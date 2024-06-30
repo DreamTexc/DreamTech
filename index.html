@@ -100,15 +100,18 @@ src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.
 
         // Function to update the counter
         function updateCounter() {
-            console.log(counter); // Display the counter value (you can modify this as needed)
+            document.getElementById('counterContainer').textContent = counter.toLocaleString();
             counter += increment;
 
             // Check if we've reached the target value
             if (counter <= targetValue) {
                 setTimeout(updateCounter, 120000); // Repeat every 120 seconds
+            } else {
+
+document.getElementById('counterContainer').textContent = targetValue.toLocaleString();
             }
         }
-
+         
         // Start the counter
         updateCounter();
     </script>
