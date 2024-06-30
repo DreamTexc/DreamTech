@@ -99,6 +99,7 @@ src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.
         let counter = 1;
         const targetValue = 1000000;
         const increment = 256;
+        let increasing = true;
 
         // Function to update the counter
         function updateCounter() {
@@ -106,9 +107,22 @@ src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.
             counter += increment;
 
             // Check if we've reached the target value
-            if (counter <= targetValue) {
-                setTimeout(updateCounter, 120000); // Repeat every 120 seconds
+            if (increasing) {
+                counter += increment;
+                if (counter >= targetValue) {
+                    counter = targetValue;
+                    increasing = false;
+                }
             } else {
+                counter -= increment;
+                if (counter <= 1) {
+                    counter =1;
+                    increasing =true;
+                }
+            }
+
+            setTimeout(updateCounter, 120000);
+        }
 
 document.getElementById('counterContainer').textContent = targetValue.toLocaleString();
             }
