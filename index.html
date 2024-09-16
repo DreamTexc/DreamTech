@@ -11,7 +11,6 @@
             justify-content: space-between;
             font-size: 8pt;
             color: green;
-
             align-items: center;
             background-color: #F8F8FF;
             width: 200px;
@@ -31,7 +30,6 @@
             color: black;
         }
 
-
         /* Flashing animation for the banner */
         @keyframes flashBanner {
             0% {
@@ -42,7 +40,17 @@
             }
         }
 
-         #movingBox {
+        /* Moving box animation */
+        @keyframes moveLeftRight {
+            0% {
+                left: 50%;
+            }
+            100% {
+                left: 0;
+            }
+        }
+
+        #movingBox {
             width: 100px;
             height: 50px;
             background-color: #3498db;
@@ -53,39 +61,24 @@
             cursor: pointer;
             animation: moveLeftRight 8s infinite alternate;
         }
+
         .overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            background-image: url(''https://th.bing.com/th/id/OIP.dNaE8QwylsvX4tA59CiB-QHaEK?w=255&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7');
+            height: 100%;
+            background-image: url('https://th.bing.com/th/id/OIP.dNaE8QwylsvX4tA59CiB-QHaEK?w=255&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7');
             background-size: cover;
-            opacity: 0.5; 
-
+            opacity: 0.5;
             mix-blend-mode: multiply;
-        }
-        </style>
-</head>
-<body>
-    <div id="movingBox">
-        <div class="overlay"></div>
-    </div>
-</body>
-</html>
-        @keyframes moveLeftRight {
-            0% {
-                left: 50%
-            }
-            100% {
-                left: 0;
-            }
         }
 
         #customImage {
             position: absolute;
             top: 0;
             right: 0;
-            width: 150px;
+            width: 100px; /* Adjusted size */
             height: auto;
         }
 
@@ -93,7 +86,7 @@
             position: absolute;
             top: 150px; /* Adjust the vertical position as needed */
             right: 0;
-            width: 150px;
+            width: 100px; /* Adjusted size */
             height: auto;
         }
 
@@ -109,30 +102,18 @@
 </head>
 <body>
     <div id="dreamBanner">DreamTech</div>
-        <div id="neit">NeIT</div>
-        <div id="fcoffe">FCoFfe</div>
-        <div id="movingBox"></div>
-        <img id="customImage"
-src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.jpg">
+    <div id="neit">NeIT</div>
+    <div id="fcoffe">FCoFfe</div>
+    <div id="movingBox">
+        <div class="overlay"></div>
     </div>
-        <img id="replicatedImage" src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.jpg">
+    <img id="customImage" src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.jpg">
+    <img id="replicatedImage" src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.jpg">
     <div id="counterContainer"></div>
 
     <!-- Include your JavaScript file -->
-    <script src="main.jss // Get the value of all cookies
-var cookies = document.cookie;
-
-        <script> #PRODUCT_ID : VISA.VISAPORT. eX| 
-TOUR TO.CC == VISON.QUEST LATERAL.SENSE </script>
-
-
-// Get the total size of the cookies in bytes (UTF-16 encoding)
-var cookieSize = cookies.length * 2;
-
-
-// Display the total cookie size
-console.log("Total cookie size: " + cookieSize + " bytes");"></script>
-     <script>
+    <script src="main.js"></script>
+    <script>
         // Initialize counter variables
         let counter = 1;
         const targetValue = 100;
@@ -143,28 +124,10 @@ console.log("Total cookie size: " + cookieSize + " bytes");"></script>
         function updateCounter() {
             document.getElementById('counterContainer').textContent = counter.toLocaleString();
             counter += increment;
-
-            // Check if we've reached the target value
-            if (increasing) {
-                if (counter >= targetValue) {
-                    counter = 1;
-                    increasing = false;
-                }
-            } else {
-                counter -= increment;
-                if (counter <= 1) {
-                    counter =1;
-                    increasing = true;
-                }
-            }
-
-            setTimeout(updateCounter, 88);
         }
 
-         window.addEventListener('load', () => {
-             updateCounter();
-         });
+        // Call the updateCounter function every second
+        setInterval(updateCounter, 1000);
     </script>
-
 </body>
 </html>
