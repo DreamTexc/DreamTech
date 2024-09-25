@@ -1,10 +1,25 @@
-function sendRequest() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("response").innerHTML = this.responseText;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Send Request Example</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+</head>
+<body>
+    <div id="response"></div>
+
+    <script>
+        function sendRequest() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("response").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("GET", "your-server-endpoint", true);
+            xhttp.send();
         }
-    };
-    xhttp.open("GET", "your-server-endpoint", true);
-    xhttp.send();
-}
+    </script>
+</body>
+</html>
