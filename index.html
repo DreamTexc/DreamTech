@@ -101,40 +101,38 @@
     </style>
 </head>
 <body>
-    <div id="dreamBanner">DreamTech</div>
-    <div id="neit">NeIT</div>
-    <div id="fcoffe">FCoFfe</div>
+    <div id="dreamBanner">
+        <div id="neit">NEIT</div>
+        <div id="fcoffe">FCOFFE</div>
+    </div>
+
     <div id="movingBox">
         <div class="overlay"></div>
     </div>
-    <img id="customImage" src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.jpg">
-    <img id="replicatedImage" src="https://orig00.deviantart.net/ed59/f/2008/147/6/8/mcduck_dollar_by_liranan.jpg">
-    <div id="counterContainer"></div>
-    
-<div>
-    <a href="https://dreamtexc.github.io/DreamTech/DreamJump.html" target="_blank">Go to DreamJump</a>
-</div>
-<div>
+
+    <img id="customImage" src="https://th.bing.com/th/id/OIP.dNaE8QwylsvX4tA59CiB-QHaEK?w=255&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Custom Image">
+    <img id="replicatedImage" src="https://th.bing.com/th/id/OIP.dNaE8QwylsvX4tA59CiB-QHaEK?w=255&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Replicated Image">
+
+    <div id="counterContainer">
+        <p>Counter: <span id="counter">0</span></p>
+    </div>
+
+    <div id="response"></div>
+
+    <a href="https://dreamtexc.github.io/DreamTech/DreamJump.html" target="_blank">Go to DreamJump</a><br>
     <a href="https://DreamTexc.github.io/DreamTech/dataBOOSTDreaM.html">View dataBOOSTDreaM.html</a>
-</div>
-    
-    <!-- Include your JavaScript file -->
-    <script src="main.js"></script>
+
     <script>
-        // Initialize counter variables
-        let counter = 1;
-        const targetValue = 100;
-        const increment = 2;
-        let increasing = true;
-
-        // Function to update the counter
-        function updateCounter() {
-            document.getElementById('counterContainer').textContent = counter.toLocaleString();
-            counter += increment;
+        function sendRequest() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("response").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("GET", "your-server-endpoint", true);
+            xhttp.send();
         }
-
-        // Call the updateCounter function every second
-        setInterval(updateCounter, 1000);
     </script>
 </body>
 </html>
