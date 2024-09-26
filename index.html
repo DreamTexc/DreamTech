@@ -119,7 +119,9 @@
 
     <a href="https://dreamtexc.github.io/DreamTech/DreamJump.html" target="_blank">Go to DreamJump</a><br>
     <a href="https://DreamTexc.github.io/DreamTech/dataBOOSTDreaM.html">View dataBOOSTDreaM.html</a>
-
+    
+    <canvas id="sineCanvas" width="600" height="200"></canvas>
+     
     <script>
         function sendRequest() {
             var xhttp = new XMLHttpRequest();
@@ -131,6 +133,29 @@
             xhttp.open("GET", "your-server-endpoint", true);
             xhttp.send();
         }
+
+                // JavaScript code to draw a moving sine wave
+        const canvas = document.getElementById('sineCanvas');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+
+        function drawSineWave() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+
+            for (let x = 0; x < canvas.width; x++) {
+                const y = canvas.height / 2 + Math.sin((x + angle) * 0.05) * 50;
+                ctx.lineTo(x, y);
+            }
+
+            ctx.strokeStyle = 'green';
+            ctx.stroke();
+            angle += 2;
+            requestAnimationFrame(drawSineWave);
+        }
+
+        drawSineWave();
     </script>
 </body>
 </html>
