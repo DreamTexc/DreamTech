@@ -9,31 +9,34 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        #contentContainer {
-            margin-top: 20px;
-        }
-        .content-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
-    <h1>Generate Content</h1>
-    <button onclick="generateContent()">Generate Content</button>
-    <div id="contentContainer"></div>
+    <h1>Generate Jet Architecture Customization</h1>
+    
+    <form id="customizationForm">
+        <label for="engineType">Engine Type:</label>
+        <input type="text" id="engineType" name="engineType"><br><br>
+        <label for="wingSpan">Wing Span:</label>
+        <input type="text" id="wingSpan" name="wingSpan"><br><br>
+        <label for="material">Material:</label>
+        <input type="text" id="material" name="material"><br><br>
+        <button type="button" onclick="redirectWithParams()">Generate Content</button>
+    </form>
 
     <script>
-        function generateContent() {
-            // Create a new content item
-            var contentItem = document.createElement("div");
-            contentItem.className = "content-item";
-            contentItem.textContent = "This is generated content. Click the button to generate more!";
+        function redirectWithParams() {
+            var engineType = document.getElementById("engineType").value;
+            var wingSpan = document.getElementById("wingSpan").value;
+            var material = document.getElementById("material").value;
+            
+            var params = new URLSearchParams({
+                engineType: engineType,
+                wingSpan: wingSpan,
+                material: material
+            });
 
-            // Append the new content item to the content container
-            document.getElementById("contentContainer").appendChild(contentItem);
+            window.location.href = 'jetMathOverlay.html?' + params.toString();
         }
     </script>
 </body>
