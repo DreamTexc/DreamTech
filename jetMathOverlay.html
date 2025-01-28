@@ -35,7 +35,7 @@
     <h1>Jet Architecture with Math Overlay</h1>
     <div class="container">
         <img src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Lockheed SR-71 Blackbird" class="image">
-        <div class="overlay">
+        <div class="overlay" id="mathOverlay">
             $$\lim_{{x \to a}} (bx + c) = ba + c$$
         </div>
     </div>
@@ -43,6 +43,19 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script type="text/javascript" id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const engineType = params.get("engineType");
+            const wingSpan = params.get("wingSpan");
+            const material = params.get("material");
+
+            const overlay = document.getElementById("mathOverlay");
+            overlay.textContent = `Engine Type: ${engineType}\nWing Span: ${wingSpan}\nMaterial: ${material}\n\n$$\\lim_{{x \\to a}} (bx + c) = ba + c$$`;
+
+            MathJax.typeset(); // Re-render MathJax
+        };
     </script>
 </body>
 </html>
