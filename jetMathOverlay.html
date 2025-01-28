@@ -21,8 +21,9 @@
         }
         .overlay {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust position to center */
             background: rgba(255, 255, 255, 0.8);
             padding: 10px;
             border-radius: 5px;
@@ -33,7 +34,7 @@
 <body>
     <h1>Jet Architecture with Math Overlay</h1>
     <div class="container">
-        <img src="lockheed_SR-71_blackbird.jpg" alt="Lockheed SR-71 Blackbird" class="image">
+        <img src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Lockheed SR-71 Blackbird" class="image">
         <div class="overlay">
             $$\lim_{{x \to a}} (bx + c) = ba + c$$
         </div>
@@ -44,3 +45,4 @@
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
     </script>
 </body>
+</html>
