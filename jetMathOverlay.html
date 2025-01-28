@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jet Architecture with Math Overlay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .container {
+            position: relative;
+            display: inline-block;
+        }
+        .image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        .overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jet Architecture with Math Overlay</h1>
+    <div class="container">
+        <img src="lockheed_SR-71_blackbird.jpg" alt="Lockheed SR-71 Blackbird" class="image">
+        <div class="overlay">
+            $$\lim_{{x \to a}} (bx + c) = ba + c$$
+        </div>
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</body>
