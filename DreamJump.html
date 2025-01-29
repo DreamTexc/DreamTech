@@ -46,9 +46,11 @@
         }
 
         function loadImages() {
+            console.log("loadImages function called");
             var imageContainer = document.getElementById("image-response");
             imageContainer.innerHTML = "";
             images.forEach(function(image) {
+                console.log("Loading image:", image);
                 var imgElement = document.createElement("img");
                 imgElement.src = image;
                 imgElement.style.width = "100px";
