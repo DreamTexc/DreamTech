@@ -89,11 +89,11 @@
         x = pos.x;
         y = pos.y;
 
-        /* Check if the cursor is within the jet image (second image in the array) */
-        if (img.src === images[1] && pos.x >= 0 && pos.x <= img.width && pos.y >= 0 && pos.y <= img.height) {
-          glass.style.display = "block"; // Show the magnifier glass only over the jet image
+        /* Check if the cursor is within the image boundaries */
+        if (pos.x >= 0 && pos.x <= img.width && pos.y >= 0 && pos.y <= img.height) {
+          glass.style.display = "block"; // Show the magnifier glass only over the image
         } else {
-          glass.style.display = "none"; // Hide the magnifier glass for other images
+          glass.style.display = "none"; // Hide the magnifier glass for other areas
           return;
         }
 
