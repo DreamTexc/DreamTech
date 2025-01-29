@@ -9,7 +9,6 @@
         body { font-family: Arial, sans-serif; }
         .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
         .option { margin: 10px 0; }
-        .ai-container { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
         .image-container { margin-top: 20px; display: flex; justify-content: space-between; }
         .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
         .image-container img:hover { border-color: #333; }
@@ -45,6 +44,8 @@
                 var imgElement = document.createElement("img");
                 imgElement.src = image;
                 imgElement.alt = "Image " + (index + 1);
+                imgElement.style.width = "30%";
+                imgElement.style.margin = "10px";
                 imageContainer.appendChild(imgElement);
                 console.log("Appended image:", imgElement);
             });
