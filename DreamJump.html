@@ -1,56 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DreamJump Portal</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123';">
-
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
-        .option { margin: 10px 0; }
-        .image-container { margin-top: 20px; display: flex; justify-content: space-between; }
-        .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
-        .image-container img:hover { border-color: #333; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DreamJump Portal</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123';">
+  <style nonce="abc123">
+    body { font-family: Arial, sans-serif; }
+    .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
+    .option { margin: 10px 0; }
+    .image-container { margin-top: 20px; display: flex; justify-content: space-between; }
+    .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
+    .image-container img:hover { border-color: #333; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>DreamJump Portal</h1>
-        <div class="option">
-            <button onclick="loadImages()">Load Images</button>
-        </div>
-        <div id="image-response" class="image-container"></div>
+  <div class="container">
+    <h1>DreamJump Portal</h1>
+    <div class="option">
+      <button onclick="loadImages()" nonce="abc123">Load Images</button>
     </div>
-
-    <script>
-        var images = [
-            "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?rs=1&pid=ImgDetMain",
-            "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
-            "https://example.com/path-to-your-third-image.jpg"
-        ];
-
-        function loadImages() {
-            console.log("loadImages function called");
-            var imageContainer = document.getElementById("image-response");
-            console.log("Image container:", imageContainer);
-            if (!imageContainer) {
-                console.error("Image container not found!");
-                return;
-            }
-            imageContainer.innerHTML = ""; // Clear the container
-            images.forEach(function(image, index) {
-                console.log("Loading image:", image);
-                var imgElement = document.createElement("img");
-                imgElement.src = image;
-                imgElement.alt = "Image " + (index + 1);
-                imgElement.style.width = "100%";
-                imgElement.style.margin = "300px";
-                imageContainer.appendChild(imgElement);
-                console.log("Appended image:", imgElement);
-            });
-        }
-    </script>
-</body>
-</html>
+    <div id="image-response" class="image-container"></div>
+  </div>
+  <script nonce="abc123">
+    var images = [
+      "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?rs=1&pid=ImgDetMain",
+      "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
+      "https://example.com/path-to-your-third-image.jpg"
+    ];
+    function loadImages() {
+      console.log("loadImages function called");
+      var imageContainer = document.getElementById("image-response");
+      console.log("Image container:", imageContainer);
+      if (!imageContainer) {
+        console.error("Image container not found!");
+        return;
+      }
+      imageContainer.innerHTML = ""; // Clear the container
+      images.forEach(function(image, index) {
+        console.log("Loading image:", image);
+        var imgElement = document.createElement("img");
+        imgElement.src = image;
+        imgElement.alt = "Image " + (index + 1);
+        imgElement.style.width = "100%";
+        imgElement.style.margin = "300px";
+        imageContainer.appendChild(imgElement);
+        console.log("Appended image:", imgElement);
+      });
+    }
+  
