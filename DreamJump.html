@@ -32,7 +32,7 @@
 
     <script>
         var selectedImages = [];
-        var images = ["image1.jpg", "image2.jpg", "image3.jpg"]; // Replace with your actual image file names
+        var images = ["image1.jpg", "image2.jpg", "image3.jpg"]; // Predefined image file names
 
         function sendRequest() {
             var xhttp = new XMLHttpRequest();
@@ -48,28 +48,13 @@
         function loadImages() {
             var imageContainer = document.getElementById("image-response");
             imageContainer.innerHTML = "";
-            images.forEach(function(image, index) {
+            images.forEach(function(image) {
                 var imgElement = document.createElement("img");
                 imgElement.src = image;
                 imgElement.style.width = "100px";
                 imgElement.style.margin = "10px";
-                imgElement.setAttribute("data-index", index);
-                imgElement.onclick = function() {
-                    toggleImageSelection(index);
-                };
                 imageContainer.appendChild(imgElement);
             });
-        }
-
-        function toggleImageSelection(index) {
-            var imgElement = document.querySelector('img[data-index="' + index + '"]');
-            if (selectedImages.includes(index)) {
-                selectedImages.splice(selectedImages.indexOf(index), 1);
-                imgElement.style.border = "none";
-            } else {
-                selectedImages.push(index);
-                imgElement.style.border = "2px solid blue";
-            }
         }
 
         function generateAI() {
