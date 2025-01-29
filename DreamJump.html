@@ -32,16 +32,9 @@
     document.getElementById('loadImagesButton').addEventListener('click', loadImages);
 
     function loadImages() {
-      console.log("loadImages function called");
       var imageContainer = document.getElementById("image-response");
-      console.log("Image container:", imageContainer);
-      if (!imageContainer) {
-        console.error("Image container not found!");
-        return;
-      }
       imageContainer.innerHTML = ""; // Clear the container
       images.forEach(function(image, index) {
-        console.log("Loading image:", image);
         var imgElement = document.createElement("img");
         imgElement.src = image;
         imgElement.alt = "Image " + (index + 1);
@@ -54,7 +47,6 @@
         });
         imgElement.addEventListener("mouseleave", removeMagnifier);
         imageContainer.appendChild(imgElement);
-        console.log("Appended image:", imgElement);
       });
     }
 
@@ -96,6 +88,15 @@
         pos = getCursorPos(e);
         x = pos.x;
         y = pos.y;
+
+        /* Check if the cursor is within the jet image (second image in the array) */
+        if (img.src === images[1] && pos.x >= 0 && pos.x <= img.width && pos.y >= 0 && pos.y <= img.height) {
+          glass.style.display = "block"; // Show the magnifier glass only over the jet image
+        } else {
+          glass.style.display = "none"; // Hide the magnifier glass for other images
+          return;
+        }
+
         /* Prevent the magnifier glass from being positioned outside the image: */
         if (x > img.width - (w / zoom)) {x = img.width - (w / zoom);}
         if (x < w / zoom) {x = w / zoom;}
