@@ -62,6 +62,12 @@
       var img, glass, w, h;
       img = document.getElementById(imgID);
 
+      /* Check if there's an existing magnifier glass and remove it */
+      var existingGlass = document.querySelector(".magnifier");
+      if (existingGlass) {
+        existingGlass.remove();
+      }
+
       /* Create magnifier glass: */
       glass = document.createElement("DIV");
       glass.setAttribute("class", "magnifier");
