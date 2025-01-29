@@ -9,7 +9,7 @@
     body { font-family: Arial, sans-serif; }
     .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
     .option { margin: 10px 0; }
-    .image-container { margin-top: 20px; display: flex; justify-content: space-between; }
+    .image-container { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
     .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
     .image-container img:hover { border-color: #333; }
   </style>
@@ -18,7 +18,7 @@
   <div class="container">
     <h1>DreamJump Portal</h1>
     <div class="option">
-      <button onclick="loadImages()" nonce="abc123">Load Images</button>
+      <button id="loadImagesButton">Load Images</button>
     </div>
     <div id="image-response" class="image-container"></div>
   </div>
@@ -28,6 +28,8 @@
       "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
       "https://example.com/path-to-your-third-image.jpg"
     ];
+    document.getElementById('loadImagesButton').addEventListener('click', loadImages);
+
     function loadImages() {
       console.log("loadImages function called");
       var imageContainer = document.getElementById("image-response");
@@ -43,7 +45,8 @@
         imgElement.src = image;
         imgElement.alt = "Image " + (index + 1);
         imgElement.style.width = "100%";
-        imgElement.style.margin = "300px";
+        imgElement.style.maxWidth = "300px";
+        imgElement.style.margin = "10px";
         imageContainer.appendChild(imgElement);
         console.log("Appended image:", imgElement);
       });
