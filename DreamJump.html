@@ -10,18 +10,14 @@
         .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
         .option { margin: 10px 0; }
         .ai-container { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
-        .image-container { margin-top: 20px; padding: 10px; border: 1px solid #ccc; display: flex; flex-wrap: wrap; justify-content: center; }
-        .image-container img { width: 100px; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
+        .image-container { margin-top: 20px; display: flex; justify-content: space-between; }
+        .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
         .image-container img:hover { border-color: #333; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>DreamJump Portal</h1>
-        <div class="option">
-            <button onclick="loadImages()">Load Images</button>
-            <div id="image-response" class="image-container"></div>
-        </div>
         <div class="option">
             <button onclick="sendRequest()">Load Data</button>
             <div id="response"></div>
@@ -30,10 +26,14 @@
             <button onclick="generateAI()">Generate AI</button>
             <div id="ai-response" class="ai-container"></div>
         </div>
+        <div class="option">
+            <button onclick="loadImages()">Load Images</button>
+        </div>
+        <div id="image-response" class="image-container"></div>
     </div>
 
     <script>
-        var images = ["https://th.bing.com/th/id/R.a1d7f79580f4def92a765838d99e1ea8?rik=dFeNhE8WHtlKGQ&riu=http%3a%2f%2f3.bp.blogspot.com%2f-n7l6G-oMO1s%2fULYTStKUGrI%2fAAAAAAAAN6o%2f9TtzGlzFbh0%2fs1600%2fF%2b22%2bRaptor%2bMilitary%2bJet%2bFighter%2bWallpapers%2b05.jpg&ehk=gSa0eFdwDqiZMuo7tWIrmYhcn45QNG9DD%2f9vVK59M8I%3d&risl=&pid=ImgRaw&r=0", "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg", "image3.jpg"]; // Predefined image file names
+        var images = ["https://th.bing.com/th/id/R.a1d7f79580f4def92a765838d99e1ea8?rik=dFeNhE8WHtlKGQ&riu=http%3a%2f%2f3.bp.blogspot.com%2f-n7l6G-oMO1s%2fULYTStKUGrI%2fAAAAAAAAN6o%2f9TtzGlzFbh0%2fs1600%2fF%2b22%2bRaptor%2bMilitary%2bJet%2bFighter%2bWallpapers%2b05.jpg&ehk=gSa0eFdwDqiZMuo7tWIrmYhcn45QNG9DD%2f9vVK59M8I%3d&risl=&pid=ImgRaw&r=0", "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg", "https://th.bing.com/th/id/OIP.VfBt_6k9-jvwIbDHOfWxeAHaEK?rs=1&pid=ImgDetMain"]; // Predefined image file names
 
         function loadImages() {
             var imageContainer = document.getElementById("image-response");
@@ -42,8 +42,6 @@
                 var imgElement = document.createElement("img");
                 imgElement.src = image;
                 imgElement.alt = "Image";
-                imgElement.style.width = "100px";
-                imgElement.style.margin = "10px";
                 imageContainer.appendChild(imgElement);
             });
         }
@@ -60,6 +58,7 @@
         }
 
         function generateAI() {
+            var selectedImages = [];
             var selectedImageFiles = selectedImages.map(function(index) {
                 return images[index];
             });
