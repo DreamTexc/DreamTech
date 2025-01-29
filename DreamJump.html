@@ -21,16 +21,19 @@
             <div id="response"></div>
         </div>
         <div class="option">
-            <button onclick="generateAI()">Generate AI</button>
-            <div id="ai-response" class="ai-container"></div>
-        </div>
-        <div class="option">
             <button onclick="loadImages()">Load Images</button>
             <div id="image-response" class="image-container"></div>
+        </div>
+        <div class="option">
+            <button onclick="generateAI()">Generate AI</button>
+            <div id="ai-response" class="ai-container"></div>
         </div>
     </div>
 
     <script>
+        var selectedImages = [];
+        var images = ["image1.jpg", "image2.jpg", "image3.jpg"]; // Replace with your actual image file names
+
         function sendRequest() {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
@@ -42,28 +45,47 @@
             xhttp.send();
         }
 
+        function loadImages() {
+            var imageContainer = document.getElementById("image-response");
+            imageContainer.innerHTML = "";
+            images.forEach(function(image, index) {
+                var imgElement = document.createElement("img");
+                imgElement.src = image;
+                imgElement.style.width = "100px";
+                imgElement.style.margin = "10px";
+                imgElement.setAttribute("data-index", index);
+                imgElement.onclick = function() {
+                    toggleImageSelection(index);
+                };
+                imageContainer.appendChild(imgElement);
+            });
+        }
+
+        function toggleImageSelection(index) {
+            var imgElement = document.querySelector('img[data-index="' + index + '"]');
+            if (selectedImages.includes(index)) {
+                selectedImages.splice(selectedImages.indexOf(index), 1);
+                imgElement.style.border = "none";
+            } else {
+                selectedImages.push(index);
+                imgElement.style.border = "2px solid blue";
+            }
+        }
+
         function generateAI() {
+            var selectedImageFiles = selectedImages.map(function(index) {
+                return images[index];
+            });
+
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     document.getElementById("ai-response").innerHTML = this.responseText;
                 }
             };
-            xhttp.open("GET", "ai-generate-endpoint", true);
-            xhttp.send();
-        }
-
-        function loadImages() {
-            var images = ["image1.jpg", "image2.jpg", "image3.jpg"]; // Replace with your actual image file names
-            var imageContainer = document.getElementById("image-response");
-            imageContainer.innerHTML = "";
-            images.forEach(function(image) {
-                var imgElement = document.createElement("img");
-                imgElement.src = image;
-                imgElement.style.width = "100px";
-                imgElement.style.margin = "10px";
-                imageContainer.appendChild(imgElement);
-            });
+            xhttp.open("POST", "ai-generate-endpoint", true);
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            xhttp.send(JSON.stringify({ images: selectedImageFiles, features: "symbol_detection_key" }));
         }
     </script>
 </body>
