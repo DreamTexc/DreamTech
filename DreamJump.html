@@ -107,9 +107,6 @@
         glass.style.top = (y - h) + "px";
         /* Display what the magnifier glass "sees": */
         glass.style.backgroundPosition = "-" + ((x * zoom) - w) + "px -" + ((y * zoom) - h) + "px";
-
-        /* Adjust magnifier glass position to follow the cursor closely */
-        glass.style.transform = `translate(${(x - w) + 10}px, ${(y - h) + 10}px)`;
       }
 
       function getCursorPos(e) {
