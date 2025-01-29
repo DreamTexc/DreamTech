@@ -12,7 +12,7 @@
     .image-container { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
     .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
     .image-container img:hover { border-color: #333; }
-    .magnifier { position: absolute; border: 3px solid red; border-radius: 50%; cursor: none; width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%; pointer-events: none; }
+    .magnifier { position: absolute; border: 3px solid red; border-radius: 50%; cursor: none; width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%; pointer-events: none; display: none; }
   </style>
 </head>
 <body>
@@ -68,14 +68,17 @@
         existingGlass.remove();
       }
 
-      /* Create magnifier glass: */
-      glass = document.createElement("DIV");
-      glass.setAttribute("class", "magnifier");
-
-      /* Insert magnifier glass: */
-      img.parentElement.insertBefore(glass, img);
+      /* Create magnifier glass if it doesn't exist */
+      if (!document.querySelector(".magnifier")) {
+        glass = document.createElement("DIV");
+        glass.setAttribute("class", "magnifier");
+        img.parentElement.insertBefore(glass, img);
+      } else {
+        glass = document.querySelector(".magnifier");
+      }
 
       /* Set background properties for the magnifier glass: */
+      glass.style.display = "block";
       glass.style.backgroundImage = "url('" + img.src + "')";
       glass.style.backgroundRepeat = "no-repeat";
       glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
@@ -122,7 +125,7 @@
 
     function removeMagnifier() {
       var glass = document.querySelector(".magnifier");
-      if (glass) glass.remove();
+      if (glass) glass.style.display = "none";
     }
   </script>
 </body>
