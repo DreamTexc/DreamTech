@@ -3,12 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Send Request Example</title>
+    <title>DreamJump Portal</title>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        .option { margin: 10px 0; }
+        .ai-container { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+        .image-container { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
 </head>
 <body>
-    <button onclick="sendRequest()">Load Data</button>
-    <div id="response"></div>
+    <div class="container">
+        <h1>DreamJump Portal</h1>
+        <div class="option">
+            <button onclick="sendRequest()">Load Data</button>
+            <div id="response"></div>
+        </div>
+        <div class="option">
+            <button onclick="generateAI()">Generate AI</button>
+            <div id="ai-response" class="ai-container"></div>
+        </div>
+        <div class="option">
+            <button onclick="loadImages()">Load Images</button>
+            <div id="image-response" class="image-container"></div>
+        </div>
+    </div>
 
     <script>
         function sendRequest() {
@@ -18,8 +38,32 @@
                     document.getElementById("response").innerHTML = this.responseText;
                 }
             };
-            xhttp.open("GET", "your-server-endpoint", true);
+            xhttp.open("GET", "load-data-endpoint", true);
             xhttp.send();
+        }
+
+        function generateAI() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("ai-response").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("GET", "ai-generate-endpoint", true);
+            xhttp.send();
+        }
+
+        function loadImages() {
+            var images = ["image1.jpg", "image2.jpg", "image3.jpg"]; // Replace with your actual image file names
+            var imageContainer = document.getElementById("image-response");
+            imageContainer.innerHTML = "";
+            images.forEach(function(image) {
+                var imgElement = document.createElement("img");
+                imgElement.src = image;
+                imgElement.style.width = "100px";
+                imgElement.style.margin = "10px";
+                imageContainer.appendChild(imgElement);
+            });
         }
     </script>
 </body>
