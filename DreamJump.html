@@ -29,7 +29,7 @@
   </div>
   <script nonce="abc123">
     var images = [
-      "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?rs=1&pid=ImgDetMain",
+      "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?pid=ImgDet&rs=1",
       "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
       "https://example.com/path-to-your-third-image.jpg"
     ];
@@ -41,9 +41,13 @@
         var imgElement = document.createElement("img");
         imgElement.src = image;
         imgElement.alt = "Image " + (index + 1);
+        imgElement.style.width = "30%"; // Maintain width for all images
+        imgElement.style.margin = "10px"; // Maintain margin for all images
         imageContainer.appendChild(imgElement);
       });
     }
+
+    document.getElementById("loadImagesButton").addEventListener("click", loadImages);
   </script>
 </body>
 </html>
