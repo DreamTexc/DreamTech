@@ -7,25 +7,25 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com https://www.slashgear.com https://example.com https://i.pinimg.com; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123';">
   <style nonce="abc123">
     body { font-family: Arial, sans-serif; }
-    .container { width: 50%; margin: auto; padding: 20px; border: 1px solid #ccc; }
+    .container { width: 90%; margin: auto; padding: 20px; border: 1px solid #ccc; }
     .option { margin: 10px 0; }
-    .image-container { margin-top: 20px; display: flex; justify-content: space-between; }
-    .image-container img { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
-    .image-container img:hover { border-color: #333; }
+    .image-container { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
+    .image-container img, .download-image { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
+    .image-container img:hover, .download-image:hover { border-color: #333; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>DreamJump Portal</h1>
     <div class="option">
-      <button onclick="loadImages()" nonce="abc123">Load Images</button>
-    </div>
-    <div id="image-response" class="image-container"></div>
-    <div class="option">
       <a href="https://raw.githubusercontent.com/DreamTexc/DreamTech/refs/heads/main/example.txt" download>
-        <img src="https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg" alt="Download Example Text File" style="width:200px;height:auto;">
+        <img src="https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg" alt="Download Example Text File" class="download-image">
       </a>
     </div>
+    <div class="option">
+      <button id="loadImagesButton" nonce="abc123">Load Images</button>
+    </div>
+    <div id="image-response" class="image-container"></div>
   </div>
   <script nonce="abc123">
     var images = [
@@ -35,23 +35,13 @@
     ];
 
     function loadImages() {
-      console.log("loadImages function called");
       var imageContainer = document.getElementById("image-response");
-      console.log("Image container:", imageContainer);
-      if (!imageContainer) {
-        console.error("Image container not found!");
-        return;
-      }
       imageContainer.innerHTML = ""; // Clear the container
       images.forEach(function(image, index) {
-        console.log("Loading image:", image);
         var imgElement = document.createElement("img");
         imgElement.src = image;
         imgElement.alt = "Image " + (index + 1);
-        imgElement.style.width = "30%";
-        imgElement.style.margin = "10px";
         imageContainer.appendChild(imgElement);
-        console.log("Appended image:", imgElement);
       });
     }
   </script>
