@@ -27,6 +27,10 @@
     <div class="option">
       <button id="loadImagesButton" nonce="abc123">Load Images</button>
     </div>
+    <div class="option">
+      <button id="runScriptButton" nonce="abc123">Run Script</button>
+    </div>
+    <div id="scriptOutput"></div>
     <div id="image-response" class="image-container"></div>
     <div id="message" class="message"></div>
   </div>
@@ -153,6 +157,16 @@
     }
 
     document.getElementById("loadImagesButton").addEventListener("click", loadImages);
+
+    // Add the new button and script for running the Python script
+    document.getElementById("runScriptButton").addEventListener("click", function() {
+      fetch("/run-script")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("scriptOutput").innerText = data.output;
+        })
+        .catch(error => console.error('Error:', error));
+    });
   </script>
 </body>
 </html>
