@@ -1,8 +1,4 @@
-// content.js or popup.js
-chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
-  if (chrome.runtime.lastError) {
-    console.error(chrome.runtime.lastError);
-  } else {
-    console.log(response.farewell);
-  }
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log(request, sender, sendResponse);
+  sendResponse({status: "received"});
 });
