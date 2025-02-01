@@ -1,6 +1,5 @@
-// background.js
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-  if (message.greeting === "hello") {
-    sendResponse({farewell: "goodbye"});
-  }
+chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+  chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, (response) => {
+    console.log(response);
+  });
 });
