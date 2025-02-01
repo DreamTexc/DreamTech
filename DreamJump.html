@@ -172,12 +172,13 @@
         },
         body: JSON.stringify({ input: userInput }),
       })
-      .then(response => response.json())
+      .then(response => response.text())
       .then(data => {
-        document.getElementById("scriptOutput").innerText = data.output;
+        try {
+          const jsonData = JSON.parse(data);
+          document.getElementById("scriptOutput").innerText = jsonData.output;
+        } catch (error) {
+          console.error('Invalid JSON response:', error);
+          document.getElementById("scriptOutput").innerText = "Error processing response.";
+        }
       })
-      .catch(error => console.error('Error:', error));
-    });
-  </script>
-</body>
-</html>
