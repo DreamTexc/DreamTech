@@ -28,6 +28,10 @@
       <button id="loadImagesButton" nonce="abc123">Load Images</button>
     </div>
     <div class="option">
+      <label for="userInput">Enter your input:</label>
+      <input type="text" id="userInput" name="userInput">
+    </div>
+    <div class="option">
       <button id="runScriptButton" nonce="abc123">Run Script</button>
     </div>
     <div id="scriptOutput"></div>
@@ -160,12 +164,19 @@
 
     // Add the new button and script for running the Python script
     document.getElementById("runScriptButton").addEventListener("click", function() {
-      fetch("/run-script")
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById("scriptOutput").innerText = data.output;
-        })
-        .catch(error => console.error('Error:', error));
+      var userInput = document.getElementById("userInput").value;
+      fetch("/run-script", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ input: userInput }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("scriptOutput").innerText = data.output;
+      })
+      .catch(error => console.error('Error:', error));
     });
   </script>
 </body>
