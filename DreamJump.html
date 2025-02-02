@@ -14,6 +14,17 @@
     .image-container img:hover, .download-image:hover { border-color: #333; }
     .magnifier { position: absolute; border: 3px solid red; border-radius: 50%; cursor: none; width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%; pointer-events: none; display: none; }
     .message { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 20px; border: 1px solid #000; border-radius: 5px; display: none; }
+    .parallelogram {
+      transform: skew(-20deg);
+      background-color: #fff;
+      border: 2px solid #000;
+      padding: 20px;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .parallelogram-content {
+      transform: skew(20deg);
+    }
   </style>
 </head>
 <body>
@@ -34,10 +45,18 @@
     <div class="option">
       <button id="runScriptButton" nonce="abc123">Run Script</button>
     </div>
+    <div class="option">
+      <label for="sshKeyInput">Enter your SSH key:</label>
+      <input type="text" id="sshKeyInput" name="sshKeyInput">
+      <button onclick="generateRandomart()" nonce="abc123">Generate Randomart</button>
+    </div>
     <div id="scriptOutput"></div>
     <div id="dotOutput"></div> <!-- New text box for dots -->
     <div id="image-response" class="image-container"></div>
     <div id="message" class="message"></div>
+    <div class="parallelogram">
+      <pre class="parallelogram-content" id="randomartOutput"></pre>
+    </div>
   </div>
   <script nonce="abc123">
     var images = [
@@ -161,18 +180,4 @@
       }, 5000); // Hide message after 5 seconds
     }
 
-    document.getElementById("loadImagesButton").addEventListener("click", loadImages);
-
-    // Add the new button and script for running the Python script
-    document.getElementById("runScriptButton").addEventListener("click", function() {
-      var userInput = document.getElementById("userInput").value;
-
-      // First try to send the input to the server
-      fetch("/run-script", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ input: userInput }),
-      })
-      .then(response =>[_{{{CITATION{{{_1{](https://github.com/WillemEngels/Thesis/tree/510372f32f57adc9f98e7a8fa0315802af432c63/index.js)[_{{{CITATION{{{_2{](https://github.com/Partypanda5/ellipses_special_brigitta/tree/81b7e802912e4861c6ceda1ce2adc3ad7eb69245/js%2Fmagnifying.js)[_{{{CITATION{{{_3{](https://github.com/SouvikDas-git/magnifyapi/tree/50be20bb57893549362b924685e01fa3c13c2bf7/magnify.js)
+    document.getElementById("load[_{{{CITATION{{{_1{](https://github.com/WillemEngels/Thesis/tree/510372f32f57adc9f98e7a8fa0315802af432c63/index.js)[_{{{CITATION{{{_2{](https://github.com/Partypanda5/ellipses_special_brigitta/tree/81b7e802912e4861c6ceda1ce2adc3ad7eb69245/js%2Fmagnifying.js)[_{{{CITATION{{{_3{](https://github.com/SouvikDas-git/magnifyapi/tree/50be20bb57893549362b924685e01fa3c13c2bf7/magnify.js)
