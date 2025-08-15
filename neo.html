@@ -28,9 +28,14 @@
     <button id="dreamButton">DREAM</button>
 
     <script>
-        document.getElementById("dreamButton").addEventListener("click", () => {
+        const dreamButton = document.getElementById("dreamButton");
+
+        dreamButton.addEventListener("click", handleDream);
+        dreamButton.addEventListener("touchstart", handleDream);
+
+        function handleDream() {
             loadXML('data/data/videoLinks.xml');
-        });
+        }
 
         function loadXML(filePath) {
             fetch(filePath)
