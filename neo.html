@@ -55,7 +55,11 @@
         }
 
         function playVideo(url) {
-            window.open(url, '_blank');
+            if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+                location.href = url; // Mobile: redirect in same tab
+            } else {
+                window.open(url, '_blank'); // Desktop: open in new tab
+            }
         }
     </script>
 </body>
