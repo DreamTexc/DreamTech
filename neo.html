@@ -2,32 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Neo Video Loader</title>
+    <title>DREAM</title>
     <style>
         body {
-            background-color: #0f0f0f;
-            color: #00ffe0;
-            font-family: 'Orbitron', sans-serif;
-            text-align: center;
-            padding-top: 50px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         button {
-            background-color: #00ffe0;
-            color: #0f0f0f;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 12px;
         }
     </style>
 </head>
 <body>
-    <h1>🎥 Neo Dream Sequence</h1>
-    <button id="loadTable">Load Table</button>
+    <button id="dreamButton">DREAM</button>
 
     <script>
-        document.getElementById("loadTable").addEventListener("click", () => {
+        document.getElementById("dreamButton").addEventListener("click", () => {
             loadXML('data/data/videoLinks.xml');
         });
 
