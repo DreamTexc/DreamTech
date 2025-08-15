@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamTech Banner</title>
     <style>
-        /* Style for the banner */
+        body {
+            background-color: #ffffff;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
         #dreamBanner {
-            display: flex; 
+            display: flex;
             justify-content: center;
             align-items: center;
             font-size: 16pt;
@@ -15,9 +20,14 @@
             background-color: #39FF14;
             width: 200px;
             height: 100px;
+            margin: 20px auto;
             cursor: pointer;
-            position: relative;
             animation: flashBanner 2s infinite alternate;
+        }
+
+        @keyframes flashBanner {
+            0% { background-color: #F8F8FF; }
+            100% { background-color: #39FF14; }
         }
 
         #neit, #fcoffe {
@@ -26,26 +36,6 @@
             text-align: left;
             position: absolute;
             margin-left: 10px;
-        }
-
-        /* Flashing animation for the banner */
-        @keyframes flashBanner {
-            0% {
-                background-color: #F8F8FF; /* Initial color */
-            }
-            100% {
-                background-color: #39FF14; /* Bright neon green */
-            }
-        }
-
-        /* Moving box animation */
-        @keyframes moveLeftRight {
-            0% {
-                left: 50%;
-            }
-            100% {
-                left: 0;
-            }
         }
 
         #movingBox {
@@ -60,6 +50,11 @@
             animation: moveLeftRight 8s infinite alternate;
         }
 
+        @keyframes moveLeftRight {
+            0% { left: 50%; }
+            100% { left: 0; }
+        }
+
         .overlay {
             position: absolute;
             top: 0;
@@ -72,20 +67,20 @@
             mix-blend-mode: multiply;
         }
 
-        #customImage {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px; /* Adjusted size */
+        img {
+            width: 100px;
             height: auto;
+            position: absolute;
+            right: 0;
+            cursor: pointer;
+        }
+
+        #customImage {
+            top: 0;
         }
 
         #replicatedImage {
-            position: absolute;
-            top: 150px; /* Adjust the vertical position as needed */
-            right: 0;
-            width: 100px; /* Adjusted size */
-            height: auto;
+            top: 150px;
         }
 
         #counterContainer {
@@ -99,7 +94,10 @@
     </style>
 </head>
 <body>
-    <div id="dreamBanner">DreamTech</div>
+
+    <a href="https://dreamtexc.github.io/DreamTech/neo.html" target="_blank">
+        <div id="dreamBanner">DreamTech</div>
+    </a>
 
     <div id="neit">NEIT</div>
     <div id="fcoffe">FCOFFE</div>
@@ -108,8 +106,13 @@
         <div class="overlay"></div>
     </div>
 
-    <img id="customImage" src="https://www.images-apmex.com/images/products/2018-niue-1-oz-gold-250-disney-scrooge-mcduck-bu_168317_Obv.jpg?v=20191025091623&width=900&height=900">
-    <img id="replicatedImage" src="https://www.images-apmex.com/images/products/2018-niue-1-oz-gold-250-disney-scrooge-mcduck-bu_168317_Obv.jpg?v=20191025091623&width=900&height=900">
+    <a href="https://dreamtexc.github.io/DreamTech/neo.html" target="_blank">
+        <img id="customImage" src="https://www.images-apmex.com/images/products/2018-niue-1-oz-gold-250-disney-scrooge-mcduck-bu_168317_Obv.jpg?v=20191025091623&width=900&height=900">
+    </a>
+
+    <a href="https://dreamtexc.github.io/DreamTech/neo.html" target="_blank">
+        <img id="replicatedImage" src="https://www.images-apmex.com/images/products/2018-niue-1-oz-gold-250-disney-scrooge-mcduck-bu_168317_Obv.jpg?v=20191025091623&width=900&height=900">
+    </a>
 
     <div id="counterContainer">
         <p>Counter: <span id="counter">0</span></p>
@@ -118,10 +121,10 @@
     <div id="response"></div>
 
     <a href="https://dreamtexc.github.io/DreamTech/DreamJump.html" target="_blank">Go to DreamJump</a><br>
-    <a href="https://DreamTexc.github.io/DreamTech/dataBOOSTDreaM.html">View dataBOOSTDreaM.html</a>
-    
+    <a href="https://dreamtexc.github.io/DreamTech/dataBOOSTDreaM.html">View dataBOOSTDreaM.html</a>
+
     <canvas id="sineCanvas" width="600" height="200"></canvas>
-     
+
     <script>
         function sendRequest() {
             var xhttp = new XMLHttpRequest();
@@ -134,7 +137,6 @@
             xhttp.send();
         }
 
-                // JavaScript code to draw a moving sine wave
         const canvas = document.getElementById('sineCanvas');
         const ctx = canvas.getContext('2d');
         let angle = 0;
