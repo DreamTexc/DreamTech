@@ -20,16 +20,11 @@
             cursor: pointer;
             border-radius: 8px;
         }
-        video {
-            margin-top: 30px;
-            box-shadow: 0 0 20px #00ffe0;
-        }
     </style>
 </head>
 <body>
     <h1>🎥 Neo Dream Sequence</h1>
     <button id="loadTable">Load Table</button>
-    <div id="tableContainer"></div>
 
     <script>
         document.getElementById("loadTable").addEventListener("click", () => {
@@ -54,16 +49,7 @@
         }
 
         function playVideo(url) {
-            const container = document.getElementById("tableContainer");
-            container.innerHTML = "";
-
-            const video = document.createElement("video");
-            video.src = url;
-            video.controls = true;
-            video.autoplay = true;
-            video.width = 720;
-
-            container.appendChild(video);
+            window.open(url, '_blank');
         }
     </script>
 </body>
