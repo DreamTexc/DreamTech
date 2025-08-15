@@ -1,14 +1,14 @@
 <videos>
   <video>
     <title>Dream Pulse</title>
-    <url>https://www.example.com/video1.mp4</url>
+    <url>https://yourcdn.com/media/lions_night_hunt.mp4</url>
   </video>
   <video>
     <title>Neon Drift</title>
-    <url>https://www.example.com/video2.mp4</url>
+    <url>https://yourcdn.com/media/leopard_night_vision.mp4</url>
   </video>
   <video>
     <title>Cyber Fade</title>
-    <url>https://www.example.com/video3.mp4</url>
+    <url>https://yourcdn.com/media/foxes_night_hunt.mp4</url>
   </video>
 </videos>
