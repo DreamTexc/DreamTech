@@ -30,6 +30,24 @@
             100% { background-color: #39FF14; }
         }
 
+        #gridButton {
+            display: inline-block;
+            font-size: 10pt;
+            color: white;
+            background-color: #222;
+            border: 1px solid #39FF14;
+            padding: 6px 12px;
+            margin: 10px auto;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        #gridButton:hover {
+            background-color: #39FF14;
+            color: black;
+        }
+
         #neit, #fcoffe {
             font-size: 12px;
             color: black;
@@ -51,56 +69,23 @@
         }
 
         @keyframes moveLeftRight {
-            0% { left: 50%; }
-            100% { left: 0; }
-        }
-
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://th.bing.com/th/id/OIP.dNaE8QwylsvX4tA59CiB-QHaEK?w=255&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7');
-            background-size: cover;
-            opacity: 0.5;
-            mix-blend-mode: multiply;
-        }
-
-        img {
-            width: 100px;
-            height: auto;
-            position: absolute;
-            right: 0;
-            cursor: pointer;
-        }
-
-        #customImage {
-            top: 0;
-        }
-
-        #replicatedImage {
-            top: 150px;
+            0% { left: 30%; }
+            100% { left: 70%; }
         }
 
         #counterContainer {
-            font-size: 16px;
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            width: 150px;
-            margin: 20px auto;
+            margin-top: 20px;
+        }
+
+        #sineCanvas {
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
+    <div id="dreamBanner">DreamTech</div>
 
-    <a href="https://dreamtexc.github.io/DreamTech/neo.html" target="_blank">
-        <div id="dreamBanner">DreamTech</div>
-    </a>
-
-    <div id="neit">NEIT</div>
-    <div id="fcoffe">FCOFFE</div>
+    <a href="https://boblt.github.io/grid.html" target="_blank" id="gridButton">Grid View</a>
 
     <div id="movingBox">
         <div class="overlay"></div>
@@ -120,7 +105,8 @@
 
     <div id="response"></div>
 
-    <a href="https://dreamtexc.github.io/DreamTech/DreamJump.html" target="_blank">Go to DreamJump</a><br>
+    <a href="https://dreamtexc.github.io/DreamTech/DreamJump.html" target="_blank">Go to DreamJump</a>
+    <br>
     <a href="https://dreamtexc.github.io/DreamTech/dataBOOSTDreaM.html">View dataBOOSTDreaM.html</a>
 
     <canvas id="sineCanvas" width="600" height="200"></canvas>
@@ -128,7 +114,7 @@
     <script>
         function sendRequest() {
             var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
+            xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     document.getElementById("response").innerHTML = this.responseText;
                 }
@@ -145,12 +131,10 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
             ctx.moveTo(0, canvas.height / 2);
-
             for (let x = 0; x < canvas.width; x++) {
                 const y = canvas.height / 2 + Math.sin((x + angle) * 0.05) * 50;
                 ctx.lineTo(x, y);
             }
-
             ctx.strokeStyle = 'green';
             ctx.stroke();
             angle += 2;
