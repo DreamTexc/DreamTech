@@ -25,15 +25,17 @@
       border-radius: 12px;
     }
 
-    #lizard-operator {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      font-size: 40px;
-      cursor: pointer;
-      animation: floaty 3s infinite ease-in-out;
-      z-index: 1000;
+    #lizard-avatar {
+      width: 60px;
+      height: auto;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
     }
+
+    #lizard-operator:hover #lizard-avatar {
+      transform: scale(1.1);
+    }
+    
 
     @keyframes floaty {
       0% { transform: translateY(0); }
@@ -58,8 +60,9 @@
 <body>
   <button id="dreamButton">DREAM</button>
 
-  <div id="lizard-operator" onclick="lizardActivate()">🦎</div>
-  <div id="lizard-dialogue"></div>
+<div id="lizard-operator" onclick="lizardActivate()">
+  <img src="images/lizard-avatar.png" alt="Lizard Operator" id="lizard-avatar">
+</div>
 
   <script>
     const dreamButton = document.getElementById("dreamButton");
