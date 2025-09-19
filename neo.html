@@ -1,66 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>DREAM</title>
-    <style>
-        body {
-            background-color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        button {
-            background-color: #ffffff;
-            color: #000000;
-            border: 2px solid #000000;
-            padding: 20px 40px;
-            font-size: 24px;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            border-radius: 12px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>DREAM</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      position: relative;
+    }
+
+    button {
+      background-color: #ffffff;
+      color: #000000;
+      border: 2px solid #000000;
+      padding: 20px 40px;
+      font-size: 24px;
+      cursor: pointer;
+      border-radius: 12px;
+    }
+
+    #lizard-operator {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 40px;
+      cursor: pointer;
+      animation: floaty 3s infinite ease-in-out;
+      z-index: 1000;
+    }
+
+    @keyframes floaty {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    #lizard-dialogue {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background: #000;
+      color: #0f0;
+      padding: 10px 15px;
+      border-radius: 8px;
+      max-width: 300px;
+      font-size: 16px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <button id="dreamButton">DREAM</button>
+  <button id="dreamButton">DREAM</button>
 
-    <script>
-        const dreamButton = document.getElementById("dreamButton");
+  <div id="lizard-operator" onclick="lizardActivate()">🦎</div>
+  <div id="lizard-dialogue"></div>
 
-        dreamButton.addEventListener("click", handleDream);
-        dreamButton.addEventListener("touchstart", handleDream);
+  <script>
+    const dreamButton = document.getElementById("dreamButton");
 
-        function handleDream() {
-            loadXML('data/data/videoLinks.xml');
-        }
+    dreamButton.addEventListener("click", handleDream);
+    dreamButton.addEventListener("touchstart", handleDream);
 
-        function loadXML(filePath) {
-            fetch(filePath)
-                .then(response => response.text())
-                .then(xmlString => {
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-                    const videos = xmlDoc.getElementsByTagName("video");
+    function handleDream() {
+      loadXML('data/data/videoLinks.xml');
+    }
 
-                    if (videos.length > 0) {
-                        const randomIndex = Math.floor(Math.random() * videos.length);
-                        const videoURL = videos[randomIndex].getElementsByTagName("url")[0].textContent;
-                        playVideo(videoURL);
-                    }
-                })
-                .catch(error => console.error("Error loading XML:", error));
-        }
+    function loadXML(filePath) {
+      fetch(filePath)
+        .then(response => response.text())
+        .then(xmlString => {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+          const videos = xmlDoc.getElementsByTagName("video");
 
-        function playVideo(url) {
-            if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                location.href = url; // Mobile: redirect in same tab
-            } else {
-                window.open(url, '_blank'); // Desktop: open in new tab
-            }
-        }
-    </script>
+          if (videos.length > 0) {
+            const randomIndex = Math.floor(Math.random() * videos.length);
+            const videoURL = videos[randomIndex].getElementsByTagName("url")[0].textContent;
+            playVideo(videoURL);
+          }
+        })
+        .catch(error => console.error("Error loading XML:", error));
+    }
+
+    function playVideo(url) {
+      if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        location.href = url;
+      } else {
+        window.open(url, '_blank');
+      }
+    }
+
+    function lizardActivate() {
+      const dialogue = document.getElementById('lizard-dialogue');
+      dialogue.innerText = "Directive received: Initiating DREAM protocol...";
+      dialogue.style.display = 'block';
+
+      setTimeout(() => {
+        dialogue.innerText = "Fetching dream sequence...";
+        handleDream();
+      }, 2000);
+
+      setTimeout(() => {
+        dialogue.innerText = "Sequence deployed. Enjoy your dream.";
+      }, 4000);
+    }
+  </script>
 </body>
 </html>
