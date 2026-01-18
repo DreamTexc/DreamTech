@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>DREAM</title>
+
   <style>
     body {
       background-color: #ffffff;
@@ -35,7 +36,6 @@
     #lizard-operator:hover #lizard-avatar {
       transform: scale(1.1);
     }
-    
 
     @keyframes floaty {
       0% { transform: translateY(0); }
@@ -55,196 +55,37 @@
       font-size: 16px;
       display: none;
     }
-    Today
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>DREAM</title>
-  <style>
-    body {
-      background-color: #ffffff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      position: relative;
-    }
 
-    button {
-      background-color: #ffffff;
-      color: #000000;
-      border: 2px solid #000000;
-      padding: 20px 40px;
-      font-size: 24px;
-      cursor: pointer;
-      border-radius: 12px;
-    }
-
-    #lizard-avatar {
-      width: 344px;
-      height: 800px;
-      border-radius: 50%;
-      transition: transform 0.3s ease;
-    }
-
-    #lizard-operator:hover #lizard-avatar {
-      transform: scale(1.1);
-    }
-    
-
-    @keyframes floaty {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0); }
-    }
-
-    #lizard-dialogue {
-      position: fixed;
-      bottom: 80px;
+    /* Wolf image styling */
+    #wolf-container {
+      position: absolute;
+      top: 20px;
       left: 20px;
-      background: #000;
-      color: #0f0;
-      padding: 10px 15px;
+    }
+
+    #wolf-image {
+      width: 180px;
+      height: auto;
       border-radius: 8px;
-      max-width: 300px;
-      font-size: 16px;
-      display: none;
+      border: 2px solid #000;
     }
   </style>
 </head>
+
 <body>
+
   <button id="dreamButton">DREAM</button>
 
-<div id="lizard-operator" onclick="lizardActivate()">
-  <img src="https://img.freepik.com/premium-photo/abstract-glowing-green-plexus-background-futuristic-neural-network-concept-artificial-intelligence-machine-learning-big-data-quantum-computing_36682-182485.jpg?w=360" alt="Lizard Operator" id="lizard-avatar">
-</div>
-
-  <script>
-    const dreamButton = document.getElementById("dreamButton");
-
-    dreamButton.addEventListener("click", handleDream);
-    dreamButton.addEventListener("touchstart", handleDream);
-
-    function handleDream() {
-      loadXML('data/data/videoLinks.xml');
-    }
-
-    function loadXML(filePath) {
-      fetch(filePath)
-        .then(response => response.text())
-        .then(xmlString => {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-          const videos = xmlDoc.getElementsByTagName("video");
-
-          if (videos.length > 0) {
-            const randomIndex = Math.floor(Math.random() * videos.length);
-            const videoURL = videos[randomIndex].getElementsByTagName("url")[0].textContent;
-            playVideo(videoURL);
-          }
-        })
-        .catch(error => console.error("Error loading XML:", error));
-    }
-
-    function playVideo(url) {
-      if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-        location.href = url;
-      } else {
-        window.open(url, '_blank');
-      }
-    }
-
-    function lizardActivate() {
-      const dialogue = document.getElementById('lizard-dialogue');
-      dialogue.innerText = "Directive received: Initiating DREAM protocol...";
-      dialogue.style.display = 'block';
-
-      setTimeout(() => {
-        dialogue.innerText = "Fetching dream sequence...";
-        handleDream();
-      }, 2000);
-
-      setTimeout(() => {
-        dialogue.innerText = "Sequence deployed. Enjoy your dream.";
-      }, 4000);
-    }
-  </script>
-</body>
-</html>
-WHATS THE .COM ADDRESS TO THIS CODE PAGE
-See my thinking
-Looks like that file is in your DreamTech repo on GitHub, so the live page URL (the “.com address”) would be:
-
-https://dreamtexc.github.io/DreamTech/neo.html
-
-
-
-CAN YOU ADD THIS IMAGE TO THE HTML CODE ABOVE
-Absolutely — to embed the wolf image you uploaded into your HTML page, you can insert it as an <img> element alongside your existing content. Here's how to integrate it cleanly:
-
-✅ Add this inside the <body> section, ideally below the <button> and before the <script>:
-html
-<div id="wolf-container">
-  <img src="/attachments/jwyUMpmYndK9DLq2qE5YN.png" alt="Wolf Eyes Outline" id="wolf-image">
-</div>
-✅ Then add this to your <style> block to control its appearance:
-css
-#wolf-container {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
-
-#wolf-image {
-  width: 200px;
-  height: auto;
-  border: 2px solid #000;
-  border-radius: 12px;
-}
-This will place the wolf image in the top-right corner of the page with a clean border and rounded edges. You can adjust the width, top, and right values to reposition or resize it as needed.
-
-Want it to animate, respond to clicks, or be part of the DREAM protocol too?
-
-CAN YOU ADD IT BETWEEN LINES 30 AND 40
-Absolutely. Lines 30–40 in your HTML fall within the <body> section, right after the <button> and before the <div id="lizard-operator">. Here's how to insert the wolf image cleanly between those lines:
-
-🔧 Updated HTML snippet (lines 30–40)
-html
-  <button id="dreamButton">DREAM</button>
-
+  <!-- Wolf image inserted between lines 30–40 -->
   <div id="wolf-container">
     <img src="/attachments/jwyUMpmYndK9DLq2qE5YN.png" alt="Wolf Eyes Outline" id="wolf-image">
   </div>
 
   <div id="lizard-operator" onclick="lizardActivate()">
-  
-#wolf-container {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-}
-
-#wolf-image {
-  width: 180px;
-  height: auto;
-  border-radius: 8px;
-  border: 2px solid #000;
-}
-  </style>
-</head>
-<body>
-  <button id="dreamButton">DREAM</button>
-
-  <div id="wolf-container"> 
-    <img src="/attachments/jwyUMpmYndK9DLq2qE5YN.png" alt="Wolf Eyes Outline" id="wolf-image"> 
+    <img src="https://img.freepik.com/premium-photo/abstract-glowing-green-plexus-background-futuristic-neural-network-concept-artificial-intelligence-machine-learning-big-data-quantum-computing_36682-182485.jpg?w=360" alt="Lizard Operator" id="lizard-avatar">
   </div>
 
-<div id="lizard-operator" onclick="lizardActivate()">
-  <img src="https://img.freepik.com/premium-photo/abstract-glowing-green-plexus-background-futuristic-neural-network-concept-artificial-intelligence-machine-learning-big-data-quantum-computing_36682-182485.jpg?w=360" alt="Lizard Operator" id="lizard-avatar">
-</div>
+  <div id="lizard-dialogue"></div>
 
   <script>
     const dreamButton = document.getElementById("dreamButton");
@@ -296,5 +137,6 @@ html
       }, 4000);
     }
   </script>
+
 </body>
 </html>
