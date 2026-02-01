@@ -1,143 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>DREAM</title>
-
-  <style>
-    body {
-      background-color: #ffffff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      position: relative;
-    }
-
-    button {
-      background-color: #ffffff;
-      color: #000000;
-      border: 2px solid #000000;
-      padding: 20px 40px;
-      font-size: 24px;
-      cursor: pointer;
-      border-radius: 12px;
-    }
-
-    #lizard-avatar {
-      width: 344px;
-      height: 800px;
-      border-radius: 50%;
-      transition: transform 0.3s ease;
-    }
-
-    #lizard-operator:hover #lizard-avatar {
-      transform: scale(1.1);
-    }
-
-    @keyframes floaty {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0); }
-    }
-
-    #lizard-dialogue {
-      position: fixed;
-      bottom: 80px;
-      left: 20px;
-      background: #000;
-      color: #0f0;
-      padding: 10px 15px;
-      border-radius: 8px;
-      max-width: 300px;
-      font-size: 16px;
-      display: none;
-    }
-
-    /* Wolf image styling */
-    #wolf-container {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-    }
-
-    #wolf-image {
-      width: 180px;
-      height: auto;
-      border-radius: 8px;
-      border: 2px solid #000;
-    }
-  </style>
+  <title>My Page</title>
 </head>
-
 <body>
 
-  <button id="dreamButton">DREAM</button>
+<p>islam first</p>
+<p>isreal second</p>
+<p>america? lol</p>
 
-  <!-- Wolf image inserted between lines 30–40 -->
-  <div id="wolf-container">
-    <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/hand-drawn-wolf-head-outline-illustration_1109719-5.avif"
-     alt="Wolf Eyes Outline" id="wolf-image">
-  </div>
-
-  <div id="lizard-operator" onclick="lizardActivate()">
-    <img src="https://img.freepik.com/premium-photo/abstract-glowing-green-plexus-background-futuristic-neural-network-concept-artificial-intelligence-machine-learning-big-data-quantum-computing_36682-182485.jpg?w=360" alt="Lizard Operator" id="lizard-avatar">
-  </div>
-
-  <div id="lizard-dialogue"></div>
-
-  <script>
-    const dreamButton = document.getElementById("dreamButton");
-
-    dreamButton.addEventListener("click", handleDream);
-    dreamButton.addEventListener("touchstart", handleDream);
-
-    function handleDream() {
-      loadXML('data/data/videoLinks.xml');
-    }
-
-    function loadXML(filePath) {
-      fetch(filePath)
-        .then(response => response.text())
-        .then(xmlString => {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-          const videos = xmlDoc.getElementsByTagName("video");
-
-          if (videos.length > 0) {
-            const randomIndex = Math.floor(Math.random() * videos.length);
-            const videoURL = videos[randomIndex].getElementsByTagName("url")[0].textContent;
-            playVideo(videoURL);
-          }
-        })
-        .catch(error => console.error("Error loading XML:", error));
-    }
-
-    function playVideo(url) {
-      if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-        location.href = url;
-      } else {
-        window.open(url, '_blank');
-      }
-    }
-
-    function lizardActivate() {
-      const dialogue = document.getElementById('lizard-dialogue');
-      dialogue.innerText = "Directive received: Initiating DREAM protocol...";
-      dialogue.style.display = 'block';
-
-      setTimeout(() => {
-        dialogue.innerText = "Fetching dream sequence...";
-        handleDream();
-      }, 2000);
-
-      setTimeout(() => {
-        dialogue.innerText = "Sequence deployed. Enjoy your dream.";
-      }, 4000);
-    }
-  </script>
+<a href="https://www.bing.com/aclk?ld=e8Dax15SikfHfWmgoWhl7UQzVUCUz3zjUe61fIziTgigVJIe0rl2XWUxJILhGbSGEnnTFERcDoZwQIPUIuH1pH5tCyhhIpEcuP-Rp15dDle0lVdM9J3ofrMAVH_eW8pGk9ekpIKV10Bezh1GJ3LfrYO8xk-gCsrnpNkN3aGNkdOBoKdzNYiiKKZuD3eLcLiWOKkYrplT8rConR6isU6k6NO1a63BQ&u=aHR0cHMlM2ElMmYlMmZnaXZlLnVucmVmdWdlZXMub3JnJTJmMTkxMTAxd2ludF9tYWlucGdfcF8zMDAwJTJmJTNmU0Zfb25ldGltZSUzZDcwMVJmMDAwMDBmMGpGcElBSSUyNlNGX21vbnRobHklM2Q3MDFSZjAwMDAwZjBqRnFJQUklMjZ1dG1fY2FtcGFpZ24lM2RVU19FTl9VTkhDUl9Db3JlQnJhbmRfQ29yZSUyNmdjbGlkJTNkMzA1YTczMGRkNjY1MTY1MWE1MjgxYTcyYWU1M2I5YTklMjZnY2xzcmMlM2QzcC5kcyUyNm1zY2xraWQlM2QzMDVhNzMwZGQ2NjUxNjUxYTUyODFhNzJhZTUzYjlhOQ&rlid=305a730dd6651651a5281a72ae53b9a9">
+  Link
+</a>
 
 </body>
 </html>
