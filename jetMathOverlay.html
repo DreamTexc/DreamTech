@@ -1,45 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Jet Math Overlay</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jet Architecture with Math Overlay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .container {
+            position: relative;
+            display: inline-block;
+        }
+        .image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        .overlay {
+            position: absolute;
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust position to center */
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .pointer {
+            cursor: pointer;
+            text-decoration: underline;
+            color: #0066cc;
+        }
+        .pointer:hover {
+            color: #004999;
+        }
+    </style>
 </head>
 <body>
-    <div id="controllerInterface">
-        <h1>Controller Interface</h1>
-        <div id="throttleLogging">
-            <h2>Throttle Logging</h2>
-            <p>Current Throttle: <span id="currentThrottle">0</span>%</p>
-        </div>
-        <div id="biosStructure">
-            <h2>BIOS Structure</h2>
-            <p>BIOS Version: <span id="biosVersion">1.0.0</span></p>
-        </div>
-        <div id="visualControllerInteractions">
-            <h2>Visual Controller Interactions</h2>
-            <button id="increaseThrottle">Increase Throttle</button>
-            <button id="decreaseThrottle">Decrease Throttle</button>
+    <h1>Jet Architecture with Math Overlay</h1>
+    <p><span class="pointer" id="moduleRef" title="Click to load module">Module Reference</span></p>
+    
+    <div class="container">
+        <img src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Lockheed SR-71 Blackbird" class="image">
+        <div class="overlay" id="mathOverlay">
+            $$\lim_{{x \to a}} (bx + c) = ba + c$$
         </div>
     </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
     <script>
-        let currentThrottle = 0;
-        const throttleDisplay = document.getElementById('currentThrottle');
+        // Simple module reference
+        const moduleRef = {
+            name: "jetMathOverlay",
+            version: "1.0.0",
+            init: function() {
+                const params = new URLSearchParams(window.location.search);
+                const engineType = params.get("engineType");
+                const wingSpan = params.get("wingSpan");
+                const material = params.get("material");
 
-        document.getElementById('increaseThrottle').onclick = function() {
-            currentThrottle = Math.min(100, currentThrottle + 10);
-            throttleDisplay.innerText = currentThrottle;
-            logThrottle(currentThrottle);
+                const overlay = document.getElementById("mathOverlay");
+                overlay.textContent = `Engine Type: ${engineType}\nWing Span: ${wingSpan}\nMaterial: ${material}\n\n$$\\lim_{{x \\to a}} (bx + c) = ba + c$$`;
+
+                MathJax.typeset(); // Re-render MathJax
+            }
         };
 
-        document.getElementById('decreaseThrottle').onclick = function() {
-            currentThrottle = Math.max(0, currentThrottle - 10);
-            throttleDisplay.innerText = currentThrottle;
-            logThrottle(currentThrottle);
-        };
+        // Pointer element handler
+        document.getElementById('moduleRef').addEventListener('click', function() {
+            console.log(`Loading module: ${moduleRef.name} v${moduleRef.version}`);
+            moduleRef.init();
+            alert(`Module \"${moduleRef.name}\" initialized!`);
+        });
 
-        function logThrottle(throttle) {
-            console.log('Throttle logged: ' + throttle + '%');
-            // TODO: Add functionality to send throttle data to the server or database.
-        }
+        // Auto-initialize on page load
+        window.onload = function() {
+            moduleRef.init();
+        };
     </script>
 </body>
 </html>
