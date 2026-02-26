@@ -1,3 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Manifest Viewer</title>
+  <style>
+    pre {
+      background: #111;
+      color: #0f0;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <pre id="output"></pre>
+
+  <script>
+    const manifestText = `
 {
   "manifest_version": 3,
   "name": "DreamJump Extension",
@@ -22,3 +43,8 @@
     }
   }
 }
+    `;
+    document.getElementById("output").textContent = manifestText;
+  </script>
+</body>
+</html>
