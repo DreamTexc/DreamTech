@@ -8,38 +8,38 @@
 
   <meta name="description" content="put a silver dollar on each eyelid and then whisper all your secrets now count from 10 with two silver dollars on each eyelid. this way i can become a better manipulator and eventually sell #DreamTech hardware to you 'the sleeper cell bot'. goodnight">
 
-<script>
-telemeter("car_3d_scan", {
-    scanId: crypto.randomUUID(),
-    mode: "lidar-emulation",
-    resolution: "0.5cm",
-    pointCount: 48213,
-    boundingBox: {
-        xMin: -1.2,
-        xMax: 1.3,
-        yMin: -0.8,
-        yMax: 0.9,
-        zMin: 0.0,
-        zMax: 1.4
-    },
-    carPose: {
-        x: 12.44,
-        y: 3.91,
-        headingDeg: 87.2
-    },
-    surfaceNormals: {
-        hood: [0.01, 0.98, 0.12],
-        roof: [0.00, 1.00, 0.00],
-        leftDoor: [-0.92, 0.30, 0.01]
-    },
-    meshQuality: {
-        holesDetected: 2,
-        noiseLevel: 0.03,
-        smoothingApplied: true
-    },
-    timestampLocal: Date.now()
-});
-</script>
+  <script>
+    telemeter("car_3d_scan", {
+        scanId: crypto.randomUUID(),
+        mode: "lidar-emulation",
+        resolution: "0.5cm",
+        pointCount: 48213,
+        boundingBox: {
+            xMin: -1.2,
+            xMax: 1.3,
+            yMin: -0.8,
+            yMax: 0.9,
+            zMin: 0.0,
+            zMax: 1.4
+        },
+        carPose: {
+            x: 12.44,
+            y: 3.91,
+            headingDeg: 87.2
+        },
+        surfaceNormals: {
+            hood: [0.01, 0.98, 0.12],
+            roof: [0.00, 1.00, 0.00],
+            leftDoor: [-0.92, 0.30, 0.01]
+        },
+        meshQuality: {
+            holesDetected: 2,
+            noiseLevel: 0.03,
+            smoothingApplied: true
+        },
+        timestampLocal: Date.now()
+    });
+  </script>
 
   <style>
     p {
@@ -49,40 +49,78 @@ telemeter("car_3d_scan", {
       margin: 1rem 0;
     }
     body {
-      background: black;d
+      background: black;
       padding: 2rem;
       font-family: monospace;
     }
+
+    /* Web Gate */
+    #web-gate {
+      width: 100%;
+      max-width: 600px;
+      overflow: hidden;
+      border: 2px solid #00ffcc;
+      margin: 2rem auto;
+      position: relative;
+    }
+    #slide-container {
+      display: flex;
+      transition: transform 0.6s ease;
+      width: 300%;
+    }
+    .slide {
+      width: 100%;
+      flex-shrink: 0;
+      padding: 3rem;
+      text-align: center;
+      color: #00ffcc;
+      font-size: 1.4rem;
+      border-right: 1px solid #003f3f;
+    }
+    #gate-controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    #gate-controls button {
+      background: black;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      cursor: pointer;
+    }
   </style>
 </head>
+
 <body>
+
   <div id="demo-frame">
-  <div id="car-scene">
+    <div id="car-scene">
 
-    <div id="web-gate">
-  <div id="slide-container">
-    <div class="slide">Gate Layer 1</div>
-    <div class="slide">Gate Layer 2</div>
-    <div class="slide">Gate Layer 3</div>
+      <div id="web-gate">
+        <div id="slide-container">
+          <div class="slide">Gate Layer 1</div>
+          <div class="slide">Gate Layer 2</div>
+          <div class="slide">Gate Layer 3</div>
+        </div>
+
+        <div id="gate-controls">
+          <button id="prev">◀</button>
+          <button id="next">▶</button>
+        </div>
+      </div>
+
+      <img id="car-bg" src="https://media.cdn-jaguarlandrover.com/api/v2/images/67952/w/1600.jpg" alt="Car" />
+
+      <svg id="track-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path id="track-path" d="M 10 90 Q 50 70 90 90" stroke="#00ffcc" stroke-width="2" fill="none" />
+      </svg>
+
+      <div id="dial"></div>
+    </div>
   </div>
 
-  <div id="gate-controls">
-    <button id="prev">◀</button>
-    <button id="next">▶</button>
-  </div>
-</div>
-
-    <img id="car-bg" src="https://media.cdn-jaguarlandrover.com/api/v2/images/67952/w/1600.jpg" alt="Car" />
-    <svg id="track-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <!-- base straight track -->
-      <path id="track-path" d="M 10 90 Q 50 70 90 90" stroke="#00ffcc" stroke-width="2" fill="none" />
-    </svg>
-    <div id="dial"></div>
-  </div>
-</div>
-</body>
-  
-<body>
   <main>
     <p>put a silver dollar on each eyelid and then whisper all your secrets now count from 10 with two silver dollars on each eyelid</p>
 
@@ -90,5 +128,27 @@ telemeter("car_3d_scan", {
 
     <p>goodnight</p>
   </main>
+
+  <script>
+    const container = document.getElementById("slide-container");
+    const slides = document.querySelectorAll(".slide");
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      if (index >= slides.length) index = 0;
+      if (index < 0) index = slides.length - 1;
+      container.style.transform = `translateX(-${index * 100}%)`;
+      currentSlide = index;
+    }
+
+    document.getElementById("next").addEventListener("click", () => {
+      showSlide(currentSlide + 1);
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      showSlide(currentSlide - 1);
+    });
+  </script>
+
 </body>
 </html>
