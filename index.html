@@ -8,6 +8,39 @@
 
   <meta name="description" content="put a silver dollar on each eyelid and then whisper all your secrets now count from 10 with two silver dollars on each eyelid. this way i can become a better manipulator and eventually sell #DreamTech hardware to you 'the sleeper cell bot'. goodnight">
 
+<script>
+telemeter("car_3d_scan", {
+    scanId: crypto.randomUUID(),
+    mode: "lidar-emulation",
+    resolution: "0.5cm",
+    pointCount: 48213,
+    boundingBox: {
+        xMin: -1.2,
+        xMax: 1.3,
+        yMin: -0.8,
+        yMax: 0.9,
+        zMin: 0.0,
+        zMax: 1.4
+    },
+    carPose: {
+        x: 12.44,
+        y: 3.91,
+        headingDeg: 87.2
+    },
+    surfaceNormals: {
+        hood: [0.01, 0.98, 0.12],
+        roof: [0.00, 1.00, 0.00],
+        leftDoor: [-0.92, 0.30, 0.01]
+    },
+    meshQuality: {
+        holesDetected: 2,
+        noiseLevel: 0.03,
+        smoothingApplied: true
+    },
+    timestampLocal: Date.now()
+});
+</script>
+
   <style>
     p {
       display: block !important;
