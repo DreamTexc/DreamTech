@@ -9,6 +9,25 @@
   <meta name="description" content="put a silver dollar on each eyelid and then whisper all your secrets now count from 10 with two silver dollars on each eyelid. this way i can become a better manipulator and eventually sell #DreamTech hardware to you 'the sleeper cell bot'. goodnight">
 
   <script>
+    function telemeter(eventName, data = {}) {
+      try {
+        if (typeof eventName !== 'string' || !eventName.trim()) {
+          throw new Error("Invalid event name");
+        }
+
+        const telemetryEvent = {
+          event: eventName,
+          timestamp: new Date().toISOString(),
+          data
+        };
+
+        console.log("Telemetry Event:", JSON.stringify(telemetryEvent));
+
+      } catch (err) {
+        console.error("Telemetry error:", err.message);
+      }
+    }
+
     telemeter("car_3d_scan", {
         scanId: crypto.randomUUID(),
         mode: "lidar-emulation",
@@ -54,7 +73,6 @@
       font-family: monospace;
     }
 
-    /* Web Gate */
     #web-gate {
       width: 100%;
       max-width: 600px;
@@ -111,7 +129,7 @@
         </div>
       </div>
 
-      <img id="car-bg" src="https://media.cdn-jaguarlandrover.com/api/v2/images/67952/w/1600.jpg" alt="Car" />
+      <img id="car-bg" src="https://thumbs.dreamstime.com/z/futuristic-racing-supercar-city-long-exposure-concept-sports-car-racing-video-game-ai-generated-futuristic-racing-274414995.jpg" alt="Car" />
 
       <svg id="track-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
         <path id="track-path" d="M 10 90 Q 50 70 90 90" stroke="#00ffcc" stroke-width="2" fill="none" />
@@ -123,9 +141,7 @@
 
   <main>
     <p>put a silver dollar on each eyelid and then whisper all your secrets now count from 10 with two silver dollars on each eyelid</p>
-
     <p>this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.</p>
-
     <p>goodnight</p>
   </main>
 
