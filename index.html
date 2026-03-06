@@ -73,10 +73,10 @@
       font-family: monospace;
     }
 
-    /* Web Gate */
+    /* Web Gate — SHRUNK */
     #web-gate {
       width: 100%;
-      max-width: 600px;
+      max-width: 260px;   /* SHRUNK */
       overflow: hidden;
       border: 2px solid #00ffcc;
       margin: 2rem auto;
@@ -96,10 +96,11 @@
     }
     .slide img {
       width: 100%;
-      height: 100%;
+      height: auto; /* SHRUNK: prevents stretching */
       object-fit: cover;
       display: block;
     }
+
     #gate-controls {
       display: flex;
       justify-content: center;
@@ -112,6 +113,23 @@
       padding: 0.5rem 1rem;
       margin: 0 0.5rem;
       cursor: pointer;
+    }
+
+    /* Car image — SHRUNK */
+    #car-bg {
+      width: 260px;   /* SHRUNK */
+      height: auto;
+      display: block;
+      margin: 1rem auto;
+      border: 2px solid #00ffcc;
+    }
+
+    /* Track overlay stays full size relative to car-bg */
+    #track-overlay {
+      width: 260px;   /* SHRUNK to match car */
+      height: auto;
+      display: block;
+      margin: 0 auto;
     }
   </style>
 </head>
