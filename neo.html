@@ -77,7 +77,6 @@
   <script>
   document.addEventListener("DOMContentLoaded", () => {
 
-    /* SAFETY CHECK: Ensure Motion One loaded */
     if (!window.motion) {
       console.error("Motion One failed to load.");
       return;
@@ -102,12 +101,9 @@
       { duration: 0.4, delay: stagger(0.05) }
     );
 
-    /* WAIT FOR IMAGE TO LOAD BEFORE STARTING TIMER */
-    const girlImg = document.getElementById("girl-img");
+    /* SEQUENCE START FUNCTION */
+    function startSequence() {
 
-    girlImg.onload = () => {
-
-      // AFTER IMAGE LOADS → START 5 SECOND TIMER
       setTimeout(() => {
 
         // fade out token phrase
@@ -126,7 +122,18 @@
         }, 1000);
 
       }, 5000);
-    };
+    }
+
+    /* IMAGE LOAD HANDLING */
+    const girlImg = document.getElementById("girl-img");
+
+    if (girlImg.complete) {
+      // image already loaded → start immediately
+      startSequence();
+    } else {
+      // wait for load event
+      girlImg.onload = startSequence;
+    }
 
   });
   </script>
