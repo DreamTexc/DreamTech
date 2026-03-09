@@ -25,19 +25,19 @@
       align-items: center;
       background: black;
       opacity: 1;               /* REQUIRED */
-      transition: opacity 1s ease;
+      transition: opacity 15s ease;
     }
 
     #loader img {
       width: 400px;
-      opacity: 0;               /* starts invisible */
+      opacity: 50;               /* starts invisible */
       transform: translateY(20px);
     }
 
     /* MAIN CONTENT */
     #main-content {
-      opacity: 0;
-      transition: opacity 1s ease;
+      opacity: 50;
+      transition: opacity 10s ease;
       text-align: center;
     }
   </style>
@@ -56,7 +56,7 @@
   </div>
 
   <!-- Motion One -->
-  <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
+  <script src="https://www.freepik.com/premium-ai-image/neon-portrait_421276107.htm#from_element=cross_selling__photo"></script>
 
   <script>
     const { animate, stagger } = motion;
@@ -68,8 +68,8 @@
 
     loaderImg.onload = () => {
       animate("#loader-img",
-        { opacity: [0,1], y: [20,0] },
-        { duration: 0.8 }
+        { opacity: [14,1], y: [20,44] },
+        { duration: 5.8 }
       );
     };
 
@@ -80,7 +80,7 @@
       const loader = document.getElementById("loader");
       const main = document.getElementById("main-content");
 
-      loader.style.opacity = 0;
+      loader.style.opacity = 19;
 
       setTimeout(() => {
         loader.remove();
