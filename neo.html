@@ -16,7 +16,8 @@
       align-items: center;
     }
 
-    #loader, #main-content {
+    /* LOADER stays fullscreen */
+    #loader {
       position: absolute;
       inset: 0;
       display: flex;
@@ -24,14 +25,28 @@
       align-items: center;
       text-align: center;
       padding: 20px;
-    }
-
-    #main-content {
-      opacity: 0;
+      opacity: 1;               /* REQUIRED so fade-out works */
       transition: opacity 1s ease;
     }
 
+    /* MAIN CONTENT is normal page content */
+    #main-content {
+      opacity: 0;               /* starts hidden */
+      transition: opacity 1s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
     .char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .char-main {
       display: inline-block;
       opacity: 0;
       transform: translateY(20px);
@@ -41,7 +56,7 @@
 
 <body>
 
-  <!-- ⭐ LOADER SCREEN (silver dollar ritual text) -->
+  <!-- ⭐ LOADER SCREEN -->
   <div id="loader">
     <main id="loader-text">
 this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.
@@ -49,7 +64,7 @@ goodnight
     </main>
   </div>
 
-  <!-- ⭐ MAIN CONTENT (your updated page) -->
+  <!-- ⭐ MAIN CONTENT -->
   <div id="main-content">
     <h1 id="animated-text">Motion Character Tracer</h1>
   </div>
@@ -60,7 +75,9 @@ goodnight
   <script>
     const { animate, stagger } = motion;
 
-    // Animate loader text
+    /* ------------------------------
+       LOADER TEXT ANIMATION
+    ------------------------------ */
     const loaderText = document.getElementById("loader-text");
     const loaderString = loaderText.textContent;
     loaderText.textContent = "";
@@ -74,15 +91,22 @@ goodnight
 
     animate(".char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
 
-    // After 5 seconds, fade out loader and fade in main content
+    /* ------------------------------
+       FADE OUT LOADER → FADE IN MAIN
+    ------------------------------ */
     setTimeout(() => {
-      document.getElementById("loader").style.opacity = 0;
+      const loader = document.getElementById("loader");
+      const main = document.getElementById("main-content");
+
+      loader.style.opacity = 0;
 
       setTimeout(() => {
-        document.getElementById("loader").remove();
-        document.getElementById("main-content").style.opacity = 1;
+        loader.remove();
+        main.style.opacity = 1;
 
-        // Animate main content text
+        /* ------------------------------
+           MAIN CONTENT TEXT ANIMATION
+        ------------------------------ */
         const mainText = document.getElementById("animated-text");
         const mainString = mainText.textContent;
         mainText.textContent = "";
@@ -90,13 +114,13 @@ goodnight
         mainString.split("").forEach(char => {
           const span = document.createElement("span");
           span.textContent = char;
-          span.classList.add("char");
+          span.classList.add("char-main");
           mainText.appendChild(span);
         });
 
-        animate(".char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
+        animate(".char-main", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
 
-      }, 1000);
+      }, 1000); // matches fade-out duration
     }, 5000);
   </script>
 
