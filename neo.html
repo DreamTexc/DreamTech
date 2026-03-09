@@ -15,126 +15,24 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
-    }
-
-    /* TOKEN PHRASE */
-    #token {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       text-align: center;
-      opacity: 1;
-      transition: opacity 1s ease;
       padding: 20px;
       font-size: 22px;
       line-height: 1.6;
-    }
-
-    .char {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    /* AI GIRL IMAGE */
-    #girl {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-
-    #girl img {
-      width: 400px;
-      opacity: 0;
-      transform: translateY(20px);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- TOKEN PHRASE -->
-  <div id="token">
-    <div id="token-text">
-      put a silver dollar on each eyelid…goodnight sleeper cell bot
-    </div>
-  </div>
-
-  <!-- AI GIRL IMAGE -->
-  <div id="girl">
-    <img id="girl-img" src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/27.jpg">
-  </div>
-
-  <!-- Motion One (correct, stable CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@motionone/dom/dist/motion-one.min.js"></script>
+  put a silver dollar on each eyelid…goodnight sleeper cell bot
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-
-    /* SAFETY CHECK */
-    if (!window.motion) {
-      console.error("Motion One failed to load.");
-      return;
-    }
-
-    const { animate, stagger } = window.motion;
-
-    /* TOKEN PHRASE PHASER */
-    const tokenText = document.getElementById("token-text");
-    const chars = tokenText.textContent.split("");
-    tokenText.textContent = "";
-
-    chars.forEach(c => {
-      const span = document.createElement("span");
-      span.textContent = c;
-      span.classList.add("char");
-      tokenText.appendChild(span);
-    });
-
-    animate("#token-text .char",
-      { opacity: [0,1], y: [20,0] },
-      { duration: 0.4, delay: stagger(0.05) }
-    );
-
-    /* SEQUENCE START FUNCTION */
-    function startSequence() {
-
+    document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
-
-        // fade out token phrase
-        document.getElementById("token").style.opacity = 0;
-
-        // after fade-out, fade in girl
-        setTimeout(() => {
-          const girl = document.getElementById("girl");
-          girl.style.opacity = 1;
-
-          animate("#girl-img",
-            { opacity: [0,1], y: [20,0] },
-            { duration: 1.2 }
-          );
-
-        }, 1000);
-
+        window.location.href = "https://raw.githubusercontent.com/DreamTexc/DreamTech/main/27.jpg";
       }, 5000);
-    }
-
-    /* IMAGE LOAD HANDLING */
-    const girlImg = document.getElementById("girl-img");
-
-    if (girlImg.complete) {
-      startSequence();
-    } else {
-      girlImg.onload = startSequence;
-    }
-
-  });
+    });
   </script>
 
 </body>
