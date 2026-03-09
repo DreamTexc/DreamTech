@@ -52,7 +52,7 @@
     <h1 id="animated-text">Motion Character Tracer</h1>
   </div>
 
-  <!-- Motion One (REAL library, not a JPG) -->
+  <!-- Motion One (REAL library) -->
   <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
 
   <script>
@@ -61,8 +61,8 @@
     /* ------------------------------
        PHASER REVEAL ON IMAGE
     ------------------------------ */
-    animate("#loader-img", 
-      { opacity: [0,1], y: [20,0] }, 
+    animate("#loader-img",
+      { opacity: [0,1], y: [20,0] },
       { duration: 0.8 }
     );
 
@@ -98,7 +98,7 @@
           { duration: 0.4, delay: stagger(0.05) }
         );
 
-      }, 1000);
+      }, 1000); // matches fade-out duration
     }, 5000);
   </script>
 
