@@ -59,27 +59,25 @@
 
 <body>
 
-  <!-- ⭐ TOKEN PHRASE FIRST -->
+  <!-- TOKEN PHRASE -->
   <div id="token">
     <div id="token-text">
       put a silver dollar on each eyelid… goodnight sleeper cell bot
     </div>
   </div>
 
-  <!-- ⭐ AI GIRL IMAGE SECOND -->
+  <!-- AI GIRL IMAGE -->
   <div id="girl">
     <img id="girl-img" src="https://img.freepik.com/premium-photo/neon-portrait_1410957-281290.jpg">
   </div>
 
   <!-- Motion One -->
   <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
-  
+
   <script>
     const { animate, stagger } = motion;
 
-    /* ------------------------------
-       1. TOKEN PHRASE PHASER
-    ------------------------------ */
+    /* TOKEN PHRASE PHASER */
     const tokenText = document.getElementById("token-text");
     const chars = tokenText.textContent.split("");
     tokenText.textContent = "";
@@ -96,26 +94,31 @@
       { duration: 0.4, delay: stagger(0.05) }
     );
 
-    /* ------------------------------
-       2. AFTER 5 SECONDS → SHOW IMAGE
-    ------------------------------ */
-    setTimeout(() => {
-      // fade out token phrase
-      document.getElementById("token").style.opacity = 0;
+    /* WAIT FOR IMAGE TO LOAD BEFORE STARTING TIMER */
+    const girlImg = document.getElementById("girl-img");
 
+    girlImg.onload = () => {
+
+      // AFTER IMAGE LOADS → START 5 SECOND TIMER
       setTimeout(() => {
-        // fade in AI girl
-        const girl = document.getElementById("girl");
-        girl.style.opacity = 1;
 
-        animate("#girl-img",
-          { opacity: [0,1], y: [20,0] },
-          { duration: 1.2 }
-        );
+        // fade out token phrase
+        document.getElementById("token").style.opacity = 0;
 
-      }, 1000); // wait for token fade-out
+        // after fade-out, fade in girl
+        setTimeout(() => {
+          const girl = document.getElementById("girl");
+          girl.style.opacity = 1;
 
-    }, 5000); // token stays visible for 5 seconds
+          animate("#girl-img",
+            { opacity: [0,1], y: [20,0] },
+            { duration: 1.2 }
+          );
+
+        }, 1000);
+
+      }, 5000);
+    };
   </script>
 
 </body>
