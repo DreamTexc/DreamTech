@@ -75,6 +75,14 @@
   <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
 
   <script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+    /* SAFETY CHECK: Ensure Motion One loaded */
+    if (!window.motion) {
+      console.error("Motion One failed to load.");
+      return;
+    }
+
     const { animate, stagger } = motion;
 
     /* TOKEN PHRASE PHASER */
@@ -119,6 +127,8 @@
 
       }, 5000);
     };
+
+  });
   </script>
 
 </body>
