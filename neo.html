@@ -38,7 +38,7 @@
       transform: translateY(20px);
     }
 
-    /* IMAGE REVEAL */
+    /* AI GIRL IMAGE */
     #girl {
       position: absolute;
       inset: 0;
@@ -54,13 +54,6 @@
       opacity: 0;
       transform: translateY(20px);
     }
-
-    /* MAIN CONTENT */
-    #main-content {
-      opacity: 0;
-      transition: opacity 1s ease;
-      text-align: center;
-    }
   </style>
 </head>
 
@@ -73,14 +66,9 @@
     </div>
   </div>
 
-  <!-- ⭐ IMAGE SECOND -->
+  <!-- ⭐ AI GIRL IMAGE SECOND -->
   <div id="girl">
     <img id="girl-img" src="YOUR_IMAGE_URL_HERE">
-  </div>
-
-  <!-- ⭐ MAIN CONTENT THIRD -->
-  <div id="main-content">
-    <h1 id="animated-text">Motion Character Tracer</h1>
   </div>
 
   <!-- Motion One -->
@@ -109,15 +97,14 @@
     );
 
     /* ------------------------------
-       2. AFTER TOKEN → FADE TOKEN OUT
+       2. AFTER 5 SECONDS → SHOW IMAGE
     ------------------------------ */
     setTimeout(() => {
+      // fade out token phrase
       document.getElementById("token").style.opacity = 0;
 
-      /* ------------------------------
-         3. FADE IN GIRL IMAGE
-      ------------------------------ */
       setTimeout(() => {
+        // fade in AI girl
         const girl = document.getElementById("girl");
         girl.style.opacity = 1;
 
@@ -126,42 +113,9 @@
           { duration: 1.2 }
         );
 
-        /* ------------------------------
-           4. AFTER IMAGE → MAIN CONTENT
-        ------------------------------ */
-        setTimeout(() => {
-          girl.style.opacity = 0;
+      }, 1000); // wait for token fade-out
 
-          setTimeout(() => {
-            const main = document.getElementById("main-content");
-            main.style.opacity = 1;
-
-            /* MAIN TEXT PHASER */
-            const mainText = document.getElementById("animated-text");
-            const letters = mainText.textContent.split("");
-            mainText.textContent = "";
-
-            letters.forEach(c => {
-              const span = document.createElement("span");
-              span.textContent = c;
-              span.style.opacity = 0;
-              span.style.display = "inline-block";
-              span.style.transform = "translateY(20px)";
-              mainText.appendChild(span);
-            });
-
-            animate("#animated-text span",
-              { opacity: [0,1], y: [20,0] },
-              { duration: 0.4, delay: stagger(0.05) }
-            );
-
-          }, 1000);
-
-        }, 3000); // how long the girl stays visible
-
-      }, 1000);
-
-    }, 4000); // how long token phrase stays visible
+    }, 5000); // token stays visible for 5 seconds
   </script>
 
 </body>
