@@ -1,56 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Motion Character Tracer</title>
+  <meta charset="UTF-8">
+  <title>put a silver dollar on each eyelid...</title>
+  <meta name="description" content="this way i can become a better manipulator and eventually sell #DreamTech hardware to you 'the sleeper cell bot' goodnight">
 
   <style>
     body {
-      font-family: sans-serif;
+      background: black;
+      color: white;
+      font-family: monospace;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: #111;
-      color: white;
       margin: 0;
     }
-    .char {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(20px);
+    main {
+      text-align: center;
+      line-height: 1.6;
+      max-width: 600px;
     }
   </style>
-</head>
 
-<body>
-  <h1 id="animated-text">Motion Character Tracer</h1>
-
-  <!-- Motion One library -->
-  <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
-
+  <!-- ⭐ Redirect to neo.html after 5 seconds -->
   <script>
-    const { animate, stagger } = motion;
-
-    const textElement = document.getElementById("animated-text");
-    const text = textElement.textContent;
-    textElement.textContent = "";
-
-    // Wrap each character in a span
-    text.split("").forEach(char => {
-      const span = document.createElement("span");
-      span.textContent = char;
-      span.classList.add("char");
-      textElement.appendChild(span);
-    });
-
-    // Animate each character with a staggered delay
-    animate(
-      ".char",
-      { opacity: [0, 1], y: [20, 0] },
-      { duration: 0.4, delay: stagger(0.05) }
-    );
+    setTimeout(() => {
+      window.location.href = "neo.html";
+    }, 5000);
   </script>
+
+</head>
+<body>
+  <main>
+    <p>this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.</p>
+    <p>goodnight</p>
+  </main>
 </body>
 </html>
