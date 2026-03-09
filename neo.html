@@ -16,35 +16,52 @@
       align-items: center;
     }
 
+    /* LOADER stays fullscreen */
     #loader {
       position: absolute;
       inset: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      opacity: 1;
+      text-align: center;
+      padding: 20px;
+      opacity: 1;               /* REQUIRED so fade-out works */
       transition: opacity 1s ease;
     }
 
-    #loader img {
-      width: 400px;
+    /* MAIN CONTENT is normal page content */
+    #main-content {
+      opacity: 0;               /* starts hidden */
+      transition: opacity 1s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .char {
+      display: inline-block;
       opacity: 0;
       transform: translateY(20px);
     }
 
-    #main-content {
+    .char-main {
+      display: inline-block;
       opacity: 0;
-      transition: opacity 1s ease;
-      text-align: center;
+      transform: translateY(20px);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ⭐ LOADER SCREEN WITH IMAGE -->
+  <!-- ⭐ LOADER SCREEN -->
   <div id="loader">
-    <img id="loader-img" src="https://as1.ftcdn.net/v2/jpg/05/71/55/96/1000_F_571559697_IKxtD73oKlGMsD4PA0SUAPRlwFSCmLbu.jpg">
+    <main id="loader-text">
+this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.
+goodnight
+    </main>
   </div>
 
   <!-- ⭐ MAIN CONTENT -->
@@ -52,19 +69,27 @@
     <h1 id="animated-text">Motion Character Tracer</h1>
   </div>
 
-  <!-- Motion One (REAL library) -->
+  <!-- Motion One -->
   <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
 
   <script>
     const { animate, stagger } = motion;
 
     /* ------------------------------
-       PHASER REVEAL ON IMAGE
+       LOADER TEXT ANIMATION
     ------------------------------ */
-    animate("#loader-img",
-      { opacity: [0,1], y: [20,0] },
-      { duration: 0.8 }
-    );
+    const loaderText = document.getElementById("loader-text");
+    const loaderString = loaderText.textContent;
+    loaderText.textContent = "";
+
+    loaderString.split("").forEach(char => {
+      const span = document.createElement("span");
+      span.textContent = char;
+      span.classList.add("char");
+      loaderText.appendChild(span);
+    });
+
+    animate(".char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
 
     /* ------------------------------
        FADE OUT LOADER → FADE IN MAIN
@@ -79,24 +104,21 @@
         loader.remove();
         main.style.opacity = 1;
 
-        /* MAIN PAGE PHASER */
+        /* ------------------------------
+           MAIN CONTENT TEXT ANIMATION
+        ------------------------------ */
         const mainText = document.getElementById("animated-text");
-        const chars = mainText.textContent.split("");
+        const mainString = mainText.textContent;
         mainText.textContent = "";
 
-        chars.forEach(c => {
+        mainString.split("").forEach(char => {
           const span = document.createElement("span");
-          span.textContent = c;
-          span.style.opacity = 0;
-          span.style.display = "inline-block";
-          span.style.transform = "translateY(20px)";
+          span.textContent = char;
+          span.classList.add("char-main");
           mainText.appendChild(span);
         });
 
-        animate("#animated-text span",
-          { opacity: [0,1], y: [20,0] },
-          { duration: 0.4, delay: stagger(0.05) }
-        );
+        animate(".char-main", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
 
       }, 1000); // matches fade-out duration
     }, 5000);
