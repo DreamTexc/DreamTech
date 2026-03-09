@@ -16,52 +16,35 @@
       align-items: center;
     }
 
-    /* LOADER stays fullscreen */
     #loader {
       position: absolute;
       inset: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-align: center;
-      padding: 20px;
-      opacity: 1;               /* REQUIRED so fade-out works */
+      opacity: 1;
       transition: opacity 1s ease;
     }
 
-    /* MAIN CONTENT is normal page content */
+    #loader img {
+      width: 400px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
     #main-content {
-      opacity: 0;               /* starts hidden */
+      opacity: 0;
       transition: opacity 1s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       text-align: center;
-      padding: 20px;
-    }
-
-    .char {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    .char-main {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(20px);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ⭐ LOADER SCREEN -->
+  <!-- ⭐ LOADER SCREEN WITH IMAGE -->
   <div id="loader">
-    <main id="loader-text">
-this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.
-goodnight
-    </main>
+    <img id="loader-img" src="https://as1.ftcdn.net/v2/jpg/05/71/55/96/1000_F_571559697_IKxtD73oKlGMsD4PA0SUAPRlwFSCmLbu.jpg">
   </div>
 
   <!-- ⭐ MAIN CONTENT -->
@@ -69,27 +52,19 @@ goodnight
     <h1 id="animated-text">Motion Character Tracer</h1>
   </div>
 
-  <!-- Motion One -->
-  <script src="https://as1.ftcdn.net/v2/jpg/05/71/55/96/1000_F_571559697_IKxtD73oKlGMsD4PA0SUAPRlwFSCmLbu.jpg"></script>
+  <!-- Motion One (REAL library, not a JPG) -->
+  <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
 
   <script>
     const { animate, stagger } = motion;
 
     /* ------------------------------
-       LOADER TEXT ANIMATION
+       PHASER REVEAL ON IMAGE
     ------------------------------ */
-    const loaderText = document.getElementById("loader-text");
-    const loaderString = loaderText.textContent;
-    loaderText.textContent = "";
-
-    loaderString.split("").forEach(char => {
-      const span = document.createElement("span");
-      span.textContent = char;
-      span.classList.add("char");
-      loaderText.appendChild(span);
-    });
-
-    animate("#loader-text .char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
+    animate("#loader-img", 
+      { opacity: [0,1], y: [20,0] }, 
+      { duration: 0.8 }
+    );
 
     /* ------------------------------
        FADE OUT LOADER → FADE IN MAIN
@@ -104,23 +79,26 @@ goodnight
         loader.remove();
         main.style.opacity = 1;
 
-        /* ------------------------------
-           MAIN CONTENT TEXT ANIMATION
-        ------------------------------ */
+        /* MAIN PAGE PHASER */
         const mainText = document.getElementById("animated-text");
-        const mainString = mainText.textContent;
+        const chars = mainText.textContent.split("");
         mainText.textContent = "";
 
-        mainString.split("").forEach(char => {
+        chars.forEach(c => {
           const span = document.createElement("span");
-          span.textContent = char;
-          span.classList.add("char-main");
+          span.textContent = c;
+          span.style.opacity = 0;
+          span.style.display = "inline-block";
+          span.style.transform = "translateY(20px)";
           mainText.appendChild(span);
         });
 
-        animate("#loader-text .char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
+        animate("#animated-text span",
+          { opacity: [0,1], y: [20,0] },
+          { duration: 0.4, delay: stagger(0.05) }
+        );
 
-      }, 1000); // matches fade-out duration
+      }, 1000);
     }, 5000);
   </script>
 
