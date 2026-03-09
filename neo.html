@@ -16,6 +16,11 @@
       height: 100vh;
       margin: 0;
     }
+    .char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+    }
     main {
       text-align: center;
       line-height: 1.6;
@@ -29,12 +34,37 @@
       window.location.href = "neo.html";
     }, 5000);
   </script>
-
 </head>
+
 <body>
-  <main>
-    <p>this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.</p>
-    <p>goodnight</p>
+  <main id="animated-text">
+    this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”. goodnight
   </main>
+
+  <!-- Motion One library -->
+  <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
+
+  <script>
+    const { animate, stagger } = motion;
+
+    const textElement = document.getElementById("animated-text");
+    const text = textElement.textContent;
+    textElement.textContent = "";
+
+    // Wrap each character in a span
+    text.split("").forEach(char => {
+      const span = document.createElement("span");
+      span.textContent = char;
+      span.classList.add("char");
+      textElement.appendChild(span);
+    });
+
+    // Animate each character with a staggered delay
+    animate(
+      ".char",
+      { opacity: [0, 1], y: [20, 0] },
+      { duration: 0.4, delay: stagger(0.05) }
+    );
+  </script>
 </body>
 </html>
