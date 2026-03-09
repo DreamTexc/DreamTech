@@ -2,69 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>put a silver dollar on each eyelid...</title>
-  <meta name="description" content="this way i can become a better manipulator and eventually sell #DreamTech hardware to you 'the sleeper cell bot' goodnight">
+  <title>DreamTech</title>
 
   <style>
     body {
       background: black;
       color: white;
       font-family: monospace;
+      margin: 0;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
     }
+
+    #loader, #main-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #main-content {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
     .char {
       display: inline-block;
       opacity: 0;
       transform: translateY(20px);
     }
-    main {
-      text-align: center;
-      line-height: 1.6;
-      max-width: 600px;
-    }
   </style>
-
-  <!-- ⭐ Redirect to neo.html after 5 seconds -->
-  <script>
-    setTimeout(() => {
-      window.location.href = "neo.html";
-    }, 5000);
-  </script>
 </head>
 
 <body>
-  <main id="animated-text">
-    this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”. goodnight
-  </main>
 
-  <!-- Motion One library -->
+  <!-- ⭐ LOADER SCREEN (silver dollar ritual text) -->
+  <div id="loader">
+    <main id="loader-text">
+this way i can become a better manipulator and eventually sell #DreamTech hardware to you “the sleeper cell bot”.
+goodnight
+    </main>
+  </div>
+
+  <!-- ⭐ MAIN CONTENT (your updated page) -->
+  <div id="main-content">
+    <h1 id="animated-text">Motion Character Tracer</h1>
+  </div>
+
+  <!-- Motion One -->
   <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
 
   <script>
     const { animate, stagger } = motion;
 
-    const textElement = document.getElementById("animated-text");
-    const text = textElement.textContent;
-    textElement.textContent = "";
+    // Animate loader text
+    const loaderText = document.getElementById("loader-text");
+    const loaderString = loaderText.textContent;
+    loaderText.textContent = "";
 
-    // Wrap each character in a span
-    text.split("").forEach(char => {
+    loaderString.split("").forEach(char => {
       const span = document.createElement("span");
       span.textContent = char;
       span.classList.add("char");
-      textElement.appendChild(span);
+      loaderText.appendChild(span);
     });
 
-    // Animate each character with a staggered delay
-    animate(
-      ".char",
-      { opacity: [0, 1], y: [20, 0] },
-      { duration: 0.4, delay: stagger(0.05) }
-    );
+    animate(".char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
+
+    // After 5 seconds, fade out loader and fade in main content
+    setTimeout(() => {
+      document.getElementById("loader").style.opacity = 0;
+
+      setTimeout(() => {
+        document.getElementById("loader").remove();
+        document.getElementById("main-content").style.opacity = 1;
+
+        // Animate main content text
+        const mainText = document.getElementById("animated-text");
+        const mainString = mainText.textContent;
+        mainText.textContent = "";
+
+        mainString.split("").forEach(char => {
+          const span = document.createElement("span");
+          span.textContent = char;
+          span.classList.add("char");
+          mainText.appendChild(span);
+        });
+
+        animate(".char", { opacity: [0,1], y: [20,0] }, { duration: 0.4, delay: stagger(0.05) });
+
+      }, 1000);
+    }, 5000);
   </script>
+
 </body>
 </html>
