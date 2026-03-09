@@ -71,18 +71,19 @@
     <img id="girl-img" src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/27.jpg">
   </div>
 
-  <!-- Motion One -->
-  <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
+  <!-- Motion One (correct, stable CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@motionone/dom/dist/motion-one.min.js"></script>
 
   <script>
   document.addEventListener("DOMContentLoaded", () => {
 
+    /* SAFETY CHECK */
     if (!window.motion) {
       console.error("Motion One failed to load.");
       return;
     }
 
-    const { animate, stagger } = motion;
+    const { animate, stagger } = window.motion;
 
     /* TOKEN PHRASE PHASER */
     const tokenText = document.getElementById("token-text");
@@ -128,10 +129,8 @@
     const girlImg = document.getElementById("girl-img");
 
     if (girlImg.complete) {
-      // image already loaded → start immediately
       startSequence();
     } else {
-      // wait for load event
       girlImg.onload = startSequence;
     }
 
