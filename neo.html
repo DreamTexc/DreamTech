@@ -14,30 +14,51 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
-    /* LOADER stays fullscreen */
-    #loader {
+    /* TOKEN PHRASE */
+    #token {
       position: absolute;
       inset: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: black;
-      opacity: 1;               /* REQUIRED */
-      transition: opacity 15s ease;
+      text-align: center;
+      opacity: 1;
+      transition: opacity 1s ease;
+      padding: 20px;
+      font-size: 22px;
+      line-height: 1.6;
     }
 
-    #loader img {
+    .char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    /* IMAGE REVEAL */
+    #girl {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    #girl img {
       width: 400px;
-      opacity: 50;               /* starts invisible */
+      opacity: 0;
       transform: translateY(20px);
     }
 
     /* MAIN CONTENT */
     #main-content {
-      opacity: 50;
-      transition: opacity 10s ease;
+      opacity: 0;
+      transition: opacity 1s ease;
       text-align: center;
     }
   </style>
@@ -45,68 +66,102 @@
 
 <body>
 
-  <!-- ⭐ LOADER SCREEN WITH IMAGE -->
-  <div id="loader">
-    <img id="loader-img" src="https://as1.ftcdn.net/v2/jpg/05/71/55/96/1000_F_571559697_IKxtD73oKlGMsD4PA0SUAPRlwFSCmLbu.jpg">
+  <!-- ⭐ TOKEN PHRASE FIRST -->
+  <div id="token">
+    <div id="token-text">
+      put a silver dollar on each eyelid… goodnight sleeper cell bot
+    </div>
   </div>
 
-  <!-- ⭐ MAIN CONTENT -->
+  <!-- ⭐ IMAGE SECOND -->
+  <div id="girl">
+    <img id="girl-img" src="YOUR_IMAGE_URL_HERE">
+  </div>
+
+  <!-- ⭐ MAIN CONTENT THIRD -->
   <div id="main-content">
     <h1 id="animated-text">Motion Character Tracer</h1>
   </div>
 
   <!-- Motion One -->
-  <script src="https://www.freepik.com/premium-ai-image/neon-portrait_421276107.htm#from_element=cross_selling__photo"></script>
+  <script src="https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.min.js"></script>
 
   <script>
     const { animate, stagger } = motion;
 
     /* ------------------------------
-       WAIT FOR IMAGE TO LOAD
+       1. TOKEN PHRASE PHASER
     ------------------------------ */
-    const loaderImg = document.getElementById("loader-img");
+    const tokenText = document.getElementById("token-text");
+    const chars = tokenText.textContent.split("");
+    tokenText.textContent = "";
 
-    loaderImg.onload = () => {
-      animate("#loader-img",
-        { opacity: [14,1], y: [20,44] },
-        { duration: 5.8 }
-      );
-    };
+    chars.forEach(c => {
+      const span = document.createElement("span");
+      span.textContent = c;
+      span.classList.add("char");
+      tokenText.appendChild(span);
+    });
+
+    animate("#token-text .char",
+      { opacity: [0,1], y: [20,0] },
+      { duration: 0.4, delay: stagger(0.05) }
+    );
 
     /* ------------------------------
-       FADE OUT LOADER → FADE IN MAIN
+       2. AFTER TOKEN → FADE TOKEN OUT
     ------------------------------ */
     setTimeout(() => {
-      const loader = document.getElementById("loader");
-      const main = document.getElementById("main-content");
+      document.getElementById("token").style.opacity = 0;
 
-      loader.style.opacity = 19;
-
+      /* ------------------------------
+         3. FADE IN GIRL IMAGE
+      ------------------------------ */
       setTimeout(() => {
-        loader.remove();
-        main.style.opacity = 1;
+        const girl = document.getElementById("girl");
+        girl.style.opacity = 1;
 
-        /* MAIN PAGE PHASER */
-        const mainText = document.getElementById("animated-text");
-        const chars = mainText.textContent.split("");
-        mainText.textContent = "";
-
-        chars.forEach(c => {
-          const span = document.createElement("span");
-          span.textContent = c;
-          span.style.opacity = 0;
-          span.style.display = "inline-block";
-          span.style.transform = "translateY(20px)";
-          mainText.appendChild(span);
-        });
-
-        animate("#animated-text span",
+        animate("#girl-img",
           { opacity: [0,1], y: [20,0] },
-          { duration: 0.4, delay: stagger(0.05) }
+          { duration: 1.2 }
         );
 
-      }, 1000); // matches fade-out duration
-    }, 5000);
+        /* ------------------------------
+           4. AFTER IMAGE → MAIN CONTENT
+        ------------------------------ */
+        setTimeout(() => {
+          girl.style.opacity = 0;
+
+          setTimeout(() => {
+            const main = document.getElementById("main-content");
+            main.style.opacity = 1;
+
+            /* MAIN TEXT PHASER */
+            const mainText = document.getElementById("animated-text");
+            const letters = mainText.textContent.split("");
+            mainText.textContent = "";
+
+            letters.forEach(c => {
+              const span = document.createElement("span");
+              span.textContent = c;
+              span.style.opacity = 0;
+              span.style.display = "inline-block";
+              span.style.transform = "translateY(20px)";
+              mainText.appendChild(span);
+            });
+
+            animate("#animated-text span",
+              { opacity: [0,1], y: [20,0] },
+              { duration: 0.4, delay: stagger(0.05) }
+            );
+
+          }, 1000);
+
+        }, 3000); // how long the girl stays visible
+
+      }, 1000);
+
+    }, 4000); // how long token phrase stays visible
   </script>
 
 </body>
