@@ -20,9 +20,9 @@
     </style>
 
     <script defer>
-        // -----------------------------
-        // @Class Wrapper Specifier Base
-        // -----------------------------
+        // -----------------------------------------
+        // DreamTech @Class Wrapper Specifier System
+        // -----------------------------------------
         class SelectionWrapper {
             constructor() {
                 this.lastSelection = "";
@@ -37,26 +37,69 @@
             }
 
             onSelection(text) {
-                // This will be overridden later
                 console.log("Wrapper received:", text);
             }
         }
 
         const wrapper = new SelectionWrapper();
 
-        // -----------------------------
+        // -----------------------------------------
         // Unified Selection Listener
-        // -----------------------------
+        // -----------------------------------------
         document.addEventListener("selectionchange", () => {
             const sel = document.getSelection().toString().trim();
             const out = document.getElementById("selectionOutput");
-
-            // Update UI
             out.textContent = sel ? `Selected: "${sel}"` : "";
-
-            // Update wrapper system
             wrapper.update();
         });
+
+        // -----------------------------------------
+        // DreamTech Spawn Specifier Interpreter
+        // -----------------------------------------
+        function runSpecifier(cmd) {
+            switch (cmd) {
+                case "@spawn.polarizer":
+                    generatePolarizer();
+                    break;
+
+                default:
+                    console.warn("Unknown DreamTech specifier:", cmd);
+            }
+        }
+
+        // -----------------------------------------
+        // Spacebar → Execute Spawn Specifier
+        // -----------------------------------------
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space") {
+                event.preventDefault();
+                runSpecifier("@spawn.polarizer");
+            }
+        });
+
+        // -----------------------------------------
+        // Generator: Heliopan Linear Polarizer
+        // -----------------------------------------
+        function generatePolarizer() {
+            const container = document.getElementById("tableContainer");
+
+            const wrap = document.createElement("div");
+            wrap.style.margin = "12px 0";
+
+            const label = document.createElement("div");
+            label.textContent = "Heliopan Linear Polarizer";
+
+            const img = document.createElement("img");
+            img.src = "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3";
+            img.alt = "Heliopan Linear Polarizer";
+            img.style.width = "200px";
+            img.style.display = "block";
+            img.style.marginTop = "6px";
+
+            wrap.appendChild(label);
+            wrap.appendChild(img);
+            container.appendChild(wrap);
+        }
     </script>
 </head>
 
