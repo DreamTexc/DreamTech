@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>XML to Table</title>
+
     <style>
         table {
             width: 100%;
@@ -17,12 +18,56 @@
             background-color: #f2f2f2;
         }
     </style>
-    <script src="script.js" defer></script>
+
+    <script defer>
+        // -----------------------------
+        // @Class Wrapper Specifier Base
+        // -----------------------------
+        class SelectionWrapper {
+            constructor() {
+                this.lastSelection = "";
+            }
+
+            update() {
+                const sel = document.getSelection().toString().trim();
+                if (sel && sel !== this.lastSelection) {
+                    this.lastSelection = sel;
+                    this.onSelection(sel);
+                }
+            }
+
+            onSelection(text) {
+                // This will be overridden later
+                console.log("Wrapper received:", text);
+            }
+        }
+
+        const wrapper = new SelectionWrapper();
+
+        // -----------------------------
+        // Unified Selection Listener
+        // -----------------------------
+        document.addEventListener("selectionchange", () => {
+            const sel = document.getSelection().toString().trim();
+            const out = document.getElementById("selectionOutput");
+
+            // Update UI
+            out.textContent = sel ? `Selected: "${sel}"` : "";
+
+            // Update wrapper system
+            wrapper.update();
+        });
+    </script>
 </head>
+
 <body>
     <h1>Welcome to DreamTech</h1>
+
+    <div id="selectionOutput"></div>
+
     <button id="loadTable">Load Table</button>
     <button onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
+
     <div id="tableContainer"></div>
 </body>
 </html>
