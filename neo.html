@@ -19,18 +19,86 @@
       padding: 20px;
       font-size: 22px;
       line-height: 1.6;
+      flex-direction: column;
+    }
+
+    input, button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 18px;
+    }
+
+    pre {
+      margin-top: 20px;
+      font-size: 18px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 
 <body>
 
-  put a silver dollar on each eyelid…goodnight sleeper cell bot
+  <!-- Ritual phrase -->
+  <p>put a silver dollar on each eyelid…goodnight sleeper cell bot</p>
+
+  <!-- Placeholder p/div sequence you provided -->
+  <p>p</p>
+  <div>div</div>
+  <p>p</p>
+  <p>p</p>
+  <div>div</div>
+  <p>p</p>
+  <div>div</div>
+
+  <!-- User choice gate -->
+  <div style="margin-top:20px;">
+    <button onclick="chooseDefault()">Use Default 5‑Second Parse</button>
+  </div>
+
+  <!-- Converter UI -->
+  <div style="margin-top:20px;">
+    <input id="num" type="number" placeholder="Enter a number">
+    <button onclick="convert()">Convert to Binary</button>
+  </div>
+
+  <pre id="result"></pre>
 
   <script>
+    let redirectEnabled = true;
+
+    // 32-bit converter (C → JS)
+    function toBinary32(num) {
+      let bits = "";
+      for (let pos = 31; pos >= 0; pos--) {
+        bits += ((num >> pos) & 1);
+      }
+      return bits;
+    }
+
+    function chooseDefault() {
+      redirectEnabled = true;
+      document.getElementById("result").textContent =
+        "Default 5‑second parse selected.";
+    }
+
+    function convert() {
+      redirectEnabled = false;
+      const n = parseInt(document.getElementById("num").value, 10);
+      document.getElementById("result").textContent = toBinary32(n);
+    }
+
+    // NEW: Assign placeholder src values to each <p>
     document.addEventListener("DOMContentLoaded", () => {
+      const ps = document.querySelectorAll("p");
+      ps.forEach((p, i) => {
+        p.dataset.src = `src_${i + 1}`;
+      });
+
+      // 5-second redirect unless overridden
       setTimeout(() => {
-        window.location.href = "https://dreamtexc.github.io/DreamTech/27.jpg";
+        if (redirectEnabled) {
+          window.location.href = "https://dreamtexc.github.io/DreamTech/27.jpg";
+        }
       }, 5000);
     });
   </script>
