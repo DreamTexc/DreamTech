@@ -41,7 +41,7 @@
   <!-- Ritual phrase -->
   <p>put a silver dollar on each eyelid…goodnight sleeper cell bot</p>
 
-  <!-- Placeholder p/div sequence you provided -->
+  <!-- Placeholder p/div sequence -->
   <p>p</p>
   <div>div</div>
   <p>p</p>
@@ -52,7 +52,7 @@
 
   <!-- User choice gate -->
   <div style="margin-top:20px;">
-    <button onclick="chooseDefault()">Use Default 5‑Second Parse</button>
+    <button onclick="startRelay()">Start 5‑Second Relay</button>
   </div>
 
   <!-- Converter UI -->
@@ -64,7 +64,7 @@
   <pre id="result"></pre>
 
   <script>
-    let redirectEnabled = true;
+    let relayTimer = null; // no redirect until user chooses
 
     // 32-bit converter (C → JS)
     function toBinary32(num) {
@@ -75,31 +75,36 @@
       return bits;
     }
 
-    function chooseDefault() {
-      redirectEnabled = true;
+    // User manually starts the 5-second relay
+    function startRelay() {
+      // Clear any previous relay
+      if (relayTimer) clearTimeout(relayTimer);
+
       document.getElementById("result").textContent =
-        "Default 5‑second parse selected.";
+        "5‑second relay initiated…";
+
+      relayTimer = setTimeout(() => {
+        window.location.href = "https://dreamtexc.github.io/DreamTech/27.jpg";
+      }, 5000);
     }
 
+    // User enters a key → cancel relay
     function convert() {
-      redirectEnabled = false;
+      if (relayTimer) {
+        clearTimeout(relayTimer);
+        relayTimer = null;
+      }
+
       const n = parseInt(document.getElementById("num").value, 10);
       document.getElementById("result").textContent = toBinary32(n);
     }
 
-    // NEW: Assign placeholder src values to each <p>
+    // Assign placeholder src values to each <p>
     document.addEventListener("DOMContentLoaded", () => {
       const ps = document.querySelectorAll("p");
       ps.forEach((p, i) => {
         p.dataset.src = `src_${i + 1}`;
       });
-
-      // 5-second redirect unless overridden
-      setTimeout(() => {
-        if (redirectEnabled) {
-          window.location.href = "https://dreamtexc.github.io/DreamTech/27.jpg";
-        }
-      }, 5000);
     });
   </script>
 
