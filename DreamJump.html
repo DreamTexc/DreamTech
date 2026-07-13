@@ -5,60 +5,139 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DreamJump Portal</title>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com https://www.slashgear.com https://example.com https://i.pinimg.com; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123';">
+
   <style nonce="abc123">
     body { font-family: Arial, sans-serif; }
     .container { width: 90%; margin: auto; padding: 20px; border: 1px solid #ccc; }
     .option { margin: 10px 0; }
+
+    /* IMAGE GRID */
     .image-container { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
-    .image-container img, .download-image { width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s; }
-    .image-container img:hover, .download-image:hover { border-color: #333; }
-    .magnifier { position: absolute; border: 3px solid red; border-radius: 50%; cursor: none; width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%; pointer-events: none; display: none; }
-    .message { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 20px; border: 1px solid #000; border-radius: 5px; display: none; }
-    .parallelogram {
-      transform: skew(-20deg);
-      background-color: #fff;
-      border: 2px solid #000;
-      padding: 20px;
-      display: inline-block;
-      margin-top: 20px;
+    .image-container img, .download-image {
+      width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s;
     }
-    .parallelogram-content {
-      transform: skew(20deg);
+    .image-container img:hover, .download-image:hover { border-color: #333; }
+
+    /* MAGNIFIER */
+    .magnifier {
+      position: absolute; border: 3px solid red; border-radius: 50%; cursor: none;
+      width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%;
+      pointer-events: none; display: none;
+    }
+
+    /* MESSAGE POPUP */
+    .message {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background-color: #fff; padding: 10px 20px; border: 1px solid #000;
+      border-radius: 5px; display: none;
+    }
+
+    /* RANDOMART BOX */
+    .parallelogram {
+      transform: skew(-20deg); background-color: #fff; border: 2px solid #000;
+      padding: 20px; display: inline-block; margin-top: 20px;
+    }
+    .parallelogram-content { transform: skew(20deg); }
+
+    /* ICMI TERMINAL OVERLAY */
+    .icmi-overlay {
+      position: relative;
+      width: 420px;
+      height: auto;
+      display: inline-block;
+      vertical-align: top;
+      margin-left: 20px;
+    }
+
+    .icmi-base {
+      width: 100%;
+      display: block;
+    }
+
+    .icmi-code {
+      position: absolute;
+      top: 18px;
+      left: 22px;
+      width: 360px;
+      background: rgba(0,0,0,0.65);
+      color: #00ffea;
+      padding: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: pre-wrap;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
+
     <h1>DreamJump Portal</h1>
+
+    <!-- ICMI TERMINAL OVERLAY -->
+    <div class="icmi-overlay">
+      <img src="too.png" class="icmi-base">
+      <div class="icmi-code" id="icmiTerminal">
+<pre>
+ICMI TERMINAL ONLINE
+--------------------
+Awaiting RELOOP commands...
+</pre>
+      </div>
+    </div>
+
     <div class="option">
       <a href="https://raw.githubusercontent.com/DreamTexc/DreamTech/refs/heads/main/example.txt" download>
         <img src="https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg" alt="Download Example Text File" class="download-image">
       </a>
     </div>
+
     <div class="option">
       <button id="loadImagesButton" nonce="abc123">Load Images</button>
     </div>
+
     <div class="option">
       <label for="userInput">Enter your input:</label>
       <input type="text" id="userInput" name="userInput">
     </div>
+
     <div class="option">
       <button id="runScriptButton" nonce="abc123">Run Script</button>
     </div>
+
     <div class="option">
       <label for="sshKeyInput">Enter your SSH key:</label>
       <input type="text" id="sshKeyInput" name="sshKeyInput">
       <button onclick="generateRandomart()" nonce="abc123">Generate Randomart</button>
     </div>
+
     <div id="scriptOutput"></div>
-    <div id="dotOutput"></div> <!-- New text box for dots -->
+    <div id="dotOutput"></div>
     <div id="image-response" class="image-container"></div>
     <div id="message" class="message"></div>
+
     <div class="parallelogram">
       <pre class="parallelogram-content" id="randomartOutput"></pre>
     </div>
+
   </div>
+
   <script nonce="abc123">
+
+    /* ICMI TERMINAL UPDATE FUNCTION */
+    function icmiLog(text) {
+      const term = document.getElementById("icmiTerminal");
+      term.innerHTML = "<pre>" + text + "</pre>";
+    }
+
+    /* EXAMPLE: Update terminal when Run Script is pressed */
+    document.getElementById("runScriptButton").addEventListener("click", function() {
+      icmiLog("Executing ICMI...\nRELOOP ACTIVE\n-L 8080:192.168.1.10:22\n-D 1080\nDONE.");
+    });
+
+    /* EXISTING IMAGE + MAGNIFIER CODE (unchanged) */
     var images = [
       "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?pid=ImgDet&rs=1",
       "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
@@ -67,14 +146,14 @@
 
     function loadImages() {
       var imageContainer = document.getElementById("image-response");
-      imageContainer.innerHTML = ""; // Clear the container
+      imageContainer.innerHTML = "";
       images.forEach(function(image, index) {
         var imgElement = document.createElement("img");
         imgElement.src = image;
         imgElement.alt = "Image " + (index + 1);
-        imgElement.style.width = "30%"; // Maintain width for all images
-        imgElement.style.margin = "10px"; // Maintain margin for all images
-        imgElement.setAttribute("id", "image-" + index); // Set an ID for each image
+        imgElement.style.width = "30%";
+        imgElement.style.margin = "10px";
+        imgElement.setAttribute("id", "image-" + index);
         imgElement.addEventListener("mousemove", function(e) {
           magnify(e.target.id, 2, e);
         });
@@ -95,14 +174,8 @@
     function magnify(imgID, zoom, event) {
       var img, glass, w, h;
       img = document.getElementById(imgID);
-
-      /* Check if there's an existing magnifier glass and remove it */
       var existingGlass = document.querySelector(".magnifier");
-      if (existingGlass) {
-        existingGlass.remove();
-      }
-
-      /* Create magnifier glass if it doesn't exist */
+      if (existingGlass) existingGlass.remove();
       if (!document.querySelector(".magnifier")) {
         glass = document.createElement("DIV");
         glass.setAttribute("class", "magnifier");
@@ -110,56 +183,40 @@
       } else {
         glass = document.querySelector(".magnifier");
       }
-
-      /* Set background properties for the magnifier glass: */
       glass.style.display = "block";
       glass.style.backgroundImage = "url('" + img.src + "')";
       glass.style.backgroundRepeat = "no-repeat";
       glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
-
       w = glass.offsetWidth / 2;
       h = glass.offsetHeight / 2;
-
       moveMagnifier(event);
 
       function moveMagnifier(e) {
         var pos, x, y;
-        /* Prevent any other actions that may occur when moving over the image */
         e.preventDefault();
-        /* Get the cursor's x and y positions: */
         pos = getCursorPos(e);
-        x = pos.x;
-        y = pos.y;
-
-        /* Check if the cursor is within the image boundaries */
+        x = pos.x; y = pos.y;
         if (pos.x >= 0 && pos.x <= img.width && pos.y >= 0 && pos.y <= img.height) {
-          glass.style.display = "block"; // Show the magnifier glass only over the image
+          glass.style.display = "block";
         } else {
-          glass.style.display = "none"; // Hide the magnifier glass for other areas
+          glass.style.display = "none";
           return;
         }
-
-        /* Prevent the magnifier glass from being positioned outside the image: */
-        if (x > img.width - (w / zoom)) {x = img.width - (w / zoom);}
-        if (x < w / zoom) {x = w / zoom;}
-        if (y > img.height - (h / zoom)) {y = img.height - (h / zoom);}
-        if (y < h / zoom) {y = h / zoom;}
-        /* Set the position of the magnifier glass: */
+        if (x > img.width - (w / zoom)) x = img.width - (w / zoom);
+        if (x < w / zoom) x = w / zoom;
+        if (y > img.height - (h / zoom)) y = img.height - (h / zoom);
+        if (y < h / zoom) y = h / zoom;
         glass.style.left = (x - w) + "px";
         glass.style.top = (y - h) + "px";
-        /* Display what the magnifier glass "sees": */
         glass.style.backgroundPosition = "-" + ((x * zoom) - w) + "px -" + ((y * zoom) - h) + "px";
       }
 
       function getCursorPos(e) {
         var a, x = 0, y = 0;
         e = e || window.event;
-        /* Get the x and y positions of the image: */
         a = img.getBoundingClientRect();
-        /* Calculate the cursor's x and y coordinates, relative to the image: */
         x = e.pageX - a.left;
         y = e.pageY - a.top;
-        /* Consider any page scrolling: */
         x = x - window.pageXOffset;
         y = y - window.pageYOffset;
         return {x : x, y : y};
@@ -177,7 +234,9 @@
       messageBox.style.display = "block";
       setTimeout(function() {
         messageBox.style.display = "none";
-      }, 5000); // Hide message after 5 seconds
+      }, 5000);
     }
 
-    document.getElementById("load[_{{{CITATION{{{_1{](https://github.com/WillemEngels/Thesis/tree/510372f32f57adc9f98e7a8fa0315802af432c63/index.js)[_{{{CITATION{{{_2{](https://github.com/Partypanda5/ellipses_special_brigitta/tree/81b7e802912e4861c6ceda1ce2adc3ad7eb69245/js%2Fmagnifying.js)[_{{{CITATION{{{_3{](https://github.com/SouvikDas-git/magnifyapi/tree/50be20bb57893549362b924685e01fa3c13c2bf7/magnify.js)
+  </script>
+</body>
+</html>
