@@ -3,151 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Dollar Page">
     <title>Dollar Page</title>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: Arial, sans-serif;
             padding: 20px;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
             text-align: center;
         }
 
-        .content {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 30px;
+        /* Scorekeeper Popup */
+        .score-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            font-family: monospace;
+            z-index: 9999;
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+        .score-popup.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
+        .vertex-line {
+            font-size: 20px;
+            margin: 10px 0;
+            letter-spacing: 2px;
+        }
+
+        .red {
+            color: #ff2a2a;
+        }
+
+        .black {
+            color: #111;
+        }
+
+        /* Trigger Button */
+        .score-btn {
+            padding: 12px 20px;
+            background: #ff2a2a;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 18px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
+            margin-top: 20px;
+            transition: 0.25s;
         }
 
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            button {
-                width: 100%;
-            }
+        .score-btn:hover {
+            background: #cc0000;
+            transform: scale(1.05);
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h1>Dollar Page</h1>
-        
-        <div class="content">
-            <p>Welcome to the Dollar Page. Add your content here.</p>
-        </div>
+    <h1>Dollar Page</h1>
+    <p>Welcome to the Dollar Page.</p>
+    <p>Add your content here.</p>
+    <p><a href="https://dreamtexc.github.io/DreamTech">Back to Jet Action</a></p>
 
-        <div class="button-group">
-            <button class="btn-primary" id="backBtn">Back to Jet</button>
-            <button class="btn-secondary" id="actionBtn">Action</button>
+    <!-- Scorekeeper Popup -->
+    <div id="scorePopup" class="score-popup">
+        <div class="score-content">
+            <div class="vertex-line red">.............||||||||||||||||.............</div>
+            <div class="vertex-line black">||||||||||||||.............||||||||||||||</div>
+            <div class="vertex-line red">.............||||||||||||||||.............</div>
+            <div class="vertex-line black">||||||||||||||.............||||||||||||||</div>
         </div>
     </div>
 
+    <!-- Trigger Button -->
+    <button id="openScore" class="score-btn">Open Scorekeeper</button>
+
     <script>
-        /* ---------------------------------------------------------
-        PAGE INITIALIZATION
-        --------------------------------------------------------- */
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeEventListeners();
-            logPageLoad();
-        });
+        document.getElementById("openScore").onclick = () => {
+            const popup = document.getElementById("scorePopup");
+            popup.classList.add("active");
 
-        /* ---------------------------------------------------------
-        EVENT LISTENERS
-        --------------------------------------------------------- */
-        function initializeEventListeners() {
-            document.getElementById('backBtn').addEventListener('click', goBack);
-            document.getElementById('actionBtn').addEventListener('click', handleAction);
-        }
-
-        /* ---------------------------------------------------------
-        BUTTON HANDLERS
-        --------------------------------------------------------- */
-        function goBack() {
-            window.location.href = 'jetMathOverlay.html';
-        }
-
-        function handleAction() {
-            alert('Action Marker!');
-        }
-
-        /* ---------------------------------------------------------
-        UTILITY FUNCTIONS
-        --------------------------------------------------------- */
-        function logPageLoad() {
-            console.log('Dollar Page inject');
-        }
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                popup.classList.remove("active");
+            }, 3000);
+        };
     </script>
 
 </body>
