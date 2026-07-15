@@ -4,60 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jet Architecture with Math Overlay</title>
+
     <style>
         body {
+            margin: 0;
+            overflow: hidden;
             font-family: Arial, sans-serif;
-            margin: 20px;
             text-align: center;
+            background: url("https://images.unsplash.com/photo-1508614589041-5a9c4a0f7c52?auto=format&fit=crop&w=1600&q=80")
+                repeat-x;
+            background-size: cover;
+            animation: parallaxScroll 20s linear infinite;
         }
-        .container {
-            position: relative;
-            display: inline-block;
+
+        @keyframes parallaxScroll {
+            from { background-position: 0 0; }
+            to { background-position: -2000px 0; }
         }
-        .image {
-            display: block;
-            max-width: 100%;
-            height: auto;
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
         }
+
+        .pointer {
+            cursor: pointer;
+            text-decoration: underline;
+            color: #00aaff;
+            font-size: 20px;
+        }
+
+        .pointer:hover {
+            color: #0088cc;
+        }
+
+        .jet {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 300px;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s linear;
+            cursor: grab;
+        }
+
         .overlay {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             padding: 10px;
             border-radius: 5px;
             font-size: 18px;
             opacity: 1;
             transition: opacity 0.8s ease;
-        }
-        .pointer {
-            cursor: pointer;
-            text-decoration: underline;
-            color: #0066cc;
-        }
-        .pointer:hover {
-            color: #004999;
+            z-index: 20;
         }
     </style>
 </head>
+
 <body>
-    <h1>Jet Architecture with Math Overlay</h1>
-    <p><span class="pointer" id="moduleRef" title="Click to load module">Module Reference</span></p>
-    
-    <div class="container">
-        <img src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Lockheed SR-71 Blackbird" class="image">
-        <div class="overlay" id="mathOverlay">
-            $$\lim_{{x \to a}} (bx + c) = ba + c$$
-        </div>
+
+    <div id="ui">
+        <span class="pointer" id="moduleRef">Module Reference</span>
+    </div>
+
+    <img id="jet" class="jet"
+        src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7">
+
+    <div class="overlay" id="mathOverlay">
+        $$\lim_{{x \to a}} (bx + c) = ba + c$$
     </div>
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <script>
+        /* ---------------------------------------------------------
+           ASVIB JOYSTICK MOVEMENT ENGINE
+        --------------------------------------------------------- */
+        function ASVIB(element) {
+            let dragging = false;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            element.addEventListener("mousedown", (e) => {
+                dragging = true;
+                offsetX = e.clientX - element.offsetLeft;
+                offsetY = e.clientY - element.offsetTop;
+                element.style.cursor = "grabbing";
+            });
+
+            document.addEventListener("mouseup", () => {
+                dragging = false;
+                element.style.cursor = "grab";
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (!dragging) return;
+
+                let x = e.clientX - offsetX;
+                let y = e.clientY - offsetY;
+
+                element.style.left = x + "px";
+                element.style.top = y + "px";
+            });
+        }
+
+        // Activate joystick movement
+        ASVIB(document.getElementById("jet"));
+
+        /* ---------------------------------------------------------
+           MODULE OVERLAY SYSTEM
+        --------------------------------------------------------- */
         const moduleRef = {
             name: "jetMathOverlay",
             version: "1.0.0",
@@ -70,7 +133,6 @@
 
                 const overlay = document.getElementById("mathOverlay");
 
-                // Make overlay visible again
                 overlay.style.opacity = "1";
 
                 overlay.textContent =
@@ -87,20 +149,18 @@
             }
         };
 
-        // Button click handler
-        document.getElementById('moduleRef').addEventListener('click', function() {
-            console.log(`Loading module: ${moduleRef.name} v${moduleRef.version}`);
+        document.getElementById("moduleRef").addEventListener("click", () => {
             moduleRef.init();
             alert(`Module "${moduleRef.name}" initialized!`);
         });
 
-        // Hide overlay automatically on page load
-        window.onload = function() {
-            const overlay = document.getElementById("mathOverlay");
+        // Hide overlay on load
+        window.onload = () => {
             setTimeout(() => {
-                overlay.style.opacity = "0";
-            }, 1500); // fade out after initial load
+                document.getElementById("mathOverlay").style.opacity = "0";
+            }, 1500);
         };
     </script>
+
 </body>
 </html>
