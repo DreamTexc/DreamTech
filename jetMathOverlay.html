@@ -29,7 +29,7 @@
             border-radius: 5px;
             font-size: 18px;
             opacity: 1;
-            transition: opacity 0.8s ease; /* Smooth fade */
+            transition: opacity 0.8s ease;
         }
         .pointer {
             cursor: pointer;
@@ -70,7 +70,7 @@
 
                 const overlay = document.getElementById("mathOverlay");
 
-                // Reset overlay visibility when module is triggered
+                // Make overlay visible again
                 overlay.style.opacity = "1";
 
                 overlay.textContent =
@@ -79,7 +79,6 @@
                     `Material: ${material}\n\n` +
                     `$$\\lim_{{x \\to a}} (bx + c) = ba + c$$`;
 
-                // Wait for MathJax to finish before fading out
                 MathJax.typesetPromise().then(() => {
                     setTimeout(() => {
                         overlay.style.opacity = "0";
@@ -95,9 +94,12 @@
             alert(`Module "${moduleRef.name}" initialized!`);
         });
 
-        // Auto-initialize on page load
+        // Hide overlay automatically on page load
         window.onload = function() {
-            moduleRef.init();
+            const overlay = document.getElementById("mathOverlay");
+            setTimeout(() => {
+                overlay.style.opacity = "0";
+            }, 1500); // fade out after initial load
         };
     </script>
 </body>
