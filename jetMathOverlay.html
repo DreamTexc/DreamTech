@@ -79,12 +79,12 @@
                     `Material: ${material}\n\n` +
                     `$$\\lim_{{x \\to a}} (bx + c) = ba + c$$`;
 
-                MathJax.typeset();
-
-                // Auto-hide after 3 seconds
-                setTimeout(() => {
-                    overlay.style.opacity = "0";
-                }, 3000);
+                // Wait for MathJax to finish before fading out
+                MathJax.typesetPromise().then(() => {
+                    setTimeout(() => {
+                        overlay.style.opacity = "0";
+                    }, 3000);
+                });
             }
         };
 
