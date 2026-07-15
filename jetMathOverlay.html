@@ -21,13 +21,15 @@
         }
         .overlay {
             position: absolute;
-            top: 50%; /* Center vertically */
-            left: 50%; /* Center horizontally */
-            transform: translate(-50%, -50%); /* Adjust position to center */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(255, 255, 255, 0.8);
             padding: 10px;
             border-radius: 5px;
             font-size: 18px;
+            opacity: 1;
+            transition: opacity 0.8s ease; /* Smooth fade */
         }
         .pointer {
             cursor: pointer;
@@ -54,11 +56,12 @@
     <script type="text/javascript" id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
     </script>
+
     <script>
-        // Simple module reference
         const moduleRef = {
             name: "jetMathOverlay",
             version: "1.0.0",
+
             init: function() {
                 const params = new URLSearchParams(window.location.search);
                 const engineType = params.get("engineType");
@@ -66,17 +69,30 @@
                 const material = params.get("material");
 
                 const overlay = document.getElementById("mathOverlay");
-                overlay.textContent = `Engine Type: ${engineType}\nWing Span: ${wingSpan}\nMaterial: ${material}\n\n$$\\lim_{{x \\to a}} (bx + c) = ba + c$$`;
 
-                MathJax.typeset(); // Re-render MathJax
+                // Reset overlay visibility when module is triggered
+                overlay.style.opacity = "1";
+
+                overlay.textContent =
+                    `Engine Type: ${engineType}\n` +
+                    `Wing Span: ${wingSpan}\n` +
+                    `Material: ${material}\n\n` +
+                    `$$\\lim_{{x \\to a}} (bx + c) = ba + c$$`;
+
+                MathJax.typeset();
+
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    overlay.style.opacity = "0";
+                }, 3000);
             }
         };
 
-        // Pointer element handler
+        // Button click handler
         document.getElementById('moduleRef').addEventListener('click', function() {
             console.log(`Loading module: ${moduleRef.name} v${moduleRef.version}`);
             moduleRef.init();
-            alert(`Module \"${moduleRef.name}\" initialized!`);
+            alert(`Module "${moduleRef.name}" initialized!`);
         });
 
         // Auto-initialize on page load
