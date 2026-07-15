@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dollar Page">
+    <title>Dollar Page</title>
 
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Dollar Page</h1>
+        
+        <div class="content">
+            <p>Welcome to the Dollar Page. Add your content here.</p>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" id="backBtn">Back to Jet</button>
+            <button class="btn-secondary" id="actionBtn">Action</button>
+        </div>
+    </div>
+
+    <script>
+        /* ---------------------------------------------------------
+        PAGE INITIALIZATION
+        --------------------------------------------------------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEventListeners();
+            logPageLoad();
+        });
+
+        /* ---------------------------------------------------------
+        EVENT LISTENERS
+        --------------------------------------------------------- */
+        function initializeEventListeners() {
+            document.getElementById('backBtn').addEventListener('click', goBack);
+            document.getElementById('actionBtn').addEventListener('click', handleAction);
+        }
+
+        /* ---------------------------------------------------------
+        BUTTON HANDLERS
+        --------------------------------------------------------- */
+        function goBack() {
+            window.location.href = 'jetMathOverlay.html';
+        }
+
+        function handleAction() {
+            alert('Action Marker!');
+        }
+
+        /* ---------------------------------------------------------
+        UTILITY FUNCTIONS
+        --------------------------------------------------------- */
+        function logPageLoad() {
+            console.log('Dollar Page inject');
+        }
+    </script>
+
+</body>
+</html>
