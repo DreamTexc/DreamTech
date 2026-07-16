@@ -47,7 +47,8 @@
             top: 50%;
             width: 300px;
             transform: translate(-50%, -50%);
-            transition: transform 0.1s linear;
+            transform-style: preserve-3d;
+            transition: transform 0.05s linear;
             cursor: grab;
         }
 
@@ -93,19 +94,45 @@
             }, 1500);
         };
 
-        // Draggable jet movement
+        // === FULL 4-WAY FLIGHT SYSTEM ===
         const jet = document.getElementById("jet");
+
+        let jetX = window.innerWidth / 2;
+        let jetY = window.innerHeight / 2;
+
+        let pitch = 0;   // nose up/down
+        let bank = 0;    // left/right tilt
+
         let dragging = false;
 
         jet.addEventListener("mousedown", () => dragging = true);
         window.addEventListener("mouseup", () => dragging = false);
 
         window.addEventListener("mousemove", (e) => {
-            if (dragging) {
-                jet.style.left = `${e.clientX}px`;
-                jet.style.top = `${e.clientY}px`;
-            }
+            if (!dragging) return;
+
+            // Move jet toward cursor smoothly
+            jetX += (e.clientX - jetX) * 0.15;
+            jetY += (e.clientY - jetY) * 0.15;
+
+            // Pitch: nose up/down
+            pitch = (window.innerHeight / 2 - e.clientY) / 40;
+
+            // Bank: left/right roll
+            bank = (window.innerWidth / 2 - e.clientX) / 60;
         });
+
+        function animateJet() {
+            jet.style.left = jetX + "px";
+            jet.style.top = jetY + "px";
+
+            jet.style.transform =
+                `translate(-50%, -50%) rotate(${bank}deg) rotateX(${pitch}deg)`;
+
+            requestAnimationFrame(animateJet);
+        }
+
+        animateJet();
 
         // Redirect to rendered Dollar page
         document.getElementById("dollarLink").onclick = () => {
@@ -113,7 +140,7 @@
                 "https://htmlpreview.github.io/?https://github.com/DreamTexc/DreamTech/blob/main/dollar.html";
         };
 
-        // Module Reference popup (unchanged)
+        // Module Reference popup
         document.getElementById("moduleRef").onclick = () => {
             alert("Module Reference Loaded!");
         };
