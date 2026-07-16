@@ -12,17 +12,17 @@
             text-align: center;
         }
 
-        /* Scorekeeper Popup */
+        /* Scorekeeper Popup (reduced by ~50%) */
         .score-popup {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.85);
-            padding: 30px;
-            border-radius: 12px;
-            width: 80%;
-            max-width: 500px;
+            padding: 15px; /* reduced */
+            border-radius: 10px;
+            width: 40%; /* reduced */
+            max-width: 250px; /* reduced */
             text-align: center;
             color: white;
             opacity: 0;
@@ -38,9 +38,9 @@
         }
 
         .vertex-line {
-            font-size: 20px;
-            margin: 10px 0;
-            letter-spacing: 2px;
+            font-size: 14px; /* reduced */
+            margin: 6px 0;
+            letter-spacing: 1px;
         }
 
         .red {
@@ -51,29 +51,29 @@
             color: #111;
         }
 
-        /* Standalone SKU Element */
+        /* Standalone SKU Element (increased by 69%) */
         .sku-box {
-            margin-top: 25px;
-            padding: 15px;
+            margin-top: 40px;
+            padding: 20px;
             display: inline-block;
             background: #111;
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(255, 0, 0, 0.45);
+            border-radius: 12px;
+            box-shadow: 0 0 18px rgba(255, 0, 0, 0.45);
             cursor: pointer;
         }
 
         .sku-img {
-            width: 140px;
-            border-radius: 8px;
+            width: calc(140px * 1.69); /* 69% larger */
+            border-radius: 10px;
         }
 
-        /* Trigger Button */
+        /* Trigger Button (reduced by ~50%) */
         .score-btn {
-            padding: 12px 20px;
+            padding: 6px 10px; /* reduced */
             background: #ff2a2a;
             border: none;
-            border-radius: 8px;
-            font-size: 18px;
+            border-radius: 6px;
+            font-size: 12px; /* reduced */
             cursor: pointer;
             margin-top: 20px;
             transition: 0.25s;
@@ -98,25 +98,25 @@
         </a>
     </p>
 
-    <!-- Standalone SKU Element -->
+    <!-- Scorekeeper Popup (reduced) -->
+    <div id="scorePopup" class="score-popup">
+        <div class="score-content">
+            <div class="vertex-line red">........||||||||||||........</div>
+            <div class="vertex-line black">||||||||........||||||||</div>
+            <div class="vertex-line red">........||||||||||||........</div>
+            <div class="vertex-line black">||||||||........||||||||</div>
+        </div>
+    </div>
+
+    <!-- Trigger Button (reduced) -->
+    <button id="openScore" class="score-btn">Open Scorekeeper</button>
+
+    <!-- Standalone SKU Element (larger + bottom placement) -->
     <div id="skuBox" class="sku-box">
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
              alt="SKU"
              class="sku-img">
     </div>
-
-    <!-- Scorekeeper Popup -->
-    <div id="scorePopup" class="score-popup">
-        <div class="score-content">
-            <div class="vertex-line red">.............||||||||||||||||.............</div>
-            <div class="vertex-line black">||||||||||||||.............||||||||||||||</div>
-            <div class="vertex-line red">.............||||||||||||||||.............</div>
-            <div class="vertex-line black">||||||||||||||.............||||||||||||||</div>
-        </div>
-    </div>
-
-    <!-- Trigger Button -->
-    <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
     <script>
         // Scorekeeper popup
