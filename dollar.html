@@ -12,6 +12,11 @@
             text-align: center;
         }
 
+        /* Back to Jet Action link spacing */
+        .back-link {
+            margin-bottom: 5px; /* pulls button directly under it */
+        }
+
         /* Scorekeeper Popup (reduced by ~50%) */
         .score-popup {
             position: fixed;
@@ -48,7 +53,7 @@
 
         /* Standalone SKU Element (MUCH larger + clearly under button) */
         .sku-box {
-            margin-top: 180px; /* pushes SKU far below the button */
+            margin-top: 160px; /* pushes SKU clearly below button */
             padding: 30px;
             display: inline-block;
             background: #111;
@@ -70,7 +75,7 @@
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 5px; /* sits directly under Back to Jet Action */
             transition: 0.25s;
         }
 
@@ -87,11 +92,15 @@
     <p>Welcome to the Dollar Page.</p>
     <p>Add your content here.</p>
 
-    <p>
+    <!-- Back to Jet Action link -->
+    <div class="back-link">
         <a href="https://htmlpreview.github.io/?https://github.com/DreamTexc/DreamTech/blob/main/jetMathOverlay.html">
             Back to Jet Action
         </a>
-    </p>
+    </div>
+
+    <!-- Trigger Button (now directly under Back to Jet Action) -->
+    <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
     <!-- Scorekeeper Popup (reduced) -->
     <div id="scorePopup" class="score-popup">
@@ -102,9 +111,6 @@
             <div class="vertex-line black">||||||||........||||||||</div>
         </div>
     </div>
-
-    <!-- Trigger Button (reduced) -->
-    <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
     <!-- Standalone SKU Element (larger + bottom placement) -->
     <div id="skuBox" class="sku-box">
