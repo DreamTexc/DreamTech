@@ -14,7 +14,7 @@
 
         /* Back to Jet Action link spacing */
         .back-link {
-            margin-bottom: 5px; /* pulls button directly under it */
+            margin-bottom: 5px;
         }
 
         /* Scorekeeper Popup (reduced by ~50%) */
@@ -51,20 +51,15 @@
         .red { color: #ff2a2a; }
         .black { color: #111; }
 
-        /* Standalone SKU Element (MUCH larger + clearly under button) */
+        /* Clean SKU image — NO border, NO box, NO shadow */
         .sku-box {
-            margin-top: 160px; /* pushes SKU clearly below button */
-            padding: 30px;
-            display: inline-block;
-            background: #111;
-            border-radius: 14px;
-            box-shadow: 0 0 26px rgba(255, 0, 0, 0.55);
-            cursor: pointer;
+            margin-top: 160px; /* spacing below button */
         }
 
         .sku-img {
-            width: calc(140px * 3.2); /* MASSIVE increase */
-            border-radius: 14px;
+            width: calc(140px * 3.2); /* large image */
+            display: block;
+            margin: 0 auto;
         }
 
         /* Trigger Button (reduced by ~50%) */
@@ -75,7 +70,7 @@
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            margin-top: 5px; /* sits directly under Back to Jet Action */
+            margin-top: 5px;
             transition: 0.25s;
         }
 
@@ -99,10 +94,10 @@
         </a>
     </div>
 
-    <!-- Trigger Button (now directly under Back to Jet Action) -->
+    <!-- Trigger Button (directly under Back to Jet Action) -->
     <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
-    <!-- Scorekeeper Popup (reduced) -->
+    <!-- Scorekeeper Popup -->
     <div id="scorePopup" class="score-popup">
         <div class="score-content">
             <div class="vertex-line red">........||||||||||||........</div>
@@ -112,7 +107,7 @@
         </div>
     </div>
 
-    <!-- Standalone SKU Element (larger + bottom placement) -->
+    <!-- Clean SKU Image (no border, no box, no shadow) -->
     <div id="skuBox" class="sku-box">
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
              alt="SKU"
