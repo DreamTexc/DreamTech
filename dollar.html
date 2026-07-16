@@ -51,12 +51,20 @@
             color: #111;
         }
 
-        /* SKU Image */
+        /* Standalone SKU Element */
+        .sku-box {
+            margin-top: 25px;
+            padding: 15px;
+            display: inline-block;
+            background: #111;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.45);
+            cursor: pointer;
+        }
+
         .sku-img {
             width: 140px;
-            margin-top: 15px;
             border-radius: 8px;
-            box-shadow: 0 0 12px rgba(255, 0, 0, 0.45);
         }
 
         /* Trigger Button */
@@ -90,20 +98,20 @@
         </a>
     </p>
 
+    <!-- Standalone SKU Element -->
+    <div id="skuBox" class="sku-box">
+        <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
+             alt="SKU"
+             class="sku-img">
+    </div>
+
     <!-- Scorekeeper Popup -->
     <div id="scorePopup" class="score-popup">
         <div class="score-content">
-
             <div class="vertex-line red">.............||||||||||||||||.............</div>
             <div class="vertex-line black">||||||||||||||.............||||||||||||||</div>
             <div class="vertex-line red">.............||||||||||||||||.............</div>
             <div class="vertex-line black">||||||||||||||.............||||||||||||||</div>
-
-            <!-- SKU Image -->
-            <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
-                 alt="SKU"
-                 class="sku-img">
-
         </div>
     </div>
 
@@ -111,14 +119,19 @@
     <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
     <script>
+        // Scorekeeper popup
         document.getElementById("openScore").onclick = () => {
             const popup = document.getElementById("scorePopup");
             popup.classList.add("active");
 
-            // Auto-hide after 3 seconds
             setTimeout(() => {
                 popup.classList.remove("active");
             }, 3000);
+        };
+
+        // Standalone SKU action
+        document.getElementById("skuBox").onclick = () => {
+            alert("SKU Activated!");
         };
     </script>
 
