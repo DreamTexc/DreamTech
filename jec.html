@@ -11,7 +11,6 @@
             padding: 0;
             height: 100vh;
 
-            /* Background image */
             background-image: url("vvv.png");
             background-size: 80% auto;
             background-repeat: no-repeat;
@@ -20,14 +19,14 @@
             font-family: Arial, sans-serif;
         }
 
-        /* LEFT VERTICAL CALCULUS PANEL — NOW TRANSPARENT */
+        /* LEFT CALCULUS PANEL — TRANSPARENT */
         #calcPanel {
             position: absolute;
             left: 0;
             top: 0;
             width: 220px;
             height: 100vh;
-            background: transparent; /* TRANSPARENT */
+            background: transparent;
             color: #0f0;
             padding: 10px;
             box-sizing: border-box;
@@ -49,24 +48,52 @@
             box-sizing: border-box;
         }
 
-        /* CANVAS ALSO TRANSPARENT */
         #calcCanvas {
             width: 100%;
             height: 260px;
-            background: transparent; /* TRANSPARENT CANVAS */
+            background: transparent;
             margin-top: 8px;
         }
 
-        /* MAIN PAGE CONTENT */
+        /* MAIN CONTENT */
         #mainContent {
             margin-left: 240px;
             padding: 20px;
             color: white;
         }
+
+        /* Jet image */
+        #jet {
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            width: 300px;
+            transform: translateX(-50%);
+            transition: transform 0.1s linear, left 0.1s linear;
+        }
+
+        /* Motion permission button */
+        #motionBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- iPhone Motion Permission Button -->
+    <button id="motionBtn">Enable Motion</button>
+
+    <!-- Jet -->
+    <img id="jet"
+         src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7">
 
     <!-- LEFT CALCULUS PANEL -->
     <div id="calcPanel">
@@ -90,6 +117,41 @@
     <script>
         console.log("Page loaded with vvv.png background.");
 
+        /* ---------------------------
+           iPhone Motion Permission
+        ---------------------------- */
+        document.getElementById("motionBtn").addEventListener("click", () => {
+            if (typeof DeviceMotionEvent.requestPermission === "function") {
+                DeviceMotionEvent.requestPermission().then(response => {
+                    if (response === "granted") {
+                        alert("Motion enabled!");
+                    }
+                });
+            } else {
+                alert("Motion sensors already available.");
+            }
+        });
+
+        /* ---------------------------
+           Mobile Tilt Parallax Jet
+        ---------------------------- */
+        window.addEventListener("deviceorientation", (event) => {
+            const gamma = event.gamma; // left/right tilt
+
+            const jet = document.getElementById("jet");
+            if (!jet) return;
+
+            const maxTilt = 25; // degrees of visual wing tilt
+            const tilt = Math.max(Math.min(gamma, 45), -45);
+            const bank = (tilt / 45) * maxTilt;
+
+            jet.style.transform = `translateX(-50%) rotate(${bank}deg)`;
+            jet.style.left = `calc(50% + ${bank * 2}px)`;
+        });
+
+        /* ---------------------------
+           Calculus Tangent Line Panel
+        ---------------------------- */
         const cCanvas = document.getElementById("calcCanvas");
         const cCtx = cCanvas.getContext("2d");
 
@@ -100,7 +162,6 @@
         resizeCalcCanvas();
         window.addEventListener("resize", resizeCalcCanvas);
 
-        // f(x) and f'(x)
         function f(x)  { return x * x; }
         function fp(x) { return 2 * x; }
 
@@ -109,13 +170,11 @@
             cCtx.strokeStyle = "#444";
             cCtx.lineWidth = 1;
 
-            // x-axis
             cCtx.beginPath();
             cCtx.moveTo(0, cCanvas.height / 2);
             cCtx.lineTo(cCanvas.width, cCanvas.height / 2);
             cCtx.stroke();
 
-            // y-axis
             cCtx.beginPath();
             cCtx.moveTo(cCanvas.width / 2, 0);
             cCtx.lineTo(cCanvas.width / 2, cCanvas.height);
@@ -129,6 +188,7 @@
 
             const scaleX = 40;
             const scaleY = 20;
+
             for (let px = 0; px < cCanvas.width; px++) {
                 const x = (px - cCanvas.width / 2) / scaleX;
                 const y = f(x);
@@ -148,7 +208,6 @@
             drawAxes();
             drawCurve();
 
-            // tangent line
             cCtx.strokeStyle = "#f00";
             cCtx.lineWidth = 2;
             cCtx.beginPath();
@@ -166,7 +225,6 @@
             }
             cCtx.stroke();
 
-            // point (x0, f(x0))
             const px0 = cCanvas.width / 2 + x0 * scaleX;
             const py0 = cCanvas.height / 2 - y0 * scaleY;
             cCtx.fillStyle = "#ff0";
@@ -175,7 +233,6 @@
             cCtx.fill();
         }
 
-        // initial draw
         drawTangent();
     </script>
 
