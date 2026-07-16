@@ -17,16 +17,165 @@
             background-repeat: no-repeat;
             background-position: center top;
             background-color: black;     /* Fills remaining 20% */
+            font-family: Arial, sans-serif;
+        }
+
+        /* LEFT VERTICAL CALCULUS PANEL */
+        #calcPanel {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 220px;
+            height: 100vh;
+            background: rgba(0,0,0,0.85);
+            color: #0f0;
+            padding: 10px;
+            box-sizing: border-box;
+            border-right: 2px solid #0f0;
+        }
+
+        #calcPanel h2 {
+            font-size: 16px;
+            margin: 0 0 8px 0;
+        }
+
+        #calcPanel input {
+            width: 100%;
+            margin-bottom: 8px;
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 4px;
+            box-sizing: border-box;
+        }
+
+        #calcCanvas {
+            width: 100%;
+            height: 260px;
+            background: #111;
+            margin-top: 8px;
+        }
+
+        /* MAIN PAGE CONTENT */
+        #mainContent {
+            margin-left: 240px; /* Make room for the left panel */
+            padding: 20px;
+            color: white;
         }
     </style>
 </head>
 
 <body>
 
-    <h1 style="color:white;">Jet Development Page</h1>
+    <!-- LEFT CALCULUS PANEL -->
+    <div id="calcPanel">
+        <h2>Tangent Line</h2>
+        <div>f(x) = x²</div>
+        <div>f′(x) = 2x</div>
+
+        <label>x₀:</label>
+        <input id="x0Input" type="number" value="1" step="0.1">
+
+        <button onclick="drawTangent()">Draw tangent</button>
+
+        <canvas id="calcCanvas"></canvas>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="mainContent">
+        <h1>Jet Development Page</h1>
+    </div>
 
     <script>
         console.log("Page loaded with vvv.png background.");
+
+        const cCanvas = document.getElementById("calcCanvas");
+        const cCtx = cCanvas.getContext("2d");
+
+        function resizeCalcCanvas() {
+            cCanvas.width = cCanvas.clientWidth;
+            cCanvas.height = cCanvas.clientHeight;
+        }
+        resizeCalcCanvas();
+        window.addEventListener("resize", resizeCalcCanvas);
+
+        // f(x) and f'(x)
+        function f(x)  { return x * x; }
+        function fp(x) { return 2 * x; }
+
+        function drawAxes() {
+            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+            cCtx.strokeStyle = "#444";
+            cCtx.lineWidth = 1;
+
+            // x-axis
+            cCtx.beginPath();
+            cCtx.moveTo(0, cCanvas.height / 2);
+            cCtx.lineTo(cCanvas.width, cCanvas.height / 2);
+            cCtx.stroke();
+
+            // y-axis
+            cCtx.beginPath();
+            cCtx.moveTo(cCanvas.width / 2, 0);
+            cCtx.lineTo(cCanvas.width / 2, cCanvas.height);
+            cCtx.stroke();
+        }
+
+        function drawCurve() {
+            cCtx.strokeStyle = "#0ff";
+            cCtx.lineWidth = 2;
+            cCtx.beginPath();
+
+            const scaleX = 40;
+            const scaleY = 20;
+            for (let px = 0; px < cCanvas.width; px++) {
+                const x = (px - cCanvas.width / 2) / scaleX;
+                const y = f(x);
+                const py = cCanvas.height / 2 - y * scaleY;
+
+                if (px === 0) cCtx.moveTo(px, py);
+                else cCtx.lineTo(px, py);
+            }
+            cCtx.stroke();
+        }
+
+        function drawTangent() {
+            const x0 = parseFloat(document.getElementById("x0Input").value);
+            const y0 = f(x0);
+            const m  = fp(x0);
+
+            drawAxes();
+            drawCurve();
+
+            // tangent line
+            cCtx.strokeStyle = "#f00";
+            cCtx.lineWidth = 2;
+            cCtx.beginPath();
+
+            const scaleX = 40;
+            const scaleY = 20;
+
+            for (let px = 0; px < cCanvas.width; px++) {
+                const x = (px - cCanvas.width / 2) / scaleX;
+                const y = y0 + m * (x - x0);
+                const py = cCanvas.height / 2 - y * scaleY;
+
+                if (px === 0) cCtx.moveTo(px, py);
+                else cCtx.lineTo(px, py);
+            }
+            cCtx.stroke();
+
+            // point (x0, f(x0))
+            const px0 = cCanvas.width / 2 + x0 * scaleX;
+            const py0 = cCanvas.height / 2 - y0 * scaleY;
+            cCtx.fillStyle = "#ff0";
+            cCtx.beginPath();
+            cCtx.arc(px0, py0, 4, 0, Math.PI * 2);
+            cCtx.fill();
+        }
+
+        // initial draw
+        drawTangent();
     </script>
 
 </body>
