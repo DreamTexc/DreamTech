@@ -23,7 +23,7 @@
             transition: background-position 0.15s ease-out;
         }
 
-        /* LEFT CALCULUS PANEL — TRANSPARENT */
+        /* LEFT CALCULUS PANEL — TRANSPARENT, NO NEON BORDER */
         #calcPanel {
             position: absolute;
             left: 0;
@@ -34,7 +34,6 @@
             color: #0f0;
             padding: 10px;
             box-sizing: border-box;
-            border-right: 2px solid #0f0;
         }
 
         #calcPanel h2 {
@@ -66,17 +65,6 @@
             color: white;
         }
 
-        /* Jet image */
-        #jet {
-            position: absolute;
-            left: 50%;
-            top: 40%;
-            width: 300px;
-            transform: translateX(-50%);
-            transition: transform 0.15s ease-out, left 0.15s ease-out;
-            z-index: 10;
-        }
-
         /* Motion permission button */
         #motionBtn {
             position: absolute;
@@ -96,10 +84,6 @@
 
     <!-- iPhone Motion Permission Button -->
     <button id="motionBtn">Enable Motion</button>
-
-    <!-- Jet -->
-    <img id="jet"
-         src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7">
 
     <!-- LEFT CALCULUS PANEL -->
     <div id="calcPanel">
@@ -146,27 +130,19 @@
         });
 
         /* ---------------------------
-           Mobile Tilt Parallax Jet + Background
+           Background Parallax Motion
         ---------------------------- */
         window.addEventListener("deviceorientation", (event) => {
             const gamma = event.gamma; // left/right tilt
-
-            const jet = document.getElementById("jet");
-            if (!jet) return;
 
             if (gamma === null) return; // iPhone before permission
 
             const maxTilt = 25;
             const tilt = Math.max(Math.min(gamma, 45), -45);
-            const bank = (tilt / 45) * maxTilt;
-
-            /* Jet tilt */
-            jet.style.transform = `translateX(-50%) rotate(${bank}deg)`;
-            jet.style.left = `calc(50% + ${bank * 2}px)`;
+            const shift = (tilt / 45) * maxTilt * 1.5;
 
             /* Background parallax effect */
-            const bgShift = bank * 1.5;
-            document.body.style.backgroundPosition = `calc(50% + ${bgShift}px) top`;
+            document.body.style.backgroundPosition = `calc(50% + ${shift}px) top`;
         });
 
         /* ---------------------------
