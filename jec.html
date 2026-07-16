@@ -11,7 +11,7 @@
             padding: 0;
             height: 100vh;
 
-            background-image: url("vvv.png");
+            background-image: url("vvv.png"), url("https://i.imgur.com/8fKQZ7C.jpeg");
             background-size: 80% auto;
             background-repeat: no-repeat;
             background-position: center top;
@@ -69,7 +69,8 @@
             top: 40%;
             width: 300px;
             transform: translateX(-50%);
-            transition: transform 0.1s linear, left 0.1s linear;
+            transition: transform 0.15s ease-out, left 0.15s ease-out;
+            z-index: 10;
         }
 
         /* Motion permission button */
@@ -82,6 +83,7 @@
             border: 1px solid #0f0;
             padding: 8px 12px;
             font-size: 14px;
+            z-index: 20;
         }
     </style>
 </head>
@@ -121,14 +123,21 @@
            iPhone Motion Permission
         ---------------------------- */
         document.getElementById("motionBtn").addEventListener("click", () => {
+            // iPhone requires BOTH permissions
             if (typeof DeviceMotionEvent.requestPermission === "function") {
                 DeviceMotionEvent.requestPermission().then(response => {
+                    if (response === "granted") {
+                        console.log("DeviceMotionEvent granted.");
+                    }
+                });
+            }
+
+            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                DeviceOrientationEvent.requestPermission().then(response => {
                     if (response === "granted") {
                         alert("Motion enabled!");
                     }
                 });
-            } else {
-                alert("Motion sensors already available.");
             }
         });
 
@@ -140,6 +149,8 @@
 
             const jet = document.getElementById("jet");
             if (!jet) return;
+
+            if (gamma === null) return; // iPhone before permission
 
             const maxTilt = 25; // degrees of visual wing tilt
             const tilt = Math.max(Math.min(gamma, 45), -45);
