@@ -65,6 +65,29 @@
             transition: opacity 0.8s ease;
             z-index: 20;
         }
+
+        /* === Stabilization Blink Indicators === */
+        #blinkLeft, #blinkRight {
+            position: absolute;
+            width: 69px;
+            height: 69px;
+            background: red;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 50;
+        }
+
+        #blinkLeft {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #blinkRight {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 
@@ -83,6 +106,10 @@
         $$\lim_{{x \to a}} (bx + c) = ba + c$$
     </div>
 
+    <!-- Stabilization Blink Elements -->
+    <div id="blinkLeft"></div>
+    <div id="blinkRight"></div>
+
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -100,8 +127,8 @@
         let jetX = window.innerWidth / 2;
         let jetY = window.innerHeight / 2;
 
-        let pitch = 0;   // nose up/down
-        let bank = 0;    // left/right tilt
+        let pitch = 0;
+        let bank = 0;
 
         let dragging = false;
 
@@ -118,16 +145,13 @@
             bank = (window.innerWidth / 2 - e.clientX) / 60;
         });
 
-        // ============================================================
-        // 🔴 5-MINUTE DRAW-ANGLE TIMER (STARTS IMMEDIATELY)
-        // ============================================================
-
-        let idleMode = true;                // idle starts immediately
-        let idleStart = Date.now();         // timestamp at page load
-        let idleDuration = 5 * 60 * 1000;   // 5 minutes
+        // === 5-MINUTE IDLE DRAW-ANGLE SYSTEM ===
+        let idleMode = true;
+        let idleStart = Date.now();
+        let idleDuration = 5 * 60 * 1000;
 
         function cancelIdle() {
-            idleMode = false;               // user interacted → disable idle permanently
+            idleMode = false;
         }
 
         window.addEventListener("mousemove", cancelIdle);
@@ -135,15 +159,20 @@
         window.addEventListener("keydown", cancelIdle);
 
         setInterval(() => {
-            if (!idleMode) return;          // idle already cancelled
+            if (!idleMode) return;
             if (Date.now() - idleStart >= idleDuration) {
-                idleMode = false;           // auto-disable after 5 minutes
+                idleMode = false;
             }
         }, 1000);
 
-        // ============================================================
-        // 🔴 END IDLE SYSTEM
-        // ============================================================
+        // === Stabilization Blink Function ===
+        function blinkSide(side) {
+            const el = document.getElementById(side);
+            el.style.opacity = "1";
+            setTimeout(() => {
+                el.style.opacity = "0";
+            }, 150);
+        }
 
         function animateJet() {
 
@@ -153,15 +182,24 @@
             let transformString =
                 `translate(-50%, -50%) rotate(${bank}deg) rotateX(${pitch}deg)`;
 
-            // 🔴 Idle draw-angle effect
+            // Idle draw-angle effect
             if (idleMode) {
-                pitch += 0.02; // slow nose lift
-                let idleBank = Math.sin(Date.now() / 2000) * 2; // gentle sway
+                pitch += 0.02;
+                let idleBank = Math.sin(Date.now() / 2000) * 2;
                 transformString =
                     `translate(-50%, -50%) rotate(${idleBank}deg) rotateX(${pitch}deg) scale(1.05)`;
             }
 
             jet.style.transform = transformString;
+
+            // === Boundary Stabilization Blink ===
+            if (jetX < 50) {
+                blinkSide("blinkLeft");
+            }
+
+            if (jetX > window.innerWidth - 50) {
+                blinkSide("blinkRight");
+            }
 
             requestAnimationFrame(animateJet);
         }
