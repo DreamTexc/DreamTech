@@ -119,16 +119,15 @@
         });
 
         // ============================================================
-        // 🔴 RED SECTION — 5-MINUTE DRAW-ANGLE TIMER (STARTS IMMEDIATELY)
+        // 🔴 5-MINUTE DRAW-ANGLE TIMER (STARTS IMMEDIATELY)
         // ============================================================
-        <span style="color:red">
 
         let idleMode = true;                // idle starts immediately
         let idleStart = Date.now();         // timestamp at page load
         let idleDuration = 5 * 60 * 1000;   // 5 minutes
 
         function cancelIdle() {
-            idleMode = false;               // user interacted → disable idle forever
+            idleMode = false;               // user interacted → disable idle permanently
         }
 
         window.addEventListener("mousemove", cancelIdle);
@@ -142,9 +141,8 @@
             }
         }, 1000);
 
-        </span>
         // ============================================================
-        // 🔴 END RED SECTION
+        // 🔴 END IDLE SYSTEM
         // ============================================================
 
         function animateJet() {
@@ -156,14 +154,12 @@
                 `translate(-50%, -50%) rotate(${bank}deg) rotateX(${pitch}deg)`;
 
             // 🔴 Idle draw-angle effect
-            <span style="color:red">
             if (idleMode) {
                 pitch += 0.02; // slow nose lift
                 let idleBank = Math.sin(Date.now() / 2000) * 2; // gentle sway
                 transformString =
                     `translate(-50%, -50%) rotate(${idleBank}deg) rotateX(${pitch}deg) scale(1.05)`;
             }
-            </span>
 
             jet.style.transform = transformString;
 
