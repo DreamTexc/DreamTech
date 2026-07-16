@@ -51,15 +51,62 @@
         .red { color: #ff2a2a; }
         .black { color: #111; }
 
-        /* Clean SKU image — NO border, NO box, NO shadow */
+        /* Clean SKU image — no border, no box, no shadow */
         .sku-box {
-            margin-top: 160px; /* spacing below button */
+            margin-top: 160px;
         }
 
         .sku-img {
-            width: calc(140px * 3.2); /* large image */
+            width: calc(140px * 3.2);
             display: block;
             margin: 0 auto;
+        }
+
+        /* Command Console */
+        .console-box {
+            margin-top: 40px;
+        }
+
+        #commandInput {
+            padding: 10px;
+            width: 260px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #111;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* SKU flight animation */
+        @keyframes flyToCenter {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(50vw, -20vh) scale(1.4);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translate(0, -40vh) scale(2.2);
+                opacity: 0.6;
+            }
+        }
+
+        .fly-effect {
+            animation: flyToCenter 2.4s ease-in-out forwards;
+        }
+
+        /* Continuous flutter */
+        .flutter-effect {
+            animation: flutter 0.35s infinite ease-in-out;
+        }
+
+        @keyframes flutter {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+            100% { transform: translateY(0px); }
         }
 
         /* Trigger Button (reduced by ~50%) */
@@ -94,7 +141,7 @@
         </a>
     </div>
 
-    <!-- Trigger Button (directly under Back to Jet Action) -->
+    <!-- Trigger Button -->
     <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
     <!-- Scorekeeper Popup -->
@@ -107,11 +154,16 @@
         </div>
     </div>
 
-    <!-- Clean SKU Image (no border, no box, no shadow) -->
+    <!-- Clean SKU Image -->
     <div id="skuBox" class="sku-box">
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
              alt="SKU"
              class="sku-img">
+    </div>
+
+    <!-- Command Console -->
+    <div class="console-box">
+        <input id="commandInput" type="text" placeholder="Enter command...">
     </div>
 
     <script>
@@ -125,10 +177,24 @@
             }, 3000);
         };
 
-        // Standalone SKU action
-        document.getElementById("skuBox").onclick = () => {
-            alert("SKU Activated!");
-        };
+        // SKU element
+        const skuImage = document.querySelector(".sku-img");
+
+        // Continuous flutter always on
+        skuImage.classList.add("flutter-effect");
+
+        // Command console listener
+        document.getElementById("commandInput").addEventListener("keyup", function(e) {
+            const cmd = e.target.value.trim();
+
+            // REGEX pattern for your custom command
+            const pattern = /into\.page\sseek/i;
+
+            // If command matches → trigger flight animation
+            if (pattern.test(cmd)) {
+                skuImage.classList.add("fly-effect");
+            }
+        });
     </script>
 
 </body>
