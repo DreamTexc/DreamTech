@@ -11,12 +11,16 @@
             padding: 0;
             height: 100vh;
 
-            background-image: url("vvv.png"), url("https://i.imgur.com/8fKQZ7C.jpeg");
+            /* Single background image */
+            background-image: url("vvv.png");
             background-size: 80% auto;
             background-repeat: no-repeat;
             background-position: center top;
             background-color: black;
             font-family: Arial, sans-serif;
+
+            /* Smooth background motion */
+            transition: background-position 0.15s ease-out;
         }
 
         /* LEFT CALCULUS PANEL — TRANSPARENT */
@@ -123,7 +127,7 @@
            iPhone Motion Permission
         ---------------------------- */
         document.getElementById("motionBtn").addEventListener("click", () => {
-            // iPhone requires BOTH permissions
+
             if (typeof DeviceMotionEvent.requestPermission === "function") {
                 DeviceMotionEvent.requestPermission().then(response => {
                     if (response === "granted") {
@@ -142,7 +146,7 @@
         });
 
         /* ---------------------------
-           Mobile Tilt Parallax Jet
+           Mobile Tilt Parallax Jet + Background
         ---------------------------- */
         window.addEventListener("deviceorientation", (event) => {
             const gamma = event.gamma; // left/right tilt
@@ -152,12 +156,17 @@
 
             if (gamma === null) return; // iPhone before permission
 
-            const maxTilt = 25; // degrees of visual wing tilt
+            const maxTilt = 25;
             const tilt = Math.max(Math.min(gamma, 45), -45);
             const bank = (tilt / 45) * maxTilt;
 
+            /* Jet tilt */
             jet.style.transform = `translateX(-50%) rotate(${bank}deg)`;
             jet.style.left = `calc(50% + ${bank * 2}px)`;
+
+            /* Background parallax effect */
+            const bgShift = bank * 1.5;
+            document.body.style.backgroundPosition = `calc(50% + ${bgShift}px) top`;
         });
 
         /* ---------------------------
