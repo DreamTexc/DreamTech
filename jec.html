@@ -20,10 +20,11 @@
             font-family: Arial, sans-serif;
 
             /* Smooth background motion */
-            transition: background-position 0.15s ease-out;
+            transition: background-position 0.15s ease-out,
+                        transform 0.15s ease-out;
         }
 
-        /* LEFT CALCULUS PANEL — TRANSPARENT, NO NEON BORDER */
+        /* LEFT CALCULUS PANEL — TRANSPARENT, NO BORDER */
         #calcPanel {
             position: absolute;
             left: 0;
@@ -129,20 +130,52 @@
             }
         });
 
-        /* ---------------------------
-           Background Parallax Motion
-        ---------------------------- */
+        /* ---------------------------------------------------------
+           Z‑FACTOR + DEPTH‑SCALING + NON‑ASYMPTOTIC PLANE + PULSE
+           --------------------------------------------------------- */
         window.addEventListener("deviceorientation", (event) => {
-            const gamma = event.gamma; // left/right tilt
+            const gamma = event.gamma;   // left/right tilt (-45 to +45)
+            const beta  = event.beta;    // forward/back tilt (pitch)
 
-            if (gamma === null) return; // iPhone before permission
+            if (gamma === null || beta === null) return;
 
-            const maxTilt = 25;
-            const tilt = Math.max(Math.min(gamma, 45), -45);
-            const shift = (tilt / 45) * maxTilt * 1.5;
+            /* 1. Z‑FACTOR SMOOTHING */
+            let h = 0.85;                 // velocity factor (0<h<1)
+            let Z = -Math.log(h);         // compiled Z‑factor
 
-            /* Background parallax effect */
-            document.body.style.backgroundPosition = `calc(50% + ${shift}px) top`;
+            let rawTiltX = gamma;
+            let rawTiltY = beta;
+
+            let tiltX = Math.exp(-Z) * rawTiltX;   // smoothed roll
+            let tiltY = Math.exp(-Z) * rawTiltY;   // smoothed pitch
+
+            /* 2. NON‑ASYMPTOTIC PLANE MAPPING */
+            let nx = tiltX / 45;   // normalize [-1,1]
+            let ny = tiltY / 45;
+
+            let planeX = 0.5 * nx;   // left/right bounded
+            let planeY = 0.5 * ny;   // forward/back bounded
+
+            /* 3. DEPTH‑SCALING PITCH */
+            let depth = Math.abs(planeY) * 40;     // tune strength
+            let scale = 1 + depth / 100;           // forward illusion
+
+            /* 4. PULSE EFFECT (+19.6px forward bump) */
+            let pulseScale = 1;
+            window.addEventListener("pointerdown", () => {
+                pulseScale = 1 + (19.6 / 300);      // ~19.6px bump
+                setTimeout(() => pulseScale = 1, 120); // decay
+            });
+
+            /* 5. APPLY TO BACKGROUND */
+            let bgShiftX = planeX * 50;   // horizontal parallax
+            let bgShiftY = planeY * 50;   // vertical parallax
+
+            document.body.style.backgroundPosition =
+                `calc(50% + ${bgShiftX}px) calc(0% + ${bgShiftY}px)`;
+
+            document.body.style.transform =
+                `scale(${scale * pulseScale})`;
         });
 
         /* ---------------------------
