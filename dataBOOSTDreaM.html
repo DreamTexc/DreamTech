@@ -47,7 +47,7 @@
             filter: blur(0px);
         }
 
-        /* Floating Dream Particles (OUTSIDE circle now) */
+        /* Floating Dream Particles */
         .dream-particles {
             position: relative;
         }
@@ -89,7 +89,7 @@
             filter: blur(8px);
             transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
 
-            /* PERFECT CENTERING */
+            /* Centering system */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -104,7 +104,10 @@
         .dream-circle img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* ensures perfect centering */
+            object-fit: cover;
+
+            /* SHIFT IMAGE TO THE RIGHT */
+            transform: translateX(12px);
         }
     </style>
 
