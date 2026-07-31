@@ -17,6 +17,67 @@
         th {
             background-color: #f2f2f2;
         }
+
+        /* Dreamlike Load Table Button */
+        #loadTable {
+            background: linear-gradient(135deg, #6f00ff, #00d4ff);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 0 12px rgba(111,0,255,0.6);
+        }
+
+        #loadTable:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 18px rgba(0,212,255,0.9);
+        }
+
+        /* Dreamlike Reveal Animation */
+        .dream-reveal {
+            opacity: 0;
+            transform: translateY(20px) scale(0.96);
+            filter: blur(6px);
+            transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
+        }
+
+        .dream-reveal.active {
+            opacity: 1;
+            transform: translateY(0px) scale(1);
+            filter: blur(0px);
+        }
+
+        /* Floating Dream Particles */
+        .dream-particles {
+            position: relative;
+        }
+
+        .dream-particles::before,
+        .dream-particles::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            animation: drift 4s infinite ease-in-out;
+        }
+
+        .dream-particles::after {
+            width: 4px;
+            height: 4px;
+            animation-duration: 5.5s;
+            background: rgba(0,212,255,0.8);
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0,0); opacity: 0.8; }
+            50% { transform: translate(25px,-20px); opacity: 0.4; }
+            100% { transform: translate(-10px,10px); opacity: 0.9; }
+        }
     </style>
 
     <script defer>
@@ -100,6 +161,27 @@
             wrap.appendChild(img);
             container.appendChild(wrap);
         }
+
+        // -----------------------------------------
+        // Dreamlike Load Table Reveal
+        // -----------------------------------------
+        document.getElementById("loadTable").addEventListener("click", () => {
+            const container = document.getElementById("tableContainer");
+
+            container.classList.add("dream-reveal", "dream-particles");
+
+            setTimeout(() => {
+                container.classList.add("active");
+            }, 50);
+
+            container.innerHTML = `
+                <table>
+                    <tr><th>DreamTech</th><th>Value</th></tr>
+                    <tr><td>Specifier</td><td>Polarizer</td></tr>
+                    <tr><td>Mode</td><td>Dreamlike</td></tr>
+                </table>
+            `;
+        });
     </script>
 </head>
 
