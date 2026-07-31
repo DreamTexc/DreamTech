@@ -18,7 +18,7 @@
             background-color: #f2f2f2;
         }
 
-        /* NORMAL Load Table Button (matches Generate Content) */
+        /* NORMAL Load Table Button */
         #loadTable {
             background: #e0e0e0;
             color: black;
@@ -89,10 +89,11 @@
             filter: blur(8px);
             transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
 
-            /* Centering system */
             display: flex;
             justify-content: center;
             align-items: center;
+
+            position: relative;
         }
 
         .dream-circle.active {
@@ -106,8 +107,50 @@
             height: 100%;
             object-fit: cover;
 
-            /* SHIFT IMAGE TO THE RIGHT */
+            /* Shift image slightly to the right */
             transform: translateX(12px);
+        }
+
+        /* TRIPLE LIMB SYSTEM */
+        .dream-limbs {
+            position: absolute;
+            left: -60px; /* attaches to left side */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .limb {
+            width: 60px;
+            height: 2px;
+            background: rgba(111,0,255,0.8);
+            position: relative;
+            transform-origin: left center;
+            transform: rotate(-20deg); /* slight upward angle */
+        }
+
+        .limb:nth-child(2) {
+            transform: rotate(-10deg);
+        }
+
+        .limb:nth-child(3) {
+            transform: rotate(0deg);
+        }
+
+        .limb::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: -3px;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            box-shadow: 0 0 6px rgba(111,0,255,0.8);
+            image-rendering: pixelated;
         }
     </style>
 
@@ -184,11 +227,22 @@
             const circle = document.createElement("div");
             circle.className = "dream-circle";
 
+            const limbs = document.createElement("div");
+            limbs.className = "dream-limbs";
+
+            limbs.innerHTML = `
+                <div class="limb"></div>
+                <div class="limb"></div>
+                <div class="limb"></div>
+            `;
+
             const img = document.createElement("img");
             img.src = url;
             img.alt = "DreamTech Image";
 
             circle.appendChild(img);
+            circle.appendChild(limbs);
+
             container.innerHTML = "";
             container.appendChild(circle);
 
