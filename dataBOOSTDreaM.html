@@ -58,7 +58,7 @@
             position: absolute;
             width: 6px;
             height: 6px;
-            background: rgba(255,255,255,0.7);
+            background: rgba(200,200,200,0.7);
             border-radius: 50%;
             animation: drift 4s infinite ease-in-out;
         }
@@ -67,7 +67,7 @@
             width: 4px;
             height: 4px;
             animation-duration: 5.5s;
-            background: rgba(0,212,255,0.8);
+            background: rgba(230,230,230,0.8);
         }
 
         @keyframes drift {
@@ -83,7 +83,10 @@
             border-radius: 50%;
             overflow: hidden;
             margin: 25px auto;
-            box-shadow: 0 0 25px rgba(111,0,255,0.6);
+
+            /* SOFT GRAY GLOW (no purple) */
+            box-shadow: 0 0 25px rgba(180,180,180,0.6);
+
             transform: scale(0.8);
             opacity: 0;
             filter: blur(8px);
@@ -111,10 +114,10 @@
             transform: translateX(12px);
         }
 
-        /* TRIPLE LIMB SYSTEM */
+        /* TRIPLE LIMB SYSTEM — GRAY VERSION */
         .dream-limbs {
             position: absolute;
-            left: -60px; /* attaches to left side */
+            left: -60px;
             top: 50%;
             transform: translateY(-50%);
             width: 60px;
@@ -127,10 +130,13 @@
         .limb {
             width: 60px;
             height: 2px;
-            background: rgba(111,0,255,0.8);
+
+            /* GRAY LINE (no purple) */
+            background: rgba(150,150,150,0.9);
+
             position: relative;
             transform-origin: left center;
-            transform: rotate(-20deg); /* slight upward angle */
+            transform: rotate(-20deg);
         }
 
         .limb:nth-child(2) {
@@ -148,8 +154,11 @@
             top: -3px;
             width: 8px;
             height: 8px;
+
+            /* WHITE PIXEL SQUARE + SOFT GRAY SHADOW */
             background: #fff;
-            box-shadow: 0 0 6px rgba(111,0,255,0.8);
+            box-shadow: 0 0 6px rgba(150,150,150,0.8);
+
             image-rendering: pixelated;
         }
     </style>
@@ -269,7 +278,6 @@
                 </table>
             `;
 
-            /* Circular image recall */
             loadDreamCircleImage(
                 "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7"
             );
@@ -287,7 +295,6 @@
 
     <div id="tableContainer"></div>
 
-    <!-- DreamTech Circle Image Container -->
     <div id="imageCircleContainer"></div>
 </body>
 </html>
