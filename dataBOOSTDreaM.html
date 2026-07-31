@@ -162,8 +162,21 @@
             image-rendering: pixelated;
         }
     </style>
+</head>
 
-    <script defer>
+<body>
+    <h1>Welcome to DreamTech</h1>
+
+    <div id="selectionOutput"></div>
+
+    <button id="loadTable">Load Table</button>
+    <button onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
+
+    <div id="tableContainer"></div>
+
+    <div id="imageCircleContainer"></div>
+
+    <script>
         /* DreamTech Wrapper System */
         class SelectionWrapper {
             constructor() {
@@ -260,7 +273,7 @@
             }, 50);
         }
 
-        /* Load Table + Circle Image */
+        /* Load Table + Circle Image — now safely after DOM is ready */
         document.getElementById("loadTable").addEventListener("click", () => {
             const container = document.getElementById("tableContainer");
 
@@ -283,18 +296,5 @@
             );
         });
     </script>
-</head>
-
-<body>
-    <h1>Welcome to DreamTech</h1>
-
-    <div id="selectionOutput"></div>
-
-    <button id="loadTable">Load Table</button>
-    <button onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
-
-    <div id="tableContainer"></div>
-
-    <div id="imageCircleContainer"></div>
 </body>
 </html>
