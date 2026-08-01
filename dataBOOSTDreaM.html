@@ -18,7 +18,6 @@
             background-color: #f2f2f2;
         }
 
-        /* NORMAL Load Table Button */
         #loadTable {
             background: #e0e0e0;
             color: black;
@@ -33,7 +32,6 @@
             background: #d0d0d0;
         }
 
-        /* Dreamlike Reveal Animation */
         .dream-reveal {
             opacity: 0;
             transform: translateY(20px);
@@ -47,7 +45,6 @@
             filter: blur(0px);
         }
 
-        /* Floating Dream Particles */
         .dream-particles {
             position: relative;
         }
@@ -76,26 +73,20 @@
             100% { transform: translate(-10px,10px); opacity: 0.9; }
         }
 
-        /* DreamTech Circular Image Presentation */
         .dream-circle {
             width: 220px;
             height: 220px;
             border-radius: 50%;
             overflow: hidden;
             margin: 25px auto;
-
-            /* SOFT GRAY GLOW (no purple) */
             box-shadow: 0 0 25px rgba(180,180,180,0.6);
-
             transform: scale(0.8);
             opacity: 0;
             filter: blur(8px);
             transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
-
             display: flex;
             justify-content: center;
             align-items: center;
-
             position: relative;
         }
 
@@ -109,15 +100,13 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-
-            /* Shift image slightly to the right */
             transform: translateX(12px);
         }
 
-        /* TRIPLE LIMB SYSTEM — GRAY VERSION */
+        /* RIGHT-SIDE LIMBS */
         .dream-limbs {
             position: absolute;
-            left: -60px;
+            left: 100%;
             top: 50%;
             transform: translateY(-50%);
             width: 60px;
@@ -130,17 +119,14 @@
         .limb {
             width: 60px;
             height: 2px;
-
-            /* GRAY LINE (no purple) */
             background: rgba(150,150,150,0.9);
-
             position: relative;
-            transform-origin: left center;
-            transform: rotate(-20deg);
+            transform-origin: right center;
+            transform: rotate(20deg);
         }
 
         .limb:nth-child(2) {
-            transform: rotate(-10deg);
+            transform: rotate(10deg);
         }
 
         .limb:nth-child(3) {
@@ -150,15 +136,12 @@
         .limb::after {
             content: "";
             position: absolute;
-            right: 0;
+            left: 0;
             top: -3px;
             width: 8px;
             height: 8px;
-
-            /* WHITE PIXEL SQUARE + SOFT GRAY SHADOW */
             background: #fff;
             box-shadow: 0 0 6px rgba(150,150,150,0.8);
-
             image-rendering: pixelated;
         }
     </style>
@@ -173,11 +156,9 @@
     <button onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
 
     <div id="tableContainer"></div>
-
     <div id="imageCircleContainer"></div>
 
     <script>
-        /* DreamTech Wrapper System */
         class SelectionWrapper {
             constructor() {
                 this.lastSelection = "";
@@ -203,7 +184,6 @@
             wrapper.update();
         });
 
-        /* DreamTech Specifier System */
         function runSpecifier(cmd) {
             switch (cmd) {
                 case "@spawn.polarizer":
@@ -242,7 +222,6 @@
             container.appendChild(wrap);
         }
 
-        /* DreamTech Circle Image Loader */
         function loadDreamCircleImage(url) {
             const container = document.getElementById("imageCircleContainer");
 
@@ -273,7 +252,6 @@
             }, 50);
         }
 
-        /* Load Table + Circle Image — now safely after DOM is ready */
         document.getElementById("loadTable").addEventListener("click", () => {
             const container = document.getElementById("tableContainer");
 
