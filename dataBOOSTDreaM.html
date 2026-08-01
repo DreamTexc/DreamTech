@@ -103,47 +103,80 @@
             transform: translateX(12px);
         }
 
-        /* RIGHT-SIDE LIMBS */
+        /* ========== LATTICE-STYLE BRANCHES (RIGHT SIDE) ========== */
         .dream-limbs {
             position: absolute;
             left: 100%;
             top: 50%;
             transform: translateY(-50%);
-            width: 60px;
+            width: 90px;
             height: 220px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            pointer-events: none;
         }
 
         .limb {
-            width: 60px;
-            height: 2px;
-            background: rgba(150,150,150,0.9);
             position: relative;
-            transform-origin: right center;
-            transform: rotate(20deg);
+            width: 90px;
+            height: 18px;
+            transform-origin: left center;
         }
 
-        .limb:nth-child(2) {
-            transform: rotate(10deg);
-        }
-
-        .limb:nth-child(3) {
-            transform: rotate(0deg);
-        }
-
-        .limb::after {
+        /* Main horizontal bar */
+        .limb::before {
             content: "";
             position: absolute;
             left: 0;
-            top: -3px;
-            width: 8px;
-            height: 8px;
-            background: #fff;
-            box-shadow: 0 0 6px rgba(150,150,150,0.8);
-            image-rendering: pixelated;
+            top: 8px;
+            width: 90px;
+            height: 3px;
+            background: linear-gradient(90deg, #bbb, #888);
+            box-shadow: 0 0 4px rgba(180,180,180,0.6);
         }
+
+        /* Two diagonal bars (lattice look) */
+        .limb .diag1,
+        .limb .diag2 {
+            position: absolute;
+            left: 0;
+            width: 90px;
+            height: 2px;
+            background: #999;
+            transform-origin: left center;
+        }
+
+        .limb .diag1 {
+            top: 3px;
+            transform: rotate(12deg);
+        }
+
+        .limb .diag2 {
+            top: 13px;
+            transform: rotate(-12deg);
+        }
+
+        /* Three structural nodes */
+        .limb .node {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ddd;
+            border: 1px solid #aaa;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(200,200,200,0.8);
+            top: 4px;
+        }
+
+        .limb .node:nth-child(1) { left: -2px; }   /* inner node (against circle) */
+        .limb .node:nth-child(2) { left: 38px; }   /* middle node */
+        .limb .node:nth-child(3) { left: 78px; }   /* outer tip node */
+
+        /* Fan angles */
+        .limb:nth-child(1) { transform: rotate(18deg); }
+        .limb:nth-child(2) { transform: rotate(6deg); }
+        .limb:nth-child(3) { transform: rotate(-6deg); }
     </style>
 </head>
 
@@ -231,11 +264,28 @@
             const limbs = document.createElement("div");
             limbs.className = "dream-limbs";
 
-            limbs.innerHTML = `
-                <div class="limb"></div>
-                <div class="limb"></div>
-                <div class="limb"></div>
-            `;
+            // Create three lattice-style limbs
+            for (let i = 0; i < 3; i++) {
+                const limb = document.createElement("div");
+                limb.className = "limb";
+
+                // Two diagonal bars
+                const diag1 = document.createElement("div");
+                diag1.className = "diag1";
+                const diag2 = document.createElement("div");
+                diag2.className = "diag2";
+
+                // Three nodes
+                for (let n = 0; n < 3; n++) {
+                    const node = document.createElement("div");
+                    node.className = "node";
+                    limb.appendChild(node);
+                }
+
+                limb.appendChild(diag1);
+                limb.appendChild(diag2);
+                limbs.appendChild(limb);
+            }
 
             const img = document.createElement("img");
             img.src = url;
