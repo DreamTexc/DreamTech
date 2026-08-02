@@ -37,7 +37,7 @@
             padding: 6px 10px;
             font-size: 14px;
             min-width: 160px;
-            display: none; /* hidden until 007 is typed */
+            display: none;
         }
 
         .dream-reveal {
@@ -230,23 +230,20 @@
             wrapper.update();
         });
 
-        /* Specifier input – 007 is now the identifier */
+        /* Specifier input – type 007 to open the list */
         document.getElementById("specifierInput").addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 const cmd = this.value.trim();
 
-                // Special identifier: 007
                 if (cmd === "007") {
                     // Anonymous function that builds the constructor list
                     (function createConstructorList() {
                         const select = document.getElementById("constructorSelect");
 
-                        // Clear previous options (keep placeholder)
                         while (select.options.length > 1) {
                             select.remove(1);
                         }
 
-                        // 007 + iconic superheroes + classics for fun
                         const constructors = [
                             "007",
                             "Batman",
@@ -275,25 +272,20 @@
                             select.appendChild(opt);
                         });
 
-                        // Show the select
                         select.style.display = "inline-block";
 
-                        // Allow user to pick a constructor
                         select.onchange = function () {
                             const chosen = this.value;
                             if (chosen) {
                                 console.log("Constructor function selected:", chosen);
                             }
                         };
-
-                        console.log("Constructor selection list ready");
                     })();
 
-                    this.value = ""; // clear the input
+                    this.value = "";
                     return;
                 }
 
-                // Normal specifier commands
                 if (cmd) {
                     runSpecifier(cmd);
                     this.value = "";
@@ -392,6 +384,7 @@
                 container.classList.add("active");
             }, 50);
 
+            // ORIGINAL TABLE – unchanged
             container.innerHTML = `
                 <table>
                     <tr><th>DreamTech</th><th>Value</th></tr>
