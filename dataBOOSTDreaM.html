@@ -392,7 +392,7 @@
     </main>
 
     <script>
-        // ========== Single Image On-Page Window (FIXED) ==========
+        // ========== Single Image On-Page Window (CORRECTED) ==========
         window.singleGif = {
             panel: null,
 
@@ -445,15 +445,15 @@
                 `;
                 img.alt = selected;
 
-                // FIXED – works and is related to the selected word
-                img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(selected)}?width=400&height=300&nologo=true&seed=${Date.now()}`;
+                // WORKING endpoint
+                img.src = `https://gen.pollinations.ai/image/${encodeURIComponent(selected)}?width=400&height=300`;
 
                 this.panel.appendChild(img);
 
                 let cycle = 0;
                 const refresh = () => {
                     if (!document.body.contains(this.panel)) return;
-                    img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(selected)}?width=400&height=300&nologo=true&seed=${Date.now() + (++cycle)}`;
+                    img.src = `https://gen.pollinations.ai/image/${encodeURIComponent(selected)}?width=400&height=300&seed=${Date.now() + (++cycle)}`;
                     setTimeout(refresh, 5000);
                 };
                 setTimeout(refresh, 5000);
