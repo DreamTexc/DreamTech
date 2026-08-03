@@ -7,14 +7,14 @@
 
     <style>
         :root {
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --border: #334155;
-            --text: #e2e8f0;
-            --muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
+            --bg: #000000;
+            --surface: #111111;
+            --border: #333333;
+            --text: #ffffff;
+            --muted: #aaaaaa;
+            --accent: #ffffff;
+            --accent-hover: #dddddd;
+            --success: #ffffff;
         }
 
         * {
@@ -121,14 +121,19 @@
 
         #loadTable {
             background: var(--accent);
-            color: white;
+            color: #000000;
         }
-        #loadTable:hover { background: var(--accent-hover); }
+        #loadTable:hover { 
+            background: var(--accent-hover); 
+        }
 
         .btn-secondary {
             background: var(--surface);
             color: var(--text);
             border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: #1a1a1a;
         }
 
         /* Selection feedback */
@@ -170,8 +175,11 @@
 
         .search-btn {
             background: var(--success);
-            color: white;
+            color: #000000;
             padding: 12px 22px;
+        }
+        .search-btn:hover {
+            background: var(--accent-hover);
         }
 
         /* Table */
@@ -192,7 +200,7 @@
         }
 
         th {
-            background: #0f172a;
+            background: #000000;
             font-weight: 600;
             font-size: 0.85rem;
             text-transform: uppercase;
@@ -218,10 +226,10 @@
         }
 
         .mode-list li:hover {
-            background: rgba(59, 130, 246, 0.15);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Dream animations (kept exactly) */
+        /* Dream animations (grayscale) */
         .dream-reveal {
             opacity: 0;
             transform: translateY(20px);
@@ -279,6 +287,7 @@
             object-fit: cover;
             border-radius: 50%;
             transform: translateX(12px);
+            filter: grayscale(100%);
         }
 
         .dream-limbs {
@@ -509,6 +518,7 @@
             img.alt = "Heliopan Linear Polarizer";
             img.style.width = "200px";
             img.style.borderRadius = "8px";
+            img.style.filter = "grayscale(100%)";
 
             wrap.appendChild(label);
             wrap.appendChild(img);
