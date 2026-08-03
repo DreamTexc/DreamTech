@@ -392,14 +392,13 @@
     </main>
 
     <script>
-        // ========== Single Image / GIF On-Page Window ==========
+        // ========== Single Image On-Page Window (FIXED) ==========
         window.singleGif = {
             panel: null,
 
             show(selected, hero) {
                 if (!selected || selected.length < 2) return;
 
-                // Remove previous panel if open
                 if (this.panel) this.panel.remove();
 
                 this.panel = document.createElement("div");
@@ -419,7 +418,6 @@
                     overflow: hidden;
                 `;
 
-                // Title bar
                 const title = document.createElement("div");
                 title.style.cssText = `
                     background: #000;
@@ -436,7 +434,6 @@
                 `;
                 this.panel.appendChild(title);
 
-                // The single image
                 const img = document.createElement("img");
                 img.style.cssText = `
                     width: 100%;
@@ -448,23 +445,21 @@
                 `;
                 img.alt = selected;
 
-                // One relevant image (no API key)
-                img.src = `https://source.unsplash.com/400x300/?${encodeURIComponent(selected)}&sig=${Date.now()}`;
+                // FIXED – works and is related to the selected word
+                img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(selected)}?width=400&height=300&nologo=true&seed=${Date.now()}`;
 
                 this.panel.appendChild(img);
 
-                // Mild recursive refresh every 5 seconds
                 let cycle = 0;
                 const refresh = () => {
                     if (!document.body.contains(this.panel)) return;
-                    img.src = `https://source.unsplash.com/400x300/?${encodeURIComponent(selected)}&sig=${Date.now() + (++cycle)}`;
+                    img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(selected)}?width=400&height=300&nologo=true&seed=${Date.now() + (++cycle)}`;
                     setTimeout(refresh, 5000);
                 };
                 setTimeout(refresh, 5000);
 
                 document.body.appendChild(this.panel);
 
-                // Close button
                 document.getElementById("closeSingleGif").onclick = () => {
                     this.panel.remove();
                     this.panel = null;
@@ -472,7 +467,7 @@
             }
         };
 
-        // ========== Selection Wrapper (enhanced) ==========
+        // ========== Selection Wrapper ==========
         class SelectionWrapper {
             constructor() {
                 this.lastSelection = "";
@@ -485,7 +480,6 @@
                 }
             }
             onSelection(text) {
-                // Only react to selections inside the Mode list
                 const selection = window.getSelection();
                 if (!selection.rangeCount) return;
 
@@ -502,19 +496,16 @@
                     return;
                 }
 
-                // Superhero is ALWAYS first (original behavior)
                 document.getElementById("google-search").value = `${hero} ${text}`;
                 document.getElementById("selectionOutput").textContent = 
                     `Selected: "${text}" → ready for Google + single image`;
 
-                // NEW: one image popup
                 window.singleGif.show(text, hero);
             }
         }
 
         const wrapper = new SelectionWrapper();
 
-        // Listen for selection (desktop + mobile)
         document.addEventListener("selectionchange", () => {
             const sel = document.getSelection().toString().trim();
             const out = document.getElementById("selectionOutput");
@@ -527,7 +518,7 @@
         document.addEventListener("mouseup", () => wrapper.update());
         document.addEventListener("touchend", () => wrapper.update());
 
-        // ========== Specifier logic (kept exactly) ==========
+        // ========== Specifier logic ==========
         document.getElementById("specifierInput").addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 const cmd = this.value.trim();
@@ -645,7 +636,7 @@
             setTimeout(() => circle.classList.add("active"), 50);
         }
 
-        // ========== Wikipedia 13 random titles (original) ==========
+        // ========== Wikipedia 13 random titles ==========
         async function getThirteenRandomWikipediaWords() {
             try {
                 const url = "https://en.wikipedia.org/w/api.php?" + new URLSearchParams({
@@ -704,7 +695,7 @@
             );
         });
 
-        // Google search action (original – still opens Google)
+        // Google search action
         function doGoogleSearch() {
             const query = document.getElementById("google-search").value.trim();
             if (!query) return;
