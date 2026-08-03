@@ -392,6 +392,86 @@
     </main>
 
     <script>
+        // ========== Single Image / GIF On-Page Window ==========
+        window.singleGif = {
+            panel: null,
+
+            show(selected, hero) {
+                if (!selected || selected.length < 2) return;
+
+                // Remove previous panel if open
+                if (this.panel) this.panel.remove();
+
+                this.panel = document.createElement("div");
+                this.panel.id = "singleGifPanel";
+                this.panel.style.cssText = `
+                    position: fixed;
+                    top: 90px;
+                    right: 24px;
+                    z-index: 9999;
+                    width: 300px;
+                    background: #111;
+                    border: 1px solid #333;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                    color: #fff;
+                    font-family: system-ui, sans-serif;
+                    overflow: hidden;
+                `;
+
+                // Title bar
+                const title = document.createElement("div");
+                title.style.cssText = `
+                    background: #000;
+                    padding: 10px 14px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid #333;
+                    font-size: 0.85rem;
+                `;
+                title.innerHTML = `
+                    <span style="color:#aaa">${hero} • ${selected}</span>
+                    <span id="closeSingleGif" style="cursor:pointer;color:#fff;font-size:1.1rem;line-height:1">✕</span>
+                `;
+                this.panel.appendChild(title);
+
+                // The single image
+                const img = document.createElement("img");
+                img.style.cssText = `
+                    width: 100%;
+                    height: 220px;
+                    object-fit: cover;
+                    display: block;
+                    background: #222;
+                    filter: grayscale(30%);
+                `;
+                img.alt = selected;
+
+                // One relevant image (no API key)
+                img.src = `https://source.unsplash.com/400x300/?${encodeURIComponent(selected)}&sig=${Date.now()}`;
+
+                this.panel.appendChild(img);
+
+                // Mild recursive refresh every 5 seconds
+                let cycle = 0;
+                const refresh = () => {
+                    if (!document.body.contains(this.panel)) return;
+                    img.src = `https://source.unsplash.com/400x300/?${encodeURIComponent(selected)}&sig=${Date.now() + (++cycle)}`;
+                    setTimeout(refresh, 5000);
+                };
+                setTimeout(refresh, 5000);
+
+                document.body.appendChild(this.panel);
+
+                // Close button
+                document.getElementById("closeSingleGif").onclick = () => {
+                    this.panel.remove();
+                    this.panel = null;
+                };
+            }
+        };
+
         // ========== Selection Wrapper (enhanced) ==========
         class SelectionWrapper {
             constructor() {
@@ -422,10 +502,13 @@
                     return;
                 }
 
-                // Superhero is ALWAYS first
+                // Superhero is ALWAYS first (original behavior)
                 document.getElementById("google-search").value = `${hero} ${text}`;
                 document.getElementById("selectionOutput").textContent = 
-                    `Selected: "${text}" → ready for Google`;
+                    `Selected: "${text}" → ready for Google + single image`;
+
+                // NEW: one image popup
+                window.singleGif.show(text, hero);
             }
         }
 
@@ -621,7 +704,7 @@
             );
         });
 
-        // Google search action
+        // Google search action (original – still opens Google)
         function doGoogleSearch() {
             const query = document.getElementById("google-search").value.trim();
             if (!query) return;
