@@ -392,11 +392,11 @@
     </main>
 
     <script>
-        // ========== Single Image On-Page Window (CORRECTED) ==========
+        // ========== Single Image On-Page Window (Wikipedia Image) ==========
         window.singleGif = {
             panel: null,
 
-            show(selected, hero) {
+            async show(selected, hero) {
                 if (!selected || selected.length < 2) return;
 
                 if (this.panel) this.panel.remove();
@@ -418,6 +418,7 @@
                     overflow: hidden;
                 `;
 
+                // Title bar
                 const title = document.createElement("div");
                 title.style.cssText = `
                     background: #000;
@@ -434,38 +435,85 @@
                 `;
                 this.panel.appendChild(title);
 
-                const img = document.createElement("img");
-                img.style.cssText = `
-                    width: 100%;
+                // Loading state
+                const loading = document.createElement("div");
+                loading.style.cssText = `
                     height: 220px;
-                    object-fit: cover;
-                    display: block;
-                    background: #222;
-                    filter: grayscale(30%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #888;
+                    font-size: 0.9rem;
+                    background: #1a1a1a;
                 `;
-                img.alt = selected;
-
-                // WORKING endpoint
-                img.src = `https://gen.pollinations.ai/image/${encodeURIComponent(selected)}?width=400&height=300`;
-
-                this.panel.appendChild(img);
-
-                let cycle = 0;
-                const refresh = () => {
-                    if (!document.body.contains(this.panel)) return;
-                    img.src = `https://gen.pollinations.ai/image/${encodeURIComponent(selected)}?width=400&height=300&seed=${Date.now() + (++cycle)}`;
-                    setTimeout(refresh, 5000);
-                };
-                setTimeout(refresh, 5000);
+                loading.textContent = "Loading Wikipedia image…";
+                this.panel.appendChild(loading);
 
                 document.body.appendChild(this.panel);
 
+                // Close button
                 document.getElementById("closeSingleGif").onclick = () => {
                     this.panel.remove();
                     this.panel = null;
                 };
+
+                // Fetch real Wikipedia image
+                const imageUrl = await getWikipediaImage(selected);
+
+                // Remove loading text
+                loading.remove();
+
+                if (imageUrl) {
+                    const img = document.createElement("img");
+                    img.style.cssText = `
+                        width: 100%;
+                        height: 220px;
+                        object-fit: cover;
+                        display: block;
+                        background: #222;
+                    `;
+                    img.alt = selected;
+                    img.src = imageUrl;
+                    this.panel.appendChild(img);
+                } else {
+                    const noImg = document.createElement("div");
+                    noImg.style.cssText = `
+                        height: 220px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #666;
+                        font-size: 0.9rem;
+                        background: #1a1a1a;
+                        text-align: center;
+                        padding: 20px;
+                    `;
+                    noImg.textContent = "No image found for this Wikipedia page";
+                    this.panel.appendChild(noImg);
+                }
             }
         };
+
+        // Helper: Get main image from Wikipedia page
+        async function getWikipediaImage(title) {
+            try {
+                const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                // Prefer original image, fallback to thumbnail
+                if (data.originalimage && data.originalimage.source) {
+                    return data.originalimage.source;
+                }
+                if (data.thumbnail && data.thumbnail.source) {
+                    return data.thumbnail.source;
+                }
+                return null;
+            } catch (err) {
+                console.error("Wikipedia image fetch failed:", err);
+                return null;
+            }
+        }
 
         // ========== Selection Wrapper ==========
         class SelectionWrapper {
@@ -498,7 +546,7 @@
 
                 document.getElementById("google-search").value = `${hero} ${text}`;
                 document.getElementById("selectionOutput").textContent = 
-                    `Selected: "${text}" → ready for Google + single image`;
+                    `Selected: "${text}" → ready for Google + Wikipedia image`;
 
                 window.singleGif.show(text, hero);
             }
