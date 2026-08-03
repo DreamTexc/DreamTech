@@ -2,91 +2,263 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>XML to Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamTech • Wikipedia Mode</title>
 
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f2f2f2;
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
         }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ========== COMPACT SPECIFIER SIDEBAR ========== */
         #specifierArea {
-            margin: 15px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background: #f9f9f9;
+            width: 210px;
+            min-width: 190px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        #specifierArea label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         #specifierInput {
-            width: 380px;
-            padding: 6px 10px;
-            font-size: 14px;
-            margin-right: 10px;
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 0.9rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+        }
+
+        #specifierInput:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
         #constructorSelect {
-            padding: 6px 10px;
-            font-size: 14px;
-            min-width: 160px;
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 0.9rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
             display: none;
         }
 
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 32px 40px;
+            max-width: 1100px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        #loadTable {
+            background: var(--accent);
+            color: white;
+        }
+        #loadTable:hover { background: var(--accent-hover); }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* Selection feedback */
+        #selectionOutput {
+            min-height: 24px;
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        /* Google Search Box */
+        .search-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 28px 0 36px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        #google-search {
+            flex: 1;
+            min-width: 260px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+        }
+
+        #google-search:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-btn {
+            background: var(--success);
+            color: white;
+            padding: 12px 22px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        th, td {
+            padding: 14px 18px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #0f172a;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+        }
+
+        /* Nice 13-word list */
+        .mode-list {
+            margin: 0;
+            padding-left: 20px;
+            columns: 2;
+            column-gap: 40px;
+        }
+
+        .mode-list li {
+            margin-bottom: 6px;
+            break-inside: avoid;
+            cursor: pointer;
+            padding: 2px 0;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .mode-list li:hover {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        /* Dream animations (kept exactly) */
         .dream-reveal {
             opacity: 0;
             transform: translateY(20px);
             filter: blur(6px);
             transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
         }
-
         .dream-reveal.active {
             opacity: 1;
-            transform: translateY(0px);
-            filter: blur(0px);
+            transform: translateY(0);
+            filter: blur(0);
         }
 
-        .dream-particles {
-            position: relative;
-        }
-
+        .dream-particles { position: relative; }
         .dream-particles::before,
         .dream-particles::after {
             content: "";
             position: absolute;
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             background: rgba(200,200,200,0.7);
             border-radius: 50%;
             animation: drift 4s infinite ease-in-out;
         }
-
         .dream-particles::after {
-            width: 4px;
-            height: 4px;
+            width: 4px; height: 4px;
             animation-duration: 5.5s;
             background: rgba(230,230,230,0.8);
         }
-
         @keyframes drift {
-            0% { transform: translate(0,0); opacity: 0.8; }
-            50% { transform: translate(25px,-20px); opacity: 0.4; }
+            0%   { transform: translate(0,0); opacity: 0.8; }
+            50%  { transform: translate(25px,-20px); opacity: 0.4; }
             100% { transform: translate(-10px,10px); opacity: 0.9; }
         }
 
         .dream-circle {
-            width: 220px;
-            height: 220px;
+            width: 220px; height: 220px;
             border-radius: 50%;
-            margin: 25px auto;
+            margin: 32px auto;
             box-shadow: 0 0 25px rgba(180,180,180,0.6);
             transform: scale(0.8);
             opacity: 0;
@@ -97,127 +269,121 @@
             align-items: center;
             position: relative;
         }
-
         .dream-circle.active {
             opacity: 1;
             transform: scale(1);
-            filter: blur(0px);
+            filter: blur(0);
         }
-
         .dream-circle img {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
             border-radius: 50%;
             transform: translateX(12px);
         }
 
-        /* LATTICE-STYLE BRANCHES (RIGHT SIDE) */
         .dream-limbs {
             position: absolute;
             left: 100%;
             top: 50%;
             transform: translateY(-50%);
-            width: 90px;
-            height: 220px;
+            width: 90px; height: 220px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             pointer-events: none;
         }
-
         .limb {
             position: relative;
-            width: 90px;
-            height: 18px;
+            width: 90px; height: 18px;
             transform-origin: left center;
         }
-
         .limb::before {
             content: "";
             position: absolute;
-            left: 0;
-            top: 8px;
-            width: 90px;
-            height: 3px;
+            left: 0; top: 8px;
+            width: 90px; height: 3px;
             background: linear-gradient(90deg, #bbb, #888);
             box-shadow: 0 0 4px rgba(180,180,180,0.6);
         }
-
-        .limb .diag1,
-        .limb .diag2 {
+        .limb .diag1, .limb .diag2 {
             position: absolute;
-            left: 0;
-            width: 90px;
-            height: 2px;
+            left: 0; width: 90px; height: 2px;
             background: #999;
             transform-origin: left center;
         }
-
-        .limb .diag1 {
-            top: 3px;
-            transform: rotate(12deg);
-        }
-
-        .limb .diag2 {
-            top: 13px;
-            transform: rotate(-12deg);
-        }
-
+        .limb .diag1 { top: 3px; transform: rotate(12deg); }
+        .limb .diag2 { top: 13px; transform: rotate(-12deg); }
         .limb .node {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 10px; height: 10px;
             background: #ddd;
             border: 1px solid #aaa;
             border-radius: 50%;
             box-shadow: 0 0 6px rgba(200,200,200,0.8);
             top: 4px;
         }
-
         .limb .node:nth-child(1) { left: -2px; }
         .limb .node:nth-child(2) { left: 38px; }
         .limb .node:nth-child(3) { left: 78px; }
-
         .limb:nth-child(1) { transform: rotate(18deg); }
         .limb:nth-child(2) { transform: rotate(6deg); }
         .limb:nth-child(3) { transform: rotate(-6deg); }
 
-        /* nice list styling for the 13 Mode words */
-        .mode-list {
-            margin: 0;
-            padding-left: 18px;
-            columns: 2;
-            column-gap: 30px;
-        }
-        .mode-list li {
-            margin-bottom: 4px;
-            break-inside: avoid;
+        /* Mobile */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            #specifierArea {
+                width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 12px;
+                padding: 16px;
+            }
+            #specifierArea label { width: 100%; }
+            #specifierInput, #constructorSelect { flex: 1; min-width: 140px; }
+            main { padding: 24px 16px; }
+            .mode-list { columns: 1; }
         }
     </style>
 </head>
-
 <body>
-    <h1>Welcome to DreamTech</h1>
 
-    <div id="selectionOutput"></div>
-
-    <!-- Specifier Area -->
-    <div id="specifierArea">
-        <label>Specifier: </label>
-        <input type="text" id="specifierInput" placeholder='Type "007" to open constructor list...'>
+    <!-- Compact Specifier Sidebar -->
+    <aside id="specifierArea">
+        <label>Specifier</label>
+        <input type="text" id="specifierInput" placeholder='Type "007" then Enter'>
+        
         <select id="constructorSelect">
-            <option value="">-- select constructor --</option>
+            <option value="">— select constructor —</option>
         </select>
-    </div>
+    </aside>
 
-    <button id="loadTable">Load Table</button>
-    <button onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
+    <main>
+        <h1>DreamTech</h1>
+        <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Double-click any word</p>
 
-    <div id="tableContainer"></div>
-    <div id="imageCircleContainer"></div>
+        <div class="btn-row">
+            <button id="loadTable">Load Table</button>
+            <button class="btn-secondary" onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
+        </div>
+
+        <div id="selectionOutput"></div>
+
+        <!-- Google Search Box -->
+        <div class="search-container">
+            <input type="text" id="google-search" 
+                   placeholder="Superhero will appear first + selected Wikipedia title">
+            <button class="search-btn" onclick="doGoogleSearch()">Search Google</button>
+        </div>
+
+        <div id="tableContainer"></div>
+        <div id="imageCircleContainer"></div>
+    </main>
 
     <script>
+        // ========== Selection Wrapper (enhanced) ==========
         class SelectionWrapper {
             constructor() {
                 this.lastSelection = "";
@@ -230,20 +396,46 @@
                 }
             }
             onSelection(text) {
-                console.log("Wrapper received:", text);
+                // Only react to selections inside the Mode list
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+
+                const node = selection.getRangeAt(0).commonAncestorContainer;
+                const li = node.nodeType === 3 ? node.parentElement : node;
+                
+                if (!li || li.tagName !== "LI" || !li.closest(".mode-list")) return;
+
+                const hero = document.getElementById("constructorSelect").value;
+
+                if (!hero) {
+                    document.getElementById("selectionOutput").textContent = 
+                        "⚠️ Please select a Superhero first (type 007)";
+                    return;
+                }
+
+                // Superhero is ALWAYS first
+                document.getElementById("google-search").value = `${hero} ${text}`;
+                document.getElementById("selectionOutput").textContent = 
+                    `Selected: "${text}" → ready for Google`;
             }
         }
 
         const wrapper = new SelectionWrapper();
 
+        // Listen for selection (desktop + mobile)
         document.addEventListener("selectionchange", () => {
             const sel = document.getSelection().toString().trim();
             const out = document.getElementById("selectionOutput");
-            out.textContent = sel ? `Selected: "${sel}"` : "";
+            if (sel) {
+                out.textContent = `Selected: "${sel}"`;
+            }
             wrapper.update();
         });
 
-        /* Specifier input – type 007 to open the list */
+        document.addEventListener("mouseup", () => wrapper.update());
+        document.addEventListener("touchend", () => wrapper.update());
+
+        // ========== Specifier logic (kept exactly) ==========
         document.getElementById("specifierInput").addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 const cmd = this.value.trim();
@@ -251,10 +443,7 @@
                 if (cmd === "007") {
                     (function createConstructorList() {
                         const select = document.getElementById("constructorSelect");
-
-                        while (select.options.length > 1) {
-                            select.remove(1);
-                        }
+                        while (select.options.length > 1) select.remove(1);
 
                         const constructors = [
                             "007", "Batman", "Iron Man", "He-Man", "Superwoman",
@@ -270,16 +459,13 @@
                             select.appendChild(opt);
                         });
 
-                        select.style.display = "inline-block";
-
+                        select.style.display = "block";
                         select.onchange = function () {
-                            const chosen = this.value;
-                            if (chosen) {
-                                console.log("Constructor function selected:", chosen);
+                            if (this.value) {
+                                console.log("Constructor selected:", this.value);
                             }
                         };
                     })();
-
                     this.value = "";
                     return;
                 }
@@ -310,19 +496,19 @@
 
         function generatePolarizer() {
             const container = document.getElementById("tableContainer");
-
             const wrap = document.createElement("div");
-            wrap.style.margin = "12px 0";
+            wrap.style.margin = "16px 0";
 
             const label = document.createElement("div");
             label.textContent = "Heliopan Linear Polarizer";
+            label.style.marginBottom = "8px";
+            label.style.color = "var(--muted)";
 
             const img = document.createElement("img");
             img.src = "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7";
             img.alt = "Heliopan Linear Polarizer";
             img.style.width = "200px";
-            img.style.display = "block";
-            img.style.marginTop = "6px";
+            img.style.borderRadius = "8px";
 
             wrap.appendChild(label);
             wrap.appendChild(img);
@@ -331,7 +517,6 @@
 
         function loadDreamCircleImage(url) {
             const container = document.getElementById("imageCircleContainer");
-
             const circle = document.createElement("div");
             circle.className = "dream-circle";
 
@@ -341,18 +526,15 @@
             for (let i = 0; i < 3; i++) {
                 const limb = document.createElement("div");
                 limb.className = "limb";
-
                 for (let n = 0; n < 3; n++) {
                     const node = document.createElement("div");
                     node.className = "node";
                     limb.appendChild(node);
                 }
-
                 const diag1 = document.createElement("div");
                 diag1.className = "diag1";
                 const diag2 = document.createElement("div");
                 diag2.className = "diag2";
-
                 limb.appendChild(diag1);
                 limb.appendChild(diag2);
                 limbs.appendChild(limb);
@@ -364,16 +546,13 @@
 
             circle.appendChild(img);
             circle.appendChild(limbs);
-
             container.innerHTML = "";
             container.appendChild(circle);
 
-            setTimeout(() => {
-                circle.classList.add("active");
-            }, 50);
+            setTimeout(() => circle.classList.add("active"), 50);
         }
 
-        // ========== NEW: Fetch 13 random Wikipedia titles ==========
+        // ========== Wikipedia 13 random titles (original) ==========
         async function getThirteenRandomWikipediaWords() {
             try {
                 const url = "https://en.wikipedia.org/w/api.php?" + new URLSearchParams({
@@ -382,7 +561,7 @@
                     rnnamespace: "0",
                     rnlimit: "13",
                     format: "json",
-                    origin: "*"          // required for CORS
+                    origin: "*"
                 });
 
                 const res = await fetch(url);
@@ -390,7 +569,6 @@
                 return data.query.random.map(item => item.title);
             } catch (err) {
                 console.error("Wikipedia fetch failed:", err);
-                // fallback so the table still appears
                 return Array.from({length: 13}, (_, i) => `Word ${i + 1}`);
             }
         }
@@ -401,24 +579,18 @@
             container.classList.add("dream-reveal", "dream-particles");
             setTimeout(() => container.classList.add("active"), 50);
 
-            // Show loading state first
             container.innerHTML = `
                 <table>
                     <tr><th>DreamTech</th><th>Value</th></tr>
                     <tr><td>Specifier</td><td>Polarizer</td></tr>
-                    <tr><td>Mode</td><td>Loading 13 random Wikipedia words…</td></tr>
+                    <tr><td>Mode</td><td>Loading 13 random Wikipedia titles…</td></tr>
                 </table>
             `;
 
-            // Fetch the 13 words
             const words = await getThirteenRandomWikipediaWords();
 
-            // Build a nice ordered list
-            const listHtml = words
-                .map(w => `<li>${w}</li>`)
-                .join("");
+            const listHtml = words.map(w => `<li>${w}</li>`).join("");
 
-            // Final table with the real Mode list
             container.innerHTML = `
                 <table>
                     <tr><th>DreamTech</th><th>Value</th></tr>
@@ -438,6 +610,13 @@
                 "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7"
             );
         });
+
+        // Google search action
+        function doGoogleSearch() {
+            const query = document.getElementById("google-search").value.trim();
+            if (!query) return;
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+        }
     </script>
 </body>
 </html>
