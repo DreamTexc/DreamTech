@@ -10,14 +10,20 @@
             font-family: Arial, sans-serif;
             padding: 20px;
             text-align: center;
+            background: #0a0a12;
+            color: #eee;
+            overflow-x: hidden;
         }
 
-        /* Back to Jet Action link spacing */
         .back-link {
             margin-bottom: 5px;
         }
 
-        /* Scorekeeper Popup (reduced by ~50%) */
+        .back-link a {
+            color: #88aaff;
+        }
+
+        /* Scorekeeper Popup */
         .score-popup {
             position: fixed;
             top: 50%;
@@ -51,15 +57,75 @@
         .red { color: #ff2a2a; }
         .black { color: #111; }
 
-        /* Clean SKU image — no border, no box, no shadow */
+        /* SKU / Jet container */
         .sku-box {
-            margin-top: 160px;
+            margin-top: 80px;
+            height: 420px;
+            position: relative;
+            perspective: 900px;
         }
 
         .sku-img {
             width: calc(140px * 3.2);
             display: block;
             margin: 0 auto;
+            transform-origin: center center;
+            /* Steep diving angle (pilot view) */
+            transform: rotate(-38deg) rotateX(12deg);
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+        }
+
+        /* Continuous diving / flight cycle */
+        @keyframes continuousDive {
+            0% {
+                transform: translate(0, 0) rotate(-38deg) rotateX(12deg) scale(1);
+            }
+            25% {
+                transform: translate(18vw, 12vh) rotate(-42deg) rotateX(18deg) scale(1.08);
+            }
+            50% {
+                transform: translate(-8vw, 28vh) rotate(-35deg) rotateX(8deg) scale(1.15);
+            }
+            75% {
+                transform: translate(22vw, 18vh) rotate(-45deg) rotateX(22deg) scale(1.05);
+            }
+            100% {
+                transform: translate(0, 0) rotate(-38deg) rotateX(12deg) scale(1);
+            }
+        }
+
+        .dive-cycle {
+            animation: continuousDive 4.8s ease-in-out infinite;
+        }
+
+        /* Subtle engine flutter on top of the dive */
+        @keyframes flutter {
+            0%, 100% { filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55)); }
+            50% { filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); }
+        }
+
+        .flutter-effect {
+            animation: continuousDive 4.8s ease-in-out infinite,
+                       flutter 0.28s infinite ease-in-out;
+        }
+
+        /* Trigger Button */
+        .score-btn {
+            padding: 6px 10px;
+            background: #ff2a2a;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: 0.25s;
+            color: white;
+        }
+
+        .score-btn:hover {
+            background: #cc0000;
+            transform: scale(1.05);
         }
 
         /* Command Console */
@@ -76,54 +142,6 @@
             background: #111;
             color: #fff;
             text-align: center;
-        }
-
-        /* SKU flight animation */
-        @keyframes flyToCenter {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: translate(50vw, -20vh) scale(1.4);
-                opacity: 0.9;
-            }
-            100% {
-                transform: translate(0, -40vh) scale(2.2);
-                opacity: 0.6;
-            }
-        }
-
-        .fly-effect {
-            animation: flyToCenter 2.4s ease-in-out forwards;
-        }
-
-        /* Continuous flutter */
-        .flutter-effect {
-            animation: flutter 0.35s infinite ease-in-out;
-        }
-
-        @keyframes flutter {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-2px); }
-            100% { transform: translateY(0px); }
-        }
-
-        /* Trigger Button (reduced by ~50%) */
-        .score-btn {
-            padding: 6px 10px;
-            background: #ff2a2a;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: 0.25s;
-        }
-
-        .score-btn:hover {
-            background: #cc0000;
-            transform: scale(1.05);
         }
     </style>
 </head>
@@ -154,11 +172,11 @@
         </div>
     </div>
 
-    <!-- Clean SKU Image -->
+    <!-- Jet / SKU Image -->
     <div id="skuBox" class="sku-box">
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
-             alt="SKU"
-             class="sku-img">
+             alt="SKU Jet"
+             class="sku-img flutter-effect">
     </div>
 
     <!-- Command Console -->
@@ -177,24 +195,24 @@
             }, 3000);
         };
 
-        // SKU element
+        // Jet is already running the continuous dive cycle via CSS class
         const skuImage = document.querySelector(".sku-img");
 
-        // Continuous flutter always on
-        skuImage.classList.add("flutter-effect");
-
-        // Command console listener
+        // Optional: still react to the old command if you type it
         document.getElementById("commandInput").addEventListener("keyup", function(e) {
             const cmd = e.target.value.trim();
-
-            // REGEX pattern for your custom command
             const pattern = /into\.page\sseek/i;
 
-            // If command matches → trigger flight animation
             if (pattern.test(cmd)) {
-                skuImage.classList.add("fly-effect");
+                // Restart the cycle for a strong “boost” feel
+                skuImage.classList.remove("flutter-effect");
+                void skuImage.offsetWidth; // force reflow
+                skuImage.classList.add("flutter-effect");
             }
         });
+
+        // Placeholder for future MPH / spacebar race system
+        // (will be added later)
     </script>
 
 </body>
