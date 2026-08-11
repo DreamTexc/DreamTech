@@ -13,6 +13,7 @@
             background: #0a0a12;
             color: #eee;
             overflow-x: hidden;
+            user-select: none;
         }
 
         .back-link {
@@ -57,18 +58,18 @@
         .red { color: #ff2a2a; }
         .black { color: #111; }
 
-        /* HACO VAULT – fixed frame of existence */
+        /* HACO VAULT */
         .sku-box {
             margin-top: 100px;
-            width: 480px;
+            width: 100%;
+            max-width: 900px;
             height: 420px;
             margin-left: auto;
             margin-right: auto;
             position: relative;
-            /* Optional subtle vault border (can be removed later) */
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 8px;
-            overflow: hidden; /* keeps the jet inside the vault */
+            overflow: hidden;
             perspective: 1000px;
         }
 
@@ -78,46 +79,32 @@
             left: 50%;
             top: 50%;
             transform-origin: center center;
-            /* Steep downward pointing angle */
+            /* Default: steep downward angle */
             transform: translate(-50%, -50%) rotate(-48deg) rotateX(18deg);
             filter: drop-shadow(0 10px 16px rgba(0,0,0,0.6));
             will-change: transform;
+            transition: transform 0.45s ease;
         }
 
-        /* Subtle continuous motion inside the 19.8 × 19.8 haco vault range */
+        /* Subtle haco vault flutter (19.8 × 19.8 range) */
         @keyframes hacoVaultFlutter {
-            0% {
-                transform: translate(-50%, -50%) 
-                           translate(0px, 0px) 
-                           rotate(-48deg) rotateX(18deg);
-            }
-            25% {
-                transform: translate(-50%, -50%) 
-                           translate(9.9px, 4.2px) 
-                           rotate(-49.5deg) rotateX(19deg);
-            }
-            50% {
-                transform: translate(-50%, -50%) 
-                           translate(-6.8px, 9.9px) 
-                           rotate(-47deg) rotateX(17deg);
-            }
-            75% {
-                transform: translate(-50%, -50%) 
-                           translate(4.5px, -7.4px) 
-                           rotate(-49deg) rotateX(18.5deg);
-            }
-            100% {
-                transform: translate(-50%, -50%) 
-                           translate(0px, 0px) 
-                           rotate(-48deg) rotateX(18deg);
-            }
+            0%   { transform: translate(-50%, -50%) translate(0px, 0px) rotate(-48deg) rotateX(18deg); }
+            25%  { transform: translate(-50%, -50%) translate(9.9px, 4.2px) rotate(-49.5deg) rotateX(19deg); }
+            50%  { transform: translate(-50%, -50%) translate(-6.8px, 9.9px) rotate(-47deg) rotateX(17deg); }
+            75%  { transform: translate(-50%, -50%) translate(4.5px, -7.4px) rotate(-49deg) rotateX(18.5deg); }
+            100% { transform: translate(-50%, -50%) translate(0px, 0px) rotate(-48deg) rotateX(18deg); }
         }
 
         .haco-flutter {
             animation: hacoVaultFlutter 3.6s ease-in-out infinite;
         }
 
-        /* Trigger Button */
+        /* Level flight state (perfectly even) */
+        .level-flight {
+            animation: none !important;
+            transform: translate(-50%, -50%) rotate(0deg) rotateX(0deg) !important;
+        }
+
         .score-btn {
             padding: 6px 10px;
             background: #ff2a2a;
@@ -135,7 +122,6 @@
             transform: scale(1.05);
         }
 
-        /* Command Console */
         .console-box {
             margin-top: 40px;
         }
@@ -149,6 +135,17 @@
             background: #111;
             color: #fff;
             text-align: center;
+        }
+
+        /* Small spacebar status indicator */
+        #spaceStatus {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #888;
+            font-family: monospace;
+        }
+        #spaceStatus.active {
+            color: #4cff4c;
         }
     </style>
 </head>
@@ -180,34 +177,112 @@
     <div id="skuBox" class="sku-box">
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
              alt="SKU Jet"
-             class="sku-img haco-flutter">
+             class="sku-img haco-flutter"
+             id="jetImage">
     </div>
+
+    <div id="spaceStatus">SPACEBAR: STANDBY</div>
 
     <div class="console-box">
         <input id="commandInput" type="text" placeholder="Enter command...">
     </div>
 
     <script>
-        // Scorekeeper
+        // ====================== STD FUNCTION ======================
+        // Applies only to the jet image + spacebar
+        function std(jet, isEngaged, deltaTime) {
+            if (!isEngaged) return;
+
+            // Level the jet perfectly even
+            jet.classList.remove("haco-flutter");
+            jet.classList.add("level-flight");
+
+            // Accelerate while held
+            speed += acceleration * deltaTime;
+
+            // Move across the screen (flight path)
+            posX += speed * deltaTime;
+
+            // Apply position (keeps vertical centered)
+            jet.style.left = `calc(50% + ${posX}px)`;
+            jet.style.top = "50%";
+        }
+        // ==========================================================
+
+        const jet = document.getElementById("jetImage");
+        const status = document.getElementById("spaceStatus");
+
+        let spaceEngaged = false;
+        let posX = 0;
+        let speed = 0;
+        const acceleration = 38;   // how fast it gains speed
+        const maxSpeed = 420;
+        let lastTime = performance.now();
+
+        // Spacebar monitor
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                e.preventDefault();          // stop page scroll
+                if (!spaceEngaged) {
+                    spaceEngaged = true;
+                    status.textContent = "SPACEBAR: ENGAGED – LEVEL FLIGHT";
+                    status.classList.add("active");
+                    // Reset starting speed for clean engagement
+                    speed = 12;
+                }
+            }
+        });
+
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "Space") {
+                spaceEngaged = false;
+                status.textContent = "SPACEBAR: STANDBY";
+                status.classList.remove("active");
+
+                // Return to dive posture & vault flutter
+                jet.classList.remove("level-flight");
+                jet.style.left = "50%";
+                jet.style.top = "50%";
+                posX = 0;
+                speed = 0;
+                jet.classList.add("haco-flutter");
+            }
+        });
+
+        // Main loop
+        function gameLoop(currentTime) {
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            // Cap speed
+            if (speed > maxSpeed) speed = maxSpeed;
+
+            // Call the std function (only affects jet + spacebar)
+            std(jet, spaceEngaged, deltaTime);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        requestAnimationFrame(gameLoop);
+
+        // Scorekeeper (unchanged)
         document.getElementById("openScore").onclick = () => {
             const popup = document.getElementById("scorePopup");
             popup.classList.add("active");
             setTimeout(() => popup.classList.remove("active"), 3000);
         };
 
-        const skuImage = document.querySelector(".sku-img");
-
-        // Optional command boost (restarts the subtle cycle)
+        // Optional command
         document.getElementById("commandInput").addEventListener("keyup", function(e) {
             const cmd = e.target.value.trim();
             if (/into\.page\sseek/i.test(cmd)) {
-                skuImage.classList.remove("haco-flutter");
-                void skuImage.offsetWidth;
-                skuImage.classList.add("haco-flutter");
+                if (!spaceEngaged) {
+                    jet.classList.remove("haco-flutter");
+                    void jet.offsetWidth;
+                    jet.classList.add("haco-flutter");
+                }
             }
         });
-
-        // Ready for future game systems (MPH, spacebar race, effects, etc.)
     </script>
 
 </body>
