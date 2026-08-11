@@ -57,57 +57,64 @@
         .red { color: #ff2a2a; }
         .black { color: #111; }
 
-        /* SKU / Jet container */
+        /* HACO VAULT – fixed frame of existence */
         .sku-box {
-            margin-top: 80px;
+            margin-top: 100px;
+            width: 480px;
             height: 420px;
+            margin-left: auto;
+            margin-right: auto;
             position: relative;
-            perspective: 900px;
+            /* Optional subtle vault border (can be removed later) */
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden; /* keeps the jet inside the vault */
+            perspective: 1000px;
         }
 
         .sku-img {
             width: calc(140px * 3.2);
-            display: block;
-            margin: 0 auto;
+            position: absolute;
+            left: 50%;
+            top: 50%;
             transform-origin: center center;
-            /* Steep diving angle (pilot view) */
-            transform: rotate(-38deg) rotateX(12deg);
-            transition: transform 0.3s ease;
-            filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+            /* Steep downward pointing angle */
+            transform: translate(-50%, -50%) rotate(-48deg) rotateX(18deg);
+            filter: drop-shadow(0 10px 16px rgba(0,0,0,0.6));
+            will-change: transform;
         }
 
-        /* Continuous diving / flight cycle */
-        @keyframes continuousDive {
+        /* Subtle continuous motion inside the 19.8 × 19.8 haco vault range */
+        @keyframes hacoVaultFlutter {
             0% {
-                transform: translate(0, 0) rotate(-38deg) rotateX(12deg) scale(1);
+                transform: translate(-50%, -50%) 
+                           translate(0px, 0px) 
+                           rotate(-48deg) rotateX(18deg);
             }
             25% {
-                transform: translate(18vw, 12vh) rotate(-42deg) rotateX(18deg) scale(1.08);
+                transform: translate(-50%, -50%) 
+                           translate(9.9px, 4.2px) 
+                           rotate(-49.5deg) rotateX(19deg);
             }
             50% {
-                transform: translate(-8vw, 28vh) rotate(-35deg) rotateX(8deg) scale(1.15);
+                transform: translate(-50%, -50%) 
+                           translate(-6.8px, 9.9px) 
+                           rotate(-47deg) rotateX(17deg);
             }
             75% {
-                transform: translate(22vw, 18vh) rotate(-45deg) rotateX(22deg) scale(1.05);
+                transform: translate(-50%, -50%) 
+                           translate(4.5px, -7.4px) 
+                           rotate(-49deg) rotateX(18.5deg);
             }
             100% {
-                transform: translate(0, 0) rotate(-38deg) rotateX(12deg) scale(1);
+                transform: translate(-50%, -50%) 
+                           translate(0px, 0px) 
+                           rotate(-48deg) rotateX(18deg);
             }
         }
 
-        .dive-cycle {
-            animation: continuousDive 4.8s ease-in-out infinite;
-        }
-
-        /* Subtle engine flutter on top of the dive */
-        @keyframes flutter {
-            0%, 100% { filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55)); }
-            50% { filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); }
-        }
-
-        .flutter-effect {
-            animation: continuousDive 4.8s ease-in-out infinite,
-                       flutter 0.28s infinite ease-in-out;
+        .haco-flutter {
+            animation: hacoVaultFlutter 3.6s ease-in-out infinite;
         }
 
         /* Trigger Button */
@@ -152,17 +159,14 @@
     <p>Welcome to the Dollar Page.</p>
     <p>Add your content here.</p>
 
-    <!-- Back to Jet Action link -->
     <div class="back-link">
         <a href="https://htmlpreview.github.io/?https://github.com/DreamTexc/DreamTech/blob/main/jetMathOverlay.html">
             Back to Jet Action
         </a>
     </div>
 
-    <!-- Trigger Button -->
     <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
-    <!-- Scorekeeper Popup -->
     <div id="scorePopup" class="score-popup">
         <div class="score-content">
             <div class="vertex-line red">........||||||||||||........</div>
@@ -172,47 +176,38 @@
         </div>
     </div>
 
-    <!-- Jet / SKU Image -->
+    <!-- HACO VAULT -->
     <div id="skuBox" class="sku-box">
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
              alt="SKU Jet"
-             class="sku-img flutter-effect">
+             class="sku-img haco-flutter">
     </div>
 
-    <!-- Command Console -->
     <div class="console-box">
         <input id="commandInput" type="text" placeholder="Enter command...">
     </div>
 
     <script>
-        // Scorekeeper popup
+        // Scorekeeper
         document.getElementById("openScore").onclick = () => {
             const popup = document.getElementById("scorePopup");
             popup.classList.add("active");
-
-            setTimeout(() => {
-                popup.classList.remove("active");
-            }, 3000);
+            setTimeout(() => popup.classList.remove("active"), 3000);
         };
 
-        // Jet is already running the continuous dive cycle via CSS class
         const skuImage = document.querySelector(".sku-img");
 
-        // Optional: still react to the old command if you type it
+        // Optional command boost (restarts the subtle cycle)
         document.getElementById("commandInput").addEventListener("keyup", function(e) {
             const cmd = e.target.value.trim();
-            const pattern = /into\.page\sseek/i;
-
-            if (pattern.test(cmd)) {
-                // Restart the cycle for a strong “boost” feel
-                skuImage.classList.remove("flutter-effect");
-                void skuImage.offsetWidth; // force reflow
-                skuImage.classList.add("flutter-effect");
+            if (/into\.page\sseek/i.test(cmd)) {
+                skuImage.classList.remove("haco-flutter");
+                void skuImage.offsetWidth;
+                skuImage.classList.add("haco-flutter");
             }
         });
 
-        // Placeholder for future MPH / spacebar race system
-        // (will be added later)
+        // Ready for future game systems (MPH, spacebar race, effects, etc.)
     </script>
 
 </body>
