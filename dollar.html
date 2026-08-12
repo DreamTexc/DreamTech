@@ -84,6 +84,7 @@
             filter: drop-shadow(0 10px 16px rgba(0,0,0,0.6));
             will-change: transform;
             transition: transform 0.45s ease;
+            z-index: 2;
         }
 
         /* Subtle haco vault flutter (19.8 × 19.8 range) */
@@ -103,6 +104,91 @@
         .level-flight {
             animation: none !important;
             transform: translate(-50%, -50%) rotate(0deg) rotateX(0deg) !important;
+        }
+
+        /* ========== TARGETING SYSTEM (Circle-Dot Alignment) ========== */
+        .target-reticle {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 220px;
+            height: 220px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.9;
+        }
+
+        /* Outer circle */
+        .target-reticle::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 2px solid rgba(255, 42, 42, 0.75);
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(255, 42, 42, 0.35);
+        }
+
+        /* Middle circle */
+        .target-reticle::after {
+            content: "";
+            position: absolute;
+            inset: 28px;
+            border: 1.5px solid rgba(255, 80, 80, 0.55);
+            border-radius: 50%;
+        }
+
+        /* Center dot (primary alignment point) */
+        .target-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            background: #ff2a2a;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px #ff2a2a, 0 0 18px rgba(255, 42, 42, 0.6);
+            z-index: 6;
+        }
+
+        /* Crosshair lines */
+        .crosshair-h, .crosshair-v {
+            position: absolute;
+            background: rgba(255, 42, 42, 0.7);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .crosshair-h {
+            width: 160px;
+            height: 1px;
+        }
+        .crosshair-v {
+            width: 1px;
+            height: 160px;
+        }
+
+        /* Small tick marks on the outer ring */
+        .tick {
+            position: absolute;
+            background: rgba(255, 80, 80, 0.8);
+            left: 50%;
+            top: 50%;
+            transform-origin: center;
+        }
+        .tick.t12 { width: 2px; height: 12px; transform: translate(-50%, -110px); }
+        .tick.t3  { width: 12px; height: 2px; transform: translate(98px, -50%); }
+        .tick.t6  { width: 2px; height: 12px; transform: translate(-50%, 98px); }
+        .tick.t9  { width: 12px; height: 2px; transform: translate(-110px, -50%); }
+
+        /* Subtle pulse on the reticle when space is engaged */
+        .target-reticle.locked {
+            animation: reticlePulse 1.4s ease-in-out infinite;
+        }
+        @keyframes reticlePulse {
+            0%, 100% { opacity: 0.9; filter: brightness(1); }
+            50%      { opacity: 1;   filter: brightness(1.25); }
         }
 
         .score-btn {
@@ -175,6 +261,17 @@
 
     <!-- HACO VAULT -->
     <div id="skuBox" class="sku-box">
+        <!-- Targeting reticle (circle-dot alignment system) -->
+        <div class="target-reticle" id="reticle">
+            <div class="crosshair-h"></div>
+            <div class="crosshair-v"></div>
+            <div class="tick t12"></div>
+            <div class="tick t3"></div>
+            <div class="tick t6"></div>
+            <div class="tick t9"></div>
+            <div class="target-dot"></div>
+        </div>
+
         <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
              alt="SKU Jet"
              class="sku-img haco-flutter"
@@ -211,6 +308,7 @@
 
         const jet = document.getElementById("jetImage");
         const status = document.getElementById("spaceStatus");
+        const reticle = document.getElementById("reticle");
 
         let spaceEngaged = false;
         let posX = 0;
@@ -227,6 +325,7 @@
                     spaceEngaged = true;
                     status.textContent = "SPACEBAR: ENGAGED – LEVEL FLIGHT";
                     status.classList.add("active");
+                    reticle.classList.add("locked");   // pulse the targeting system
                     // Reset starting speed for clean engagement
                     speed = 12;
                 }
@@ -238,6 +337,7 @@
                 spaceEngaged = false;
                 status.textContent = "SPACEBAR: STANDBY";
                 status.classList.remove("active");
+                reticle.classList.remove("locked");
 
                 // Return to dive posture & vault flutter
                 jet.classList.remove("level-flight");
