@@ -54,44 +54,43 @@ body::before {
         }
         .pointer:hover { color: #66ccff; }
 
-        /* ===== DEEPER BLACK JET ===== */
-        #jet {
-            position: absolute;
-            left: 50%;
-            /* start much higher / deeper in the sky */
-            top: 22%;
-            width: 280px;
-            max-width: 70vw;
-            transform: translate(-50%, -50%) scale(0.42) rotateX(18deg);
-            transform-style: preserve-3d;
-            transform-origin: 50% 50%;          /* middle of the jet – drop/scroll focuses here */
-            transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        top 0.9s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        left 0.9s cubic-bezier(0.25, 0.8, 0.25, 1);
-            cursor: grab;
-            z-index: 10;
-            will-change: transform, top, left;
+/* ===== DEEPER BLACK JET (now more colorful) ===== */
+#jet {
+    position: absolute;
+    left: 50%;
+    top: 22%;
+    width: 280px;
+    max-width: 70vw;
+    transform: translate(-50%, -50%) scale(0.42) rotateX(18deg);
+    transform-style: preserve-3d;
+    transform-origin: 50% 50%;
+    transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1),
+                top 0.9s cubic-bezier(0.25, 0.8, 0.25, 1),
+                left 0.9s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: grab;
+    z-index: 10;
+    will-change: transform, top, left;
 
-            /* deeper / farther look */
-            filter: 
-                contrast(1.45) 
-                brightness(0.68) 
-                saturate(0.55) 
-                drop-shadow(0 18px 28px rgba(0,0,0,0.9))
-                blur(0.6px);                   /* slight atmospheric distance */
-            mix-blend-mode: multiply;
-            opacity: 0.92;
-        }
+    /* more colorful + still has depth */
+    filter: 
+        contrast(1.35) 
+        brightness(0.85) 
+        saturate(1.45)               /* ← main color boost */
+        drop-shadow(0 16px 24px rgba(0,0,0,0.75))
+        blur(0.4px);
+    mix-blend-mode: multiply;
+    opacity: 0.95;
+}
 
-        /* when it comes closer the blur disappears */
-        #jet.closer {
-            filter: 
-                contrast(1.45) 
-                brightness(0.72) 
-                saturate(0.6) 
-                drop-shadow(0 14px 22px rgba(0,0,0,0.85));
-            opacity: 1;
-        }
+/* when it comes closer */
+#jet.closer {
+    filter: 
+        contrast(1.35) 
+        brightness(0.92) 
+        saturate(1.55)               /* even richer when closer */
+        drop-shadow(0 12px 18px rgba(0,0,0,0.7));
+    opacity: 1;
+}
 
         /* Landing state – still respects the deeper start */
         #jet.landing {
