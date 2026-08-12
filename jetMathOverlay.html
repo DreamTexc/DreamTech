@@ -53,9 +53,9 @@
             background: radial-gradient(ellipse at center, #0d0d18 0%, #05050a 70%);
         }
 
-        /* 6-D Jet – now 30% smaller than previous (38.5% of original) */
+        /* 6-D Jet – current size */
         .sku-img {
-            width: calc(140px * 3.2 * 0.55 * 0.7);   /* 30% smaller than last version */
+            width: calc(140px * 3.2 * 0.55 * 0.7);
             position: absolute;
             left: 50%; top: 50%;
             transform-origin: center center;
@@ -80,6 +80,20 @@
         .level-flight {
             animation: none !important;
             transform: translate(-50%, -50%) rotate(0deg) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1) !important;
+        }
+
+        /* ===== RED LASERS from thrusters ===== */
+        .laser {
+            position: absolute;
+            width: 0.8px;               /* extremely thin */
+            height: 18px;               /* short sparse length */
+            background: #ff1a1a;
+            box-shadow: 0 0 4px #ff2a2a, 0 0 8px #ff0000;
+            border-radius: 1px;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.95;
+            transform-origin: center bottom;
         }
 
         .score-btn {
@@ -131,4 +145,245 @@
     </div>
 
     <!-- HACO VAULT -->
-    <div id="skuBox" class="sku-
+    <div id="skuBox" class="sku-box">
+        <img src="https://raw.githubusercontent.com/DreamTexc/DreamTech/main/sku.png"
+             alt="SKU Jet 6D"
+             class="sku-img haco-flutter"
+             id="jetImage">
+    </div>
+
+    <div id="spaceStatus">SPACEBAR: STANDBY</div>
+    <div id="polarityStatus">POLARITY: NEUTRAL | FORM: DIVE</div>
+
+    <div class="console-box">
+        <input id="commandInput" type="text"
+               placeholder="apex | epex | ems | vortex 30 15 -10 | polarShift 200 -80 0 1.2 | reset">
+    </div>
+
+    <script>
+        // =========================================================
+        // 6-D VORTEX POLARITY ENGINE
+        // =========================================================
+        const jet   = document.getElementById("jetImage");
+        const status = document.getElementById("spaceStatus");
+        const polarStatus = document.getElementById("polarityStatus");
+        const skuBox = document.getElementById("skuBox");
+
+        let state = {
+            x: 0, y: 0, z: 0,
+            rotX: 18, rotY: 0, rotZ: -48,
+            scale: 1, flutter: true
+        };
+
+        function applyPolarity() {
+            jet.classList.remove("haco-flutter", "level-flight");
+            if (state.flutter) jet.classList.add("haco-flutter");
+
+            const t = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px))
+                       rotateX(${state.rotX}deg)
+                       rotateY(${state.rotY}deg)
+                       rotateZ(${state.rotZ}deg)
+                       scale(${state.scale})
+                       translateZ(${state.z}px)`;
+
+            jet.style.transform = t;
+            updatePolarityDisplay();
+        }
+
+        function updatePolarityDisplay() {
+            const form = state.flutter ? "DIVE / FLUTTER" :
+                        (state.rotX === 0 && state.rotZ === 0) ? "LEVEL" : "VORTEX";
+            polarStatus.textContent =
+                `POLARITY  X:${state.x.toFixed(0)}  Y:${state.y.toFixed(0)}  Z:${state.z.toFixed(0)}  |  ` +
+                `RX:${state.rotX.toFixed(0)}° RY:${state.rotY.toFixed(0)}° RZ:${state.rotZ.toFixed(0)}°  |  ` +
+                `SCALE:${state.scale.toFixed(2)}  |  FORM: ${form}`;
+        }
+
+        // Named functions
+        function apex(intensity = 1) {
+            state.x = 0; state.y = -220 * intensity; state.z = 40 * intensity;
+            state.rotX = -25 * intensity; state.rotY = 0; state.rotZ = 0;
+            state.scale = 1.15; state.flutter = false; applyPolarity();
+        }
+        function epex(intensity = 1) {
+            state.x = 0; state.y = 240 * intensity; state.z = -30 * intensity;
+            state.rotX = 35 * intensity; state.rotY = 0; state.rotZ = 180;
+            state.scale = 0.95; state.flutter = false; applyPolarity();
+        }
+        function ems(direction = 1, intensity = 1) {
+            state.x = 380 * direction * intensity; state.y = 0; state.z = 20 * intensity;
+            state.rotX = 10; state.rotY = -35 * direction; state.rotZ = -15 * direction;
+            state.scale = 1.05; state.flutter = false; applyPolarity();
+        }
+        function vortex(rx = 25, ry = 15, rz = -30, intensity = 1) {
+            state.rotX = rx * intensity; state.rotY = ry * intensity; state.rotZ = rz * intensity;
+            state.flutter = false; applyPolarity();
+        }
+        function polarShift(x = 0, y = 0, z = 0, scale = 1) {
+            state.x = x; state.y = y; state.z = z; state.scale = scale;
+            state.flutter = false; applyPolarity();
+        }
+        function resetPolarity() {
+            state = { x:0, y:0, z:0, rotX:18, rotY:0, rotZ:-48, scale:1, flutter:true };
+            applyPolarity(); jet.classList.add("haco-flutter");
+        }
+
+        window.apex = apex; window.epex = epex; window.ems = ems;
+        window.vortex = vortex; window.polarShift = polarShift; window.resetPolarity = resetPolarity;
+
+        // =========================================================
+        // SPACEBAR + STD
+        // =========================================================
+        let spaceEngaged = false;
+        let posX = 0, speed = 0;
+        const acceleration = 38, maxSpeed = 420;
+        let lastTime = performance.now();
+
+        function std(jetEl, isEngaged, deltaTime) {
+            if (!isEngaged) return;
+            jetEl.classList.remove("haco-flutter");
+            jetEl.classList.add("level-flight");
+            speed += acceleration * deltaTime;
+            if (speed > maxSpeed) speed = maxSpeed;
+            posX += speed * deltaTime;
+            jetEl.style.left = `calc(50% + ${posX}px)`;
+            jetEl.style.top  = "50%";
+        }
+
+        window.addEventListener("keydown", e => {
+            if (e.code === "Space") {
+                e.preventDefault();
+                if (!spaceEngaged) {
+                    spaceEngaged = true;
+                    status.textContent = "SPACEBAR: ENGAGED – LEVEL FLIGHT";
+                    status.classList.add("active");
+                    speed = 12; state.flutter = false;
+                }
+            }
+        });
+
+        window.addEventListener("keyup", e => {
+            if (e.code === "Space") {
+                spaceEngaged = false;
+                status.textContent = "SPACEBAR: STANDBY";
+                status.classList.remove("active");
+                jet.classList.remove("level-flight");
+                jet.style.left = "50%"; jet.style.top = "50%";
+                posX = 0; speed = 0;
+                applyPolarity();
+            }
+        });
+
+        function gameLoop(t) {
+            const dt = (t - lastTime) / 1000;
+            lastTime = t;
+            std(jet, spaceEngaged, dt);
+            requestAnimationFrame(gameLoop);
+        }
+        requestAnimationFrame(gameLoop);
+
+        // =========================================================
+        // LASER SYSTEM – left & right thrusters
+        // =========================================================
+        function fireThrusterLasers() {
+            const jetRect = jet.getBoundingClientRect();
+            const boxRect = skuBox.getBoundingClientRect();
+
+            // Approximate thruster positions relative to jet center
+            // (tuned for the current small jet size + typical rear thruster placement)
+            const thrusterOffsetX = 28;   // left/right distance from center
+            const thrusterOffsetY = 18;   // slightly toward the rear
+
+            // Current rotation of the jet (in degrees)
+            const rot = state.rotZ * Math.PI / 180;
+
+            // Helper to create one laser
+            function createLaser(side) {
+                const laser = document.createElement("div");
+                laser.className = "laser";
+
+                // Local offset of the thruster
+                const localX = side === "left" ? -thrusterOffsetX : thrusterOffsetX;
+                const localY = thrusterOffsetY;
+
+                // Rotate the offset by the jet’s current Z rotation
+                const worldX = localX * Math.cos(rot) - localY * Math.sin(rot);
+                const worldY = localX * Math.sin(rot) + localY * Math.cos(rot);
+
+                // Position relative to the sku-box
+                const centerX = jetRect.left + jetRect.width / 2 - boxRect.left;
+                const centerY = jetRect.top  + jetRect.height / 2 - boxRect.top;
+
+                laser.style.left = (centerX + worldX) + "px";
+                laser.style.top  = (centerY + worldY) + "px";
+
+                // Point the laser outward (rearward relative to jet)
+                laser.style.transform = `rotate(${state.rotZ + 180}deg)`;
+
+                skuBox.appendChild(laser);
+
+                // Fade & remove quickly (sparse effect)
+                setTimeout(() => {
+                    laser.style.transition = "opacity 0.18s ease-out, transform 0.18s ease-out";
+                    laser.style.opacity = "0";
+                    laser.style.transform += " translateY(12px)";
+                    setTimeout(() => laser.remove(), 200);
+                }, 40);
+            }
+
+            createLaser("left");
+            createLaser("right");
+        }
+
+        // Left click + Right click both fire the lasers
+        window.addEventListener("mousedown", (e) => {
+            if (e.button === 0 || e.button === 2) {   // left or right
+                fireThrusterLasers();
+            }
+        });
+
+        // Prevent context menu on right-click
+        window.addEventListener("contextmenu", e => e.preventDefault());
+
+        // =========================================================
+        // COMMAND PARSER
+        // =========================================================
+        document.getElementById("commandInput").addEventListener("keyup", function(e) {
+            if (e.key !== "Enter") return;
+            const raw = e.target.value.trim().toLowerCase();
+            e.target.value = "";
+
+            if (raw === "apex")          apex();
+            else if (raw === "epex")     epex();
+            else if (raw === "ems")      ems(1);
+            else if (raw === "ems left" || raw === "ems -1") ems(-1);
+            else if (raw.startsWith("vortex")) {
+                const parts = raw.split(/\s+/).slice(1).map(Number);
+                vortex(parts[0]||25, parts[1]||15, parts[2]||-30);
+            }
+            else if (raw.startsWith("polarshift") || raw.startsWith("polar")) {
+                const parts = raw.split(/\s+/).slice(1).map(Number);
+                polarShift(parts[0]||0, parts[1]||0, parts[2]||0, parts[3]||1);
+            }
+            else if (raw === "reset" || raw === "resetpolarity") resetPolarity();
+            else if (/into\.page\sseek/i.test(raw)) {
+                if (!spaceEngaged) {
+                    jet.classList.remove("haco-flutter");
+                    void jet.offsetWidth;
+                    jet.classList.add("haco-flutter");
+                }
+            }
+        });
+
+        // Scorekeeper
+        document.getElementById("openScore").onclick = () => {
+            const p = document.getElementById("scorePopup");
+            p.classList.add("active");
+            setTimeout(() => p.classList.remove("active"), 3000);
+        };
+
+        // Initial polarity
+        applyPolarity();
+    </script>
+</body>
+</html>
