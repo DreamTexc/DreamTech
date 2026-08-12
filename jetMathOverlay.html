@@ -3,220 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jet Architecture with Math Overlay</title>
+    <title>Dollar Page – 6D Vortex Polarity</title>
 
     <style>
         body {
-            margin: 0;
-            overflow: hidden;
             font-family: Arial, sans-serif;
+            padding: 20px;
             text-align: center;
-            background: url("https://images.unsplash.com/photo-1508614589041-5a9c4a0f7c52?auto=format&fit=crop&w=1600&q=80")
-                repeat-x;
-            background-size: cover;
-            animation: parallaxScroll 20s linear infinite;
+            background: #0a0a12;
+            color: #eee;
+            overflow-x: hidden;
+            user-select: none;
+            min-height: 100vh;
         }
 
-        @keyframes parallaxScroll {
-            from { background-position: 0 0; }
-            to { background-position: -2000px 0; }
-        }
+        .back-link { margin-bottom: 5px; }
+        .back-link a { color: #88aaff; }
 
-        #ui {
-            position: absolute;
-            top: 20px;
+        /* Scorekeeper Popup */
+        .score-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            padding: 15px; border-radius: 10px;
+            width: 40%; max-width: 250px;
+            text-align: center; color: white;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+            font-family: monospace; z-index: 9999;
+        }
+        .score-popup.active { opacity: 1; pointer-events: auto; }
+        .vertex-line { font-size: 14px; margin: 6px 0; letter-spacing: 1px; }
+        .red { color: #ff2a2a; }
+        .black { color: #111; }
+
+        /* HACO VAULT */
+        .sku-box {
+            margin-top: 60px;
             width: 100%;
-            text-align: center;
+            max-width: 1100px;
+            height: 520px;
+            margin-left: auto; margin-right: auto;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            overflow: visible;
+            perspective: 1400px;
+            background: radial-gradient(ellipse at center, #0d0d18 0%, #05050a 70%);
+        }
+
+        /* 6-D Jet – now 30% smaller than previous (38.5% of original) */
+        .sku-img {
+            width: calc(140px * 3.2 * 0.55 * 0.7);   /* 30% smaller than last version */
+            position: absolute;
+            left: 50%; top: 50%;
+            transform-origin: center center;
+            transform: translate(-50%, -50%) rotate(-48deg) rotateX(18deg) rotateY(0deg) rotateZ(0deg) scale(1);
+            filter: drop-shadow(0 12px 20px rgba(0,0,0,0.7));
+            will-change: transform;
+            transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
             z-index: 10;
         }
 
-        .pointer {
-            cursor: pointer;
-            text-decoration: underline;
-            color: #00aaff;
-            font-size: 20px;
+        /* Subtle vault flutter */
+        @keyframes hacoVaultFlutter {
+            0%   { transform: translate(-50%, -50%) translate(0px,0px) rotate(-48deg) rotateX(18deg) rotateY(0deg) scale(1); }
+            25%  { transform: translate(-50%, -50%) translate(9.9px,4.2px) rotate(-49.5deg) rotateX(19deg) rotateY(2deg) scale(1.01); }
+            50%  { transform: translate(-50%, -50%) translate(-6.8px,9.9px) rotate(-47deg) rotateX(17deg) rotateY(-1deg) scale(0.99); }
+            75%  { transform: translate(-50%, -50%) translate(4.5px,-7.4px) rotate(-49deg) rotateX(18.5deg) rotateY(1deg) scale(1.005); }
+            100% { transform: translate(-50%, -50%) translate(0px,0px) rotate(-48deg) rotateX(18deg) rotateY(0deg) scale(1); }
+        }
+        .haco-flutter { animation: hacoVaultFlutter 3.6s ease-in-out infinite; }
+
+        /* Level flight */
+        .level-flight {
+            animation: none !important;
+            transform: translate(-50%, -50%) rotate(0deg) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1) !important;
         }
 
-        .pointer:hover {
-            color: #0088cc;
+        .score-btn {
+            padding: 6px 12px; background: #ff2a2a; border: none;
+            border-radius: 6px; font-size: 12px; cursor: pointer;
+            margin-top: 8px; color: white; transition: 0.25s;
+        }
+        .score-btn:hover { background: #cc0000; transform: scale(1.05); }
+
+        .console-box { margin-top: 30px; }
+        #commandInput {
+            padding: 11px; width: 320px; font-size: 14px;
+            border-radius: 6px; border: 1px solid #444;
+            background: #111; color: #fff; text-align: center;
         }
 
-        .jet {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 300px;
-            transform: translate(-50%, -50%);
-            transform-style: preserve-3d;
-            transition: transform 0.05s linear;
-            cursor: grab;
+        #spaceStatus {
+            margin-top: 14px; font-size: 13px; color: #888;
+            font-family: monospace;
         }
+        #spaceStatus.active { color: #4cff4c; }
 
-        .overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.85);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 18px;
-            opacity: 1;
-            transition: opacity 0.8s ease;
-            z-index: 20;
-        }
-
-        /* === Stabilization Blink Indicators === */
-        #blinkLeft, #blinkRight {
-            position: absolute;
-            width: 69px;
-            height: 69px;
-            background: red;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 50;
-        }
-
-        #blinkLeft {
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        #blinkRight {
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
+        #polarityStatus {
+            margin-top: 8px; font-size: 12px; color: #66aaff;
+            font-family: monospace; letter-spacing: 0.5px;
         }
     </style>
 </head>
-
 <body>
 
-    <div id="ui">
-        <span class="pointer" id="moduleRef">Module Reference</span>
-        <span style="margin: 0 20px; color: #00aaff;">|</span>
-        <span class="pointer" id="dollarLink">View Dollar</span>
+    <h1>Dollar Page – 6D Vortex Polarity</h1>
+    <p>Jet now carries full mathematical polarity. Type commands below or call the functions directly.</p>
+
+    <div class="back-link">
+        <a href="https://htmlpreview.github.io/?https://github.com/DreamTexc/DreamTech/blob/main/jetMathOverlay.html">
+            Back to Jet Action
+        </a>
     </div>
 
-    <img id="jet" class="jet"
-        src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7">
+    <button id="openScore" class="score-btn">Open Scorekeeper</button>
 
-    <div class="overlay" id="mathOverlay">
-        $$\lim_{{x \to a}} (bx + c) = ba + c$$
+    <div id="scorePopup" class="score-popup">
+        <div class="score-content">
+            <div class="vertex-line red">........||||||||||||........</div>
+            <div class="vertex-line black">||||||||........||||||||</div>
+            <div class="vertex-line red">........||||||||||||........</div>
+            <div class="vertex-line black">||||||||........||||||||</div>
+        </div>
     </div>
 
-    <!-- Stabilization Blink Elements -->
-    <div id="blinkLeft"></div>
-    <div id="blinkRight"></div>
-
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-    <script>
-        // Hide math overlay after load
-        window.onload = () => {
-            setTimeout(() => {
-                document.getElementById("mathOverlay").style.opacity = "0";
-            }, 1500);
-        };
-
-        // === FULL 4-WAY FLIGHT SYSTEM ===
-        const jet = document.getElementById("jet");
-
-        let jetX = window.innerWidth / 2;
-        let jetY = window.innerHeight / 2;
-
-        let pitch = 0;
-        let bank = 0;
-
-        let dragging = false;
-
-        jet.addEventListener("mousedown", () => dragging = true);
-        window.addEventListener("mouseup", () => dragging = false);
-
-        window.addEventListener("mousemove", (e) => {
-            if (!dragging) return;
-
-            jetX += (e.clientX - jetX) * 0.15;
-            jetY += (e.clientY - jetY) * 0.15;
-
-            pitch = (window.innerHeight / 2 - e.clientY) / 40;
-            bank = (window.innerWidth / 2 - e.clientX) / 60;
-        });
-
-        // === 5-MINUTE IDLE DRAW-ANGLE SYSTEM ===
-        let idleMode = true;
-        let idleStart = Date.now();
-        let idleDuration = 5 * 60 * 1000;
-
-        function cancelIdle() {
-            idleMode = false;
-        }
-
-        window.addEventListener("mousemove", cancelIdle);
-        window.addEventListener("mousedown", cancelIdle);
-        window.addEventListener("keydown", cancelIdle);
-
-        setInterval(() => {
-            if (!idleMode) return;
-            if (Date.now() - idleStart >= idleDuration) {
-                idleMode = false;
-            }
-        }, 1000);
-
-        // === Stabilization Blink Function ===
-        function blinkSide(side) {
-            const el = document.getElementById(side);
-            el.style.opacity = "1";
-            setTimeout(() => {
-                el.style.opacity = "0";
-            }, 150);
-        }
-
-        function animateJet() {
-
-            jet.style.left = jetX + "px";
-            jet.style.top = jetY + "px";
-
-            let transformString =
-                `translate(-50%, -50%) rotate(${bank}deg) rotateX(${pitch}deg)`;
-
-            // Idle draw-angle effect
-            if (idleMode) {
-                pitch += 0.02;
-                let idleBank = Math.sin(Date.now() / 2000) * 2;
-                transformString =
-                    `translate(-50%, -50%) rotate(${idleBank}deg) rotateX(${pitch}deg) scale(1.05)`;
-            }
-
-            jet.style.transform = transformString;
-
-            // === Boundary Stabilization Blink ===
-            if (jetX < 50) {
-                blinkSide("blinkLeft");
-            }
-
-            if (jetX > window.innerWidth - 50) {
-                blinkSide("blinkRight");
-            }
-
-            requestAnimationFrame(animateJet);
-        }
-
-        animateJet();
-
-        // Redirect to rendered Dollar page
-        document.getElementById("dollarLink").onclick = () => {
-            window.location.href =
-                "https://htmlpreview.github.io/?https://github.com/DreamTexc/DreamTech/blob/main/dollar.html";
-        };
-
-        // Module Reference popup
-        document.getElementById("moduleRef").onclick = () => {
-            alert("Module Reference Loaded!");
-        };
-    </script>
-
-</body>
-</html>
+    <!-- HACO VAULT -->
+    <div id="skuBox" class="sku-
