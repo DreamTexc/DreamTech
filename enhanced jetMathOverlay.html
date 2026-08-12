@@ -2,23 +2,346 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced jetMathOverlay</title>
-    <script>
-        // Placeholder for CREATE/RETURN loop and draggable sequences
-        function createSequence() {
-            // Logic for creating sequences linked to jet wing edges
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Enhanced jetMathOverlay – pop.png Landing</title>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            /* pop.png as background – landing strip */
+            background: url("https://raw.githubusercontent.com/DreamTexc/DreamTech/main/pop.png")
+                        center center / cover no-repeat fixed;
+            background-color: #0a0a12;
+            color: #eee;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        function controlFullSequence() {
-            // Logic for controlling the full sequence
+        #ui {
+            position: absolute;
+            top: 16px;
+            width: 100%;
+            text-align: center;
+            z-index: 30;
+            pointer-events: none;
         }
-    </script>
+
+        .pointer {
+            pointer-events: auto;
+            cursor: pointer;
+            text-decoration: underline;
+            color: #00aaff;
+            font-size: 18px;
+            margin: 0 12px;
+        }
+        .pointer:hover { color: #66ccff; }
+
+        /* Jet */
+        #jet {
+            position: absolute;
+            left: 50%;
+            top: 42%;
+            width: 280px;
+            max-width: 70vw;
+            transform: translate(-50%, -50%);
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        top 0.9s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        left 0.9s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: grab;
+            z-index: 10;
+            filter: drop-shadow(0 12px 18px rgba(0,0,0,0.6));
+            will-change: transform, top, left;
+        }
+
+        /* Landing state */
+        #jet.landing {
+            top: 78% !important;
+            transform: translate(-50%, -50%) rotate(0deg) rotateX(8deg) scale(0.92) !important;
+        }
+
+        /* Math overlay */
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.88);
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 17px;
+            opacity: 1;
+            transition: opacity 0.8s ease;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Blink indicators */
+        #blinkLeft, #blinkRight {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #ff2222;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            z-index: 40;
+            border-radius: 4px;
+        }
+        #blinkLeft  { left: 0;  top: 50%; transform: translateY(-50%); }
+        #blinkRight { right: 0; top: 50%; transform: translateY(-50%); }
+
+        /* ===== DOM MODULE focused on pop.png ===== */
+        #popModule {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.78);
+            color: #ffcc00;
+            padding: 9px 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 13px;
+            z-index: 50;
+            border: 1px solid rgba(255, 204, 0, 0.45);
+            letter-spacing: 0.5px;
+            pointer-events: none;
+        }
+
+        /* Landing strip hint (visual break) */
+        #landingHint {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-family: monospace;
+            z-index: 25;
+            opacity: 0.6;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        #landingHint.active {
+            opacity: 1;
+            color: #4cff4c;
+        }
+
+        /* Mobile spacebar alternative button */
+        #spaceBtn {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 22px;
+            background: rgba(255, 42, 42, 0.85);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 40;
+            display: none; /* shown only on touch devices */
+            cursor: pointer;
+        }
+        @media (hover: none) and (pointer: coarse) {
+            #spaceBtn { display: block; }
+        }
+    </style>
 </head>
 <body>
-    <h1>Enhanced jetMathOverlay</h1>
-    <div id="sequenceControl">
-        <!-- Implementation for draggable sequences -->
+
+    <div id="ui">
+        <span class="pointer" id="moduleRef">Module Reference</span>
+        <span class="pointer" id="dollarLink">View Dollar</span>
     </div>
+
+    <img id="jet"
+         src="https://th.bing.com/th/id/OIP.9FP89-HLK-BYghgyHBsoowAAAA?w=298&h=200&c=7&r=0&o=5&dpr=1.5&pid=1.7"
+         alt="Jet"
+         draggable="false">
+
+    <div class="overlay" id="mathOverlay">
+        $$\lim_{{x \to a}} (bx + c) = ba + c$$
+    </div>
+
+    <div id="blinkLeft"></div>
+    <div id="blinkRight"></div>
+
+    <!-- DOM Module focused on pop.png -->
+    <div id="popModule">DOM Module → focused on "pop.png"</div>
+
+    <div id="landingHint">SPACE / HOLD → Attempt Landing on pop.png strip</div>
+
+    <!-- Mobile-friendly space button -->
+    <button id="spaceBtn">HOLD TO LAND</button>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        // Hide math overlay after load
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById("mathOverlay").style.opacity = "0";
+            }, 1600);
+        };
+
+        const jet = document.getElementById("jet");
+        const landingHint = document.getElementById("landingHint");
+        const spaceBtn = document.getElementById("spaceBtn");
+
+        let jetX = window.innerWidth / 2;
+        let jetY = window.innerHeight * 0.42;
+        let pitch = 0;
+        let bank = 0;
+        let dragging = false;
+        let isLanding = false;
+        let spaceHeld = false;
+
+        // ===== DOM MODULE focused on pop.png =====
+        const popModule = {
+            name: "pop.png",
+            element: document.getElementById("popModule"),
+            src: "https://raw.githubusercontent.com/DreamTexc/DreamTech/main/pop.png",
+
+            init() {
+                this.element.textContent = `DOM Module → focused on "${this.name}"`;
+                console.log("%c popModule initialized → focused on pop.png", "color:#ffcc00");
+            },
+
+            setFocus(name = "pop.png") {
+                this.name = name;
+                this.element.textContent = `DOM Module → focused on "${this.name}"`;
+            }
+        };
+        popModule.init();
+        window.popModule = popModule;
+
+        // ===== LANDING SEQUENCE (visual break) =====
+        function startLanding() {
+            if (isLanding) return;
+            isLanding = true;
+            spaceHeld = true;
+            jet.classList.add("landing");
+            landingHint.classList.add("active");
+            landingHint.textContent = "LANDING… aligning with pop.png strip";
+        }
+
+        function abortLanding() {
+            isLanding = false;
+            spaceHeld = false;
+            jet.classList.remove("landing");
+            landingHint.classList.remove("active");
+            landingHint.textContent = "SPACE / HOLD → Attempt Landing on pop.png strip";
+            // gently return toward center altitude
+            jet.style.top = "42%";
+        }
+
+        // Desktop spacebar
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                e.preventDefault();
+                startLanding();
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "Space") {
+                abortLanding();
+            }
+        });
+
+        // Mobile / touch support
+        spaceBtn.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            startLanding();
+        });
+        spaceBtn.addEventListener("touchend", (e) => {
+            e.preventDefault();
+            abortLanding();
+        });
+        spaceBtn.addEventListener("mousedown", startLanding);
+        spaceBtn.addEventListener("mouseup", abortLanding);
+        spaceBtn.addEventListener("mouseleave", abortLanding);
+
+        // ===== Drag flight system =====
+        jet.addEventListener("mousedown", () => { if (!isLanding) dragging = true; });
+        window.addEventListener("mouseup", () => dragging = false);
+
+        window.addEventListener("mousemove", (e) => {
+            if (!dragging || isLanding) return;
+            jetX += (e.clientX - jetX) * 0.18;
+            jetY += (e.clientY - jetY) * 0.18;
+            pitch = (window.innerHeight / 2 - e.clientY) / 45;
+            bank  = (window.innerWidth  / 2 - e.clientX) / 70;
+        });
+
+        // Touch drag
+        jet.addEventListener("touchstart", (e) => {
+            if (!isLanding) dragging = true;
+        }, {passive: false});
+        window.addEventListener("touchend", () => dragging = false);
+        window.addEventListener("touchmove", (e) => {
+            if (!dragging || isLanding) return;
+            const t = e.touches[0];
+            jetX += (t.clientX - jetX) * 0.18;
+            jetY += (t.clientY - jetY) * 0.18;
+        }, {passive: false});
+
+        // Idle + boundary blink
+        let idleMode = true;
+        const cancelIdle = () => idleMode = false;
+        window.addEventListener("mousemove", cancelIdle);
+        window.addEventListener("mousedown", cancelIdle);
+        window.addEventListener("keydown", cancelIdle);
+        window.addEventListener("touchstart", cancelIdle);
+
+        function blinkSide(id) {
+            const el = document.getElementById(id);
+            el.style.opacity = "1";
+            setTimeout(() => el.style.opacity = "0", 160);
+        }
+
+        function animate() {
+            if (!isLanding) {
+                jet.style.left = jetX + "px";
+                jet.style.top  = jetY + "px";
+
+                let t = `translate(-50%, -50%) rotate(${bank}deg) rotateX(${pitch}deg)`;
+                if (idleMode) {
+                    pitch += 0.015;
+                    const idleBank = Math.sin(Date.now() / 2200) * 2.2;
+                    t = `translate(-50%, -50%) rotate(${idleBank}deg) rotateX(${pitch}deg) scale(1.04)`;
+                }
+                jet.style.transform = t;
+            }
+
+            // Boundary blinks
+            if (jetX < 60) blinkSide("blinkLeft");
+            if (jetX > window.innerWidth - 60) blinkSide("blinkRight");
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Links
+        document.getElementById("dollarLink").onclick = () => {
+            window.location.href =
+                "https://htmlpreview.github.io/?https://github.com/DreamTexc/DreamTech/blob/main/dollar.html";
+        };
+        document.getElementById("moduleRef").onclick = () => {
+            alert("Module Reference → popModule is focused on pop.png");
+        };
+
+        // Resize safety
+        window.addEventListener("resize", () => {
+            jetX = Math.min(Math.max(jetX, 40), window.innerWidth - 40);
+            jetY = Math.min(Math.max(jetY, 40), window.innerHeight - 40);
+        });
+    </script>
 </body>
 </html>
