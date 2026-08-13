@@ -15,17 +15,16 @@
       perspective:1200px;transform-style:preserve-3d;
     }
 
-    /* Draggable jet – starts normal (0°) */
     .$ img.acc{
       max-width:90vw;max-height:80vh;display:block;border-radius:8px;
       cursor:grab;touch-action:none;user-select:none;
       will-change:transform;
       position:relative;z-index:5;
-      transition:none;
+      transition:transform 0.4s ease;
     }
     .$ img.acc:active{cursor:grabbing}
 
-    /* 720° full tilt + roll maneuver */
+    /* 720° maneuver – uses current base rotation */
     .$ img.acc.spinning{
       animation:fullManeuver 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
@@ -37,7 +36,6 @@
       100% {transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--base,0deg)) rotateX(0deg) rotateY(720deg) rotateZ(720deg) scale(1)}
     }
 
-    /* Corner decorations */
     .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.7;pointer-events:none;z-index:1}
     .mod.left{left:6px}
     .mod.right{right:6px}
@@ -94,9 +92,10 @@
     let startX = 0;
     let startY = 0;
 
-    // Base rotation – starts at 0°, toggles ±90° on each double-click
+    // Base rotation starts at 0°
     let baseRotation = 0;
-    let rotateDirection = 1; // 1 = +90°, -1 = -90°
+    // Alternating direction: true = clockwise (+90), false = counter-clockwise (-90)
+    let clockwise = true;
 
     function updatePosition() {
       if (isSpinning) return;
@@ -143,7 +142,7 @@
 
     jet.addEventListener('dragstart', e => e.preventDefault());
 
-    // ----- Double-click / double-tap: 720° spin + alternate 90° rotation -----
+    // ----- Double-click / double-tap -----
     let lastTap = 0;
 
     function triggerSpin() {
@@ -151,11 +150,7 @@
       isSpinning = true;
       isDragging = false;
 
-      // Alternate direction each time: +90° then -90° then +90° ...
-      baseRotation += 90 * rotateDirection;
-      rotateDirection *= -1;
-
-      // Update CSS variables for the animation
+      // Use CURRENT base for the spin animation
       jet.style.setProperty('--x', currentX + 'px');
       jet.style.setProperty('--y', currentY + 'px');
       jet.style.setProperty('--base', baseRotation + 'deg');
@@ -164,7 +159,16 @@
 
       setTimeout(() => {
         jet.classList.remove('spinning');
-        // Lock in the new base rotation after the maneuver
+
+        // AFTER the 720° maneuver finishes → apply the 90° turn
+        if (clockwise) {
+          baseRotation += 90;   // right / clockwise
+        } else {
+          baseRotation -= 90;   // left / counter-clockwise
+        }
+        clockwise = !clockwise; // flip direction for next time
+
+        // Apply the new permanent rotation
         jet.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${baseRotation}deg)`;
         isSpinning = false;
       }, 2800);
@@ -182,7 +186,7 @@
       lastTap = now;
     });
 
-    // Start normal (0°)
+    // Start at 0°
     updatePosition();
   </script>
 
