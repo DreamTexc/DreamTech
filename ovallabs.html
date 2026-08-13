@@ -12,16 +12,19 @@
     .$:focus{transform:scale(1.04);filter:brightness(1.1);box-shadow:0 0 0 3px rgba(100,180,255,.6)}
     .$:focus:hover{transform:scale(1.08);filter:brightness(1.2)}
 
-    /* Main jet (acc.png) */
+    /* Main jet */
     .$ > img.acc{
       max-width:90vw;max-height:80vh;display:block;border-radius:8px;
       transform-origin:center center;
       transform-style:preserve-3d;
       transition:transform 1.8s ease, opacity 2.2s ease;
       animation:dropThenFly 4s ease-in forwards, flyForward 7s ease-in-out 4s infinite alternate;
+      cursor:grab;
+      touch-action:none;
+      user-select:none;
     }
+    .$ > img.acc:active{cursor:grabbing}
 
-    /* Interaction state – shrink then disappear upward/back */
     .$ > img.acc.shrink{
       animation:none;
       transform:translateY(0) scale(0.70) translateZ(0);
@@ -41,7 +44,6 @@
       100%{transform:translateY(0) scale(0.92) translateZ(220px)}
     }
 
-    /* Cartesian graphs */
     .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.8;pointer-events:none;z-index:1}
     .mod.left{left:6px}
     .mod.right{right:6px}
@@ -49,7 +51,6 @@
     .mod .curve{stroke-dasharray:80;stroke-dashoffset:80;animation:draw 2.6s ease-in-out infinite alternate}
     @keyframes draw{to{stroke-dashoffset:0}}
 
-    /* Venture clusters */
     .venture{
       position:absolute;top:4px;width:180px;height:120px;
       perspective:300px;pointer-events:none;z-index:2;
@@ -92,44 +93,101 @@
   <script>
     const target = document.querySelector('.$');
     const jet = document.querySelector('img.acc');
+
+    // --- Existing disappear interaction ---
     let holdTimer = null;
     let isInteracting = false;
 
-    // Shared sequence: slow shrink to 30% smaller → then disappear upward/back
     function startDisappear() {
-      if (isInteracting) return;
+      if (isInteracting || isDragging) return;
       isInteracting = true;
       jet.classList.add('shrink');
-      // After shrink finishes, begin the backward/upward descent
-      setTimeout(() => {
-        jet.classList.add('disappear');
-      }, 1800);
+      setTimeout(() => jet.classList.add('disappear'), 1800);
     }
-
     function resetJet() {
       clearTimeout(holdTimer);
       isInteracting = false;
       jet.classList.remove('shrink', 'disappear');
-      // Restore original animation after a short delay
       jet.style.animation = 'none';
-      jet.offsetHeight; // reflow
+      jet.offsetHeight;
       jet.style.animation = '';
+      // Keep current parallax/drag offset
+      applyTransform();
     }
 
-    // Desktop – hover (scroll/mouse over)
     jet.addEventListener('mouseenter', startDisappear);
     jet.addEventListener('mouseleave', resetJet);
-
-    // Mobile – tap & hold
-    jet.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      holdTimer = setTimeout(startDisappear, 280); // short hold
-    }, {passive: false});
-
+    jet.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        holdTimer = setTimeout(startDisappear, 280);
+      }
+    }, {passive:false});
     jet.addEventListener('touchend', resetJet);
     jet.addEventListener('touchcancel', resetJet);
 
-    // Existing focus/rollover logs
+    // --- Parallax + full drag movement (desktop + mobile) ---
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let offsetX = 0, offsetY = 0;
+    let currentX = 0, currentY = 0;
+    let parallaxX = 0, parallaxY = 0;
+
+    function applyTransform() {
+      // Combine drag offset + subtle parallax tilt/depth
+      const tx = currentX + parallaxX * 0.35;
+      const ty = currentY + parallaxY * 0.25;
+      const rotY = parallaxX * 0.04;
+      const rotX = -parallaxY * 0.03;
+      const z = Math.abs(parallaxX) * 0.15;
+
+      if (!jet.classList.contains('shrink') && !jet.classList.contains('disappear')) {
+        jet.style.transform = `translate(${tx}px, ${ty}px) translateZ(${z}px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      }
+    }
+
+    function onPointerDown(e) {
+      isDragging = true;
+      jet.style.animation = 'none';
+      jet.style.transition = 'none';
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX - currentX;
+      startY = pt.clientY - currentY;
+      e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+      const pt = e.touches ? e.touches[0] : e;
+
+      // Parallax tracking (always, even when not dragging)
+      const rect = jet.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      parallaxX = pt.clientX - cx;
+      parallaxY = pt.clientY - cy;
+
+      if (isDragging) {
+        currentX = pt.clientX - startX;
+        currentY = pt.clientY - startY;
+      }
+      applyTransform();
+    }
+
+    function onPointerUp() {
+      isDragging = false;
+      jet.style.transition = 'transform 1.8s ease, opacity 2.2s ease';
+    }
+
+    // Mouse
+    jet.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    // Touch
+    jet.addEventListener('touchstart', onPointerDown, {passive:false});
+    window.addEventListener('touchmove', onPointerMove, {passive:false});
+    window.addEventListener('touchend', onPointerUp);
+
+    // Existing logs
     target.addEventListener('focus', () => console.log('focus → .$'));
     target.addEventListener('mouseenter', () => console.log('rollover → .$'));
     target.addEventListener('keydown', e => {
