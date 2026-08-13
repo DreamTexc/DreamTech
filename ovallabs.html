@@ -12,24 +12,36 @@
     .$:focus{transform:scale(1.04);filter:brightness(1.1);box-shadow:0 0 0 3px rgba(100,180,255,.6)}
     .$:focus:hover{transform:scale(1.08);filter:brightness(1.2)}
 
-    /* Main acc.png (jet) – z-component only on this image */
+    /* Main jet (acc.png) */
     .$ > img.acc{
       max-width:90vw;max-height:80vh;display:block;border-radius:8px;
       transform-origin:center center;
       transform-style:preserve-3d;
+      transition:transform 1.8s ease, opacity 2.2s ease;
       animation:dropThenFly 4s ease-in forwards, flyForward 7s ease-in-out 4s infinite alternate;
+    }
+
+    /* Interaction state – shrink then disappear upward/back */
+    .$ > img.acc.shrink{
+      animation:none;
+      transform:translateY(0) scale(0.70) translateZ(0);
+    }
+    .$ > img.acc.disappear{
+      animation:none;
+      transform:translateY(-28vh) scale(0.55) translateZ(-320px);
+      opacity:0;
     }
 
     @keyframes dropThenFly{
       0%{transform:translateY(-40vh) scale(1) translateZ(0)}
-      100%{transform:translateY(0) scale(0.65) translateZ(0)} /* halt at 35% smaller */
+      100%{transform:translateY(0) scale(0.65) translateZ(0)}
     }
     @keyframes flyForward{
       0%{transform:translateY(0) scale(0.65) translateZ(0)}
-      100%{transform:translateY(0) scale(0.92) translateZ(220px)} /* strong z-forward on jet only */
+      100%{transform:translateY(0) scale(0.92) translateZ(220px)}
     }
 
-    /* Cartesian line-graph blocks */
+    /* Cartesian graphs */
     .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.8;pointer-events:none;z-index:1}
     .mod.left{left:6px}
     .mod.right{right:6px}
@@ -37,7 +49,7 @@
     .mod .curve{stroke-dasharray:80;stroke-dashoffset:80;animation:draw 2.6s ease-in-out infinite alternate}
     @keyframes draw{to{stroke-dashoffset:0}}
 
-    /* Perspective image venture clusters */
+    /* Venture clusters */
     .venture{
       position:absolute;top:4px;width:180px;height:120px;
       perspective:300px;pointer-events:none;z-index:2;
@@ -56,7 +68,6 @@
 <body>
 
   <div class="$" tabindex="0" id="acc-target">
-    <!-- Cartesian graphs -->
     <div class="mod left">
       <svg viewBox="0 0 64 40">
         <line x1="4" y1="36" x2="60" y2="36" stroke="#555" stroke-width="1"/>
@@ -72,24 +83,60 @@
       </svg>
     </div>
 
-    <!-- Perspective blurred image venture clusters -->
-    <div class="venture left">
-      <img src="accr.png" alt="">
-    </div>
-    <div class="venture right">
-      <img src="accr.png" alt="">
-    </div>
+    <div class="venture left"><img src="accr.png" alt=""></div>
+    <div class="venture right"><img src="accr.png" alt=""></div>
 
-    <!-- Jet only – z-component + drop/fly applied exclusively here -->
     <img class="acc" src="acc.png" alt="acc">
   </div>
 
   <script>
-    const target=document.querySelector('.$');
-    target.addEventListener('focus',()=>console.log('focus → .$'));
-    target.addEventListener('mouseenter',()=>console.log('rollover → .$'));
-    target.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){e.preventDefault();console.log('activate → .$')}
+    const target = document.querySelector('.$');
+    const jet = document.querySelector('img.acc');
+    let holdTimer = null;
+    let isInteracting = false;
+
+    // Shared sequence: slow shrink to 30% smaller → then disappear upward/back
+    function startDisappear() {
+      if (isInteracting) return;
+      isInteracting = true;
+      jet.classList.add('shrink');
+      // After shrink finishes, begin the backward/upward descent
+      setTimeout(() => {
+        jet.classList.add('disappear');
+      }, 1800);
+    }
+
+    function resetJet() {
+      clearTimeout(holdTimer);
+      isInteracting = false;
+      jet.classList.remove('shrink', 'disappear');
+      // Restore original animation after a short delay
+      jet.style.animation = 'none';
+      jet.offsetHeight; // reflow
+      jet.style.animation = '';
+    }
+
+    // Desktop – hover (scroll/mouse over)
+    jet.addEventListener('mouseenter', startDisappear);
+    jet.addEventListener('mouseleave', resetJet);
+
+    // Mobile – tap & hold
+    jet.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      holdTimer = setTimeout(startDisappear, 280); // short hold
+    }, {passive: false});
+
+    jet.addEventListener('touchend', resetJet);
+    jet.addEventListener('touchcancel', resetJet);
+
+    // Existing focus/rollover logs
+    target.addEventListener('focus', () => console.log('focus → .$'));
+    target.addEventListener('mouseenter', () => console.log('rollover → .$'));
+    target.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        console.log('activate → .$');
+      }
     });
   </script>
 
