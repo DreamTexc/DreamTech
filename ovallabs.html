@@ -6,12 +6,27 @@
   <title>Focus × Rollover $ Class</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;font-family:system-ui,sans-serif;color:#e0e0e0}
-    .${position:relative;display:inline-block;outline:none;transition:transform .25s ease,filter .25s ease,box-shadow .25s ease;border-radius:8px;cursor:pointer}
+    body{min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;font-family:system-ui,sans-serif;color:#e0e0e0;overflow:hidden}
+    .${position:relative;display:inline-block;outline:none;transition:transform .25s ease,filter .25s ease,box-shadow .25s ease;border-radius:8px;cursor:pointer;perspective:800px}
     .$:hover{transform:scale(1.06);filter:brightness(1.15);box-shadow:0 0 24px rgba(255,255,255,.15)}
     .$:focus{transform:scale(1.04);filter:brightness(1.1);box-shadow:0 0 0 3px rgba(100,180,255,.6)}
     .$:focus:hover{transform:scale(1.08);filter:brightness(1.2)}
-    img{max-width:90vw;max-height:80vh;display:block;border-radius:8px}
+
+    /* Main acc.png – drop then fly forward */
+    .$ > img.acc{
+      max-width:90vw;max-height:80vh;display:block;border-radius:8px;
+      transform-origin:center center;
+      animation:dropThenFly 4s ease-in forwards, flyForward 6s ease-in-out 4s infinite alternate;
+    }
+
+    @keyframes dropThenFly{
+      0%{transform:translateY(-40vh) scale(1)}
+      100%{transform:translateY(0) scale(0.65)} /* halt drop at 35% smaller */
+    }
+    @keyframes flyForward{
+      0%{transform:translateY(0) scale(0.65) translateZ(0)}
+      100%{transform:translateY(0) scale(0.85) translateZ(120px)} /* slow steady toward user */
+    }
 
     /* Cartesian line-graph blocks */
     .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.8;pointer-events:none;z-index:1}
@@ -21,16 +36,16 @@
     .mod .curve{stroke-dasharray:80;stroke-dashoffset:80;animation:draw 2.6s ease-in-out infinite alternate}
     @keyframes draw{to{stroke-dashoffset:0}}
 
-    /* New global class – perspective image venture cluster */
+    /* Perspective image venture clusters */
     .venture{
-      position:absolute;top:4px;width:195px;height:150px;
-      perspective:200px;pointer-events:none;z-index:2;
+      position:absolute;top:4px;width:180px;height:120px;
+      perspective:300px;pointer-events:none;z-index:2;
       filter:blur(1.2px);opacity:.55;
     }
     .venture.left{left:4px}
     .venture.right{right:4px}
     .venture img{
-      width:100%;height:100%;object-fit:cover;border-radius:6px;
+      width:100%;height:100%;object-fit:cover;border-radius:8px;
       transform:rotateY(18deg) rotateX(6deg);
       box-shadow:0 6px 18px rgba(0,0,0,.45);
     }
@@ -56,7 +71,7 @@
       </svg>
     </div>
 
-    <!-- Perspective blurred image venture clusters (new global class) -->
+    <!-- Perspective blurred image venture clusters -->
     <div class="venture left">
       <img src="accr.png" alt="">
     </div>
@@ -64,7 +79,8 @@
       <img src="accr.png" alt="">
     </div>
 
-    <img src="acc.png" alt="acc">
+    <!-- Main image – paths to $ , drops then flies forward -->
+    <img class="acc" src="acc.png" alt="acc">
   </div>
 
   <script>
