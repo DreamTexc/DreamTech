@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus × Rollover $ Class</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0f0f0f;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #e0e0e0;
+    }
+
+    /* Core class we develop from (and only from) for now */
+    .$ {
+      display: inline-block;
+      outline: none;
+      transition: transform 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Rollover (hover) state */
+    .$:hover {
+      transform: scale(1.06);
+      filter: brightness(1.15);
+      box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
+    }
+
+    /* Focus state */
+    .$:focus {
+      transform: scale(1.04);
+      filter: brightness(1.1);
+      box-shadow: 0 0 0 3px rgba(100, 180, 255, 0.6);
+    }
+
+    /* Combined focus + rollover */
+    .$:focus:hover {
+      transform: scale(1.08);
+      filter: brightness(1.2);
+    }
+
+    img {
+      max-width: 90vw;
+      max-height: 80vh;
+      display: block;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Image centered. Place acc.png in the same folder as this HTML file. -->
+  <div class="$" tabindex="0" id="acc-target">
+    <img src="acc.png" alt="acc">
+  </div>
+
+  <script>
+    // We develop exclusively from the .$ class for now.
+    // Further if / else statements, scripts and windows will be added later.
+
+    const target = document.querySelector('.$');
+
+    // Focus handler
+    target.addEventListener('focus', () => {
+      // Core focus behaviour lives here – extend later
+      console.log('focus → .$');
+    });
+
+    // Rollover (mouseenter) handler
+    target.addEventListener('mouseenter', () => {
+      // Core rollover behaviour lives here – extend later
+      console.log('rollover → .$');
+    });
+
+    // Optional: keep keyboard focus visible / accessible
+    target.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        // Placeholder for future interaction
+        console.log('activate → .$');
+      }
+    });
+  </script>
+
+</body>
+</html>
