@@ -15,16 +15,29 @@
       perspective:1200px;transform-style:preserve-3d;
     }
 
-    /* The image you can physically drag */
+    /* Draggable jet */
     .$ img.acc{
       max-width:90vw;max-height:80vh;display:block;border-radius:8px;
       cursor:grab;touch-action:none;user-select:none;
       will-change:transform;
       position:relative;z-index:5;
+      transition:none;
     }
     .$ img.acc:active{cursor:grabbing}
 
-    /* Corner decorations (non-interactive) */
+    /* 720° full tilt + roll maneuver */
+    .$ img.acc.spinning{
+      animation:fullManeuver 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes fullManeuver{
+      0%   {transform:translate(var(--x,0px),var(--y,0px)) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)}
+      25%  {transform:translate(var(--x,0px),var(--y,0px)) rotateX(25deg) rotateY(180deg) rotateZ(180deg) scale(1.05)}
+      50%  {transform:translate(var(--x,0px),var(--y,0px)) rotateX(-15deg) rotateY(360deg) rotateZ(360deg) scale(1.1)}
+      75%  {transform:translate(var(--x,0px),var(--y,0px)) rotateX(20deg) rotateY(540deg) rotateZ(540deg) scale(1.05)}
+      100% {transform:translate(var(--x,0px),var(--y,0px)) rotateX(0deg) rotateY(720deg) rotateZ(720deg) scale(1)}
+    }
+
+    /* Corner decorations */
     .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.7;pointer-events:none;z-index:1}
     .mod.left{left:6px}
     .mod.right{right:6px}
@@ -50,7 +63,6 @@
 <body>
 
   <div class="$" id="acc-target">
-    <!-- Cartesian graphs -->
     <div class="mod left">
       <svg viewBox="0 0 64 40">
         <line x1="4" y1="36" x2="60" y2="36" stroke="#555" stroke-width="1"/>
@@ -66,11 +78,9 @@
       </svg>
     </div>
 
-    <!-- Blurred corner images -->
     <div class="venture left"><img src="accr.png" alt=""></div>
     <div class="venture right"><img src="accr.png" alt=""></div>
 
-    <!-- THE DRAGGABLE IMAGE -->
     <img class="acc" src="acc.png" alt="acc" draggable="false">
   </div>
 
@@ -78,42 +88,41 @@
     const jet = document.querySelector('img.acc');
 
     let isDragging = false;
+    let isSpinning = false;
     let currentX = 0;
     let currentY = 0;
     let startX = 0;
     let startY = 0;
 
-    // Apply position
     function updatePosition() {
+      if (isSpinning) return; // let the CSS animation control transform during spin
       jet.style.transform = `translate(${currentX}px, ${currentY}px)`;
+      // Keep CSS variables in sync so the spin starts from the current location
+      jet.style.setProperty('--x', currentX + 'px');
+      jet.style.setProperty('--y', currentY + 'px');
     }
 
-    // Start drag
+    // ----- Drag -----
     function startDrag(e) {
+      if (isSpinning) return;
       isDragging = true;
       jet.style.cursor = 'grabbing';
-
       const pt = e.touches ? e.touches[0] : e;
       startX = pt.clientX - currentX;
       startY = pt.clientY - currentY;
-
       e.preventDefault();
       e.stopPropagation();
     }
 
-    // Move
     function duringDrag(e) {
-      if (!isDragging) return;
-
+      if (!isDragging || isSpinning) return;
       const pt = e.touches ? e.touches[0] : e;
       currentX = pt.clientX - startX;
       currentY = pt.clientY - startY;
-
       updatePosition();
       e.preventDefault();
     }
 
-    // End drag
     function endDrag() {
       isDragging = false;
       jet.style.cursor = 'grab';
@@ -130,8 +139,44 @@
     window.addEventListener('touchend', endDrag);
     window.addEventListener('touchcancel', endDrag);
 
-    // Prevent image ghost dragging
     jet.addEventListener('dragstart', e => e.preventDefault());
+
+    // ----- 720° Full Tilt + Roll Maneuver -----
+    // Double-click (desktop) or double-tap (mobile) to trigger
+    let lastTap = 0;
+
+    function triggerSpin() {
+      if (isSpinning) return;
+      isSpinning = true;
+      isDragging = false;
+
+      // Sync current position into CSS variables
+      jet.style.setProperty('--x', currentX + 'px');
+      jet.style.setProperty('--y', currentY + 'px');
+
+      jet.classList.add('spinning');
+
+      // After animation finishes, clean up and restore drag control
+      setTimeout(() => {
+        jet.classList.remove('spinning');
+        // Normalize rotation so it doesn’t jump
+        jet.style.transform = `translate(${currentX}px, ${currentY}px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
+        isSpinning = false;
+      }, 2800);
+    }
+
+    // Desktop double-click
+    jet.addEventListener('dblclick', triggerSpin);
+
+    // Mobile double-tap
+    jet.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        triggerSpin();
+      }
+      lastTap = now;
+    });
   </script>
+
 </body>
 </html>
