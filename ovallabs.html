@@ -35,6 +35,14 @@
       opacity:0;
     }
 
+    /* Larger appearance while being moved */
+    .$ > img.acc.moving{
+      animation:none;
+      transition:none;
+      filter:brightness(1.08);
+      z-index:10;
+    }
+
     @keyframes dropThenFly{
       0%{transform:translateY(-40vh) scale(1) translateZ(0)}
       100%{transform:translateY(0) scale(0.65) translateZ(0)}
@@ -111,7 +119,6 @@
       jet.style.animation = 'none';
       jet.offsetHeight;
       jet.style.animation = '';
-      // Keep current parallax/drag offset
       applyTransform();
     }
 
@@ -125,15 +132,14 @@
     jet.addEventListener('touchend', resetJet);
     jet.addEventListener('touchcancel', resetJet);
 
-    // --- Parallax + full drag movement (desktop + mobile) ---
+    // --- Parallax + full drag movement ---
     let isDragging = false;
     let startX = 0, startY = 0;
-    let offsetX = 0, offsetY = 0;
     let currentX = 0, currentY = 0;
     let parallaxX = 0, parallaxY = 0;
+    let moveScale = 1; // extra scale while moving
 
     function applyTransform() {
-      // Combine drag offset + subtle parallax tilt/depth
       const tx = currentX + parallaxX * 0.35;
       const ty = currentY + parallaxY * 0.25;
       const rotY = parallaxX * 0.04;
@@ -141,24 +147,29 @@
       const z = Math.abs(parallaxX) * 0.15;
 
       if (!jet.classList.contains('shrink') && !jet.classList.contains('disappear')) {
-        jet.style.transform = `translate(${tx}px, ${ty}px) translateZ(${z}px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        jet.style.transform = `translate(${tx}px, ${ty}px) scale(${moveScale}) translateZ(${z}px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
       }
     }
 
     function onPointerDown(e) {
       isDragging = true;
+      jet.classList.add('moving');
       jet.style.animation = 'none';
       jet.style.transition = 'none';
+
+      // Make the jet larger and relative to its current size when move starts
+      moveScale = 1.35; // 35% larger while dragging
+
       const pt = e.touches ? e.touches[0] : e;
       startX = pt.clientX - currentX;
       startY = pt.clientY - currentY;
+      applyTransform();
       e.preventDefault();
     }
 
     function onPointerMove(e) {
       const pt = e.touches ? e.touches[0] : e;
 
-      // Parallax tracking (always, even when not dragging)
       const rect = jet.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -174,7 +185,10 @@
 
     function onPointerUp() {
       isDragging = false;
-      jet.style.transition = 'transform 1.8s ease, opacity 2.2s ease';
+      jet.classList.remove('moving');
+      moveScale = 1; // return to normal size
+      jet.style.transition = 'transform 0.45s ease, opacity 2.2s ease';
+      applyTransform();
     }
 
     // Mouse
