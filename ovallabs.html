@@ -15,28 +15,26 @@
       perspective:1200px;transform-style:preserve-3d;
     }
 
-    /* Draggable jet – permanently rotated 90° horizontally */
+    /* Draggable jet – starts normal (0°) */
     .$ img.acc{
       max-width:90vw;max-height:80vh;display:block;border-radius:8px;
       cursor:grab;touch-action:none;user-select:none;
       will-change:transform;
       position:relative;z-index:5;
       transition:none;
-      /* Base 90° horizontal rotation */
-      transform: rotate(90deg);
     }
     .$ img.acc:active{cursor:grabbing}
 
-    /* 720° full tilt + roll maneuver (respects the 90° base) */
+    /* 720° full tilt + roll maneuver */
     .$ img.acc.spinning{
       animation:fullManeuver 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
     @keyframes fullManeuver{
-      0%   {transform:translate(var(--x,0px),var(--y,0px)) rotate(90deg) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)}
-      25%  {transform:translate(var(--x,0px),var(--y,0px)) rotate(90deg) rotateX(25deg) rotateY(180deg) rotateZ(180deg) scale(1.05)}
-      50%  {transform:translate(var(--x,0px),var(--y,0px)) rotate(90deg) rotateX(-15deg) rotateY(360deg) rotateZ(360deg) scale(1.1)}
-      75%  {transform:translate(var(--x,0px),var(--y,0px)) rotate(90deg) rotateX(20deg) rotateY(540deg) rotateZ(540deg) scale(1.05)}
-      100% {transform:translate(var(--x,0px),var(--y,0px)) rotate(90deg) rotateX(0deg) rotateY(720deg) rotateZ(720deg) scale(1)}
+      0%   {transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--base,0deg)) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)}
+      25%  {transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--base,0deg)) rotateX(25deg) rotateY(180deg) rotateZ(180deg) scale(1.05)}
+      50%  {transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--base,0deg)) rotateX(-15deg) rotateY(360deg) rotateZ(360deg) scale(1.1)}
+      75%  {transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--base,0deg)) rotateX(20deg) rotateY(540deg) rotateZ(540deg) scale(1.05)}
+      100% {transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--base,0deg)) rotateX(0deg) rotateY(720deg) rotateZ(720deg) scale(1)}
     }
 
     /* Corner decorations */
@@ -96,12 +94,16 @@
     let startX = 0;
     let startY = 0;
 
+    // Base rotation – starts at 0°, toggles ±90° on each double-click
+    let baseRotation = 0;
+    let rotateDirection = 1; // 1 = +90°, -1 = -90°
+
     function updatePosition() {
       if (isSpinning) return;
-      // Always keep the 90° horizontal rotation
-      jet.style.transform = `translate(${currentX}px, ${currentY}px) rotate(90deg)`;
+      jet.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${baseRotation}deg)`;
       jet.style.setProperty('--x', currentX + 'px');
       jet.style.setProperty('--y', currentY + 'px');
+      jet.style.setProperty('--base', baseRotation + 'deg');
     }
 
     // ----- Drag -----
@@ -141,7 +143,7 @@
 
     jet.addEventListener('dragstart', e => e.preventDefault());
 
-    // ----- 720° Spin (double-click / double-tap) -----
+    // ----- Double-click / double-tap: 720° spin + alternate 90° rotation -----
     let lastTap = 0;
 
     function triggerSpin() {
@@ -149,20 +151,29 @@
       isSpinning = true;
       isDragging = false;
 
+      // Alternate direction each time: +90° then -90° then +90° ...
+      baseRotation += 90 * rotateDirection;
+      rotateDirection *= -1;
+
+      // Update CSS variables for the animation
       jet.style.setProperty('--x', currentX + 'px');
       jet.style.setProperty('--y', currentY + 'px');
+      jet.style.setProperty('--base', baseRotation + 'deg');
 
       jet.classList.add('spinning');
 
       setTimeout(() => {
         jet.classList.remove('spinning');
-        jet.style.transform = `translate(${currentX}px, ${currentY}px) rotate(90deg)`;
+        // Lock in the new base rotation after the maneuver
+        jet.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${baseRotation}deg)`;
         isSpinning = false;
       }, 2800);
     }
 
+    // Desktop
     jet.addEventListener('dblclick', triggerSpin);
 
+    // Mobile double-tap
     jet.addEventListener('touchend', e => {
       const now = Date.now();
       if (now - lastTap < 300) {
@@ -171,7 +182,7 @@
       lastTap = now;
     });
 
-    // Initialize with the 90° rotation
+    // Start normal (0°)
     updatePosition();
   </script>
 
