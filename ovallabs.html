@@ -132,16 +132,15 @@ let x = 0, y = 0;
 let startX = 0, startY = 0;
 let base = 0;
 
-// Update transform
+// Update transform + CSS variables
 function applyTransform(){
-  if(spinning) return;
   jet.style.transform = `translate(${x}px,${y}px) rotate(${base}deg)`;
   jet.style.setProperty('--x', x + 'px');
   jet.style.setProperty('--y', y + 'px');
   jet.style.setProperty('--base', base + 'deg');
 }
 
-// Drag start
+// Drag
 function startDrag(e){
   if(spinning) return;
   dragging = true;
@@ -151,7 +150,6 @@ function startDrag(e){
   e.preventDefault();
 }
 
-// Drag move
 function duringDrag(e){
   if(!dragging || spinning) return;
   const pt = e.touches ? e.touches[0] : e;
@@ -161,18 +159,17 @@ function duringDrag(e){
   e.preventDefault();
 }
 
-// Drag end
 function endDrag(){
   dragging = false;
 }
 
-// Determine left/right side
+// Left / Right side detection
 function getSide(clientX){
   const rect = jet.getBoundingClientRect();
-  return clientX < rect.left + rect.width/2 ? 'left' : 'right';
+  return clientX < rect.left + rect.width / 2 ? 'left' : 'right';
 }
 
-// Spin trigger
+// Spin + 90° turn based on side
 function triggerSpin(side){
   if(spinning) return;
   spinning = true;
@@ -180,14 +177,15 @@ function triggerSpin(side){
 
   const delta = side === 'left' ? -90 : 90;
 
+  // ★ Critical: update variables RIGHT BEFORE the animation starts
+  applyTransform();
+
   jet.classList.add('spinning');
 
-  setTimeout(()=>{
+  setTimeout(() => {
     jet.classList.remove('spinning');
-
-    // Reset animation cleanly
     jet.style.animation = 'none';
-    void jet.offsetWidth;
+    void jet.offsetWidth;          // force reflow
     jet.style.animation = '';
 
     base += delta;
@@ -197,7 +195,7 @@ function triggerSpin(side){
   }, 2850);
 }
 
-// Desktop double-click
+// Desktop
 jet.addEventListener('dblclick', e => {
   triggerSpin(getSide(e.clientX));
 });
@@ -207,8 +205,8 @@ let lastTap = 0;
 jet.addEventListener('touchend', e => {
   const now = Date.now();
   if(now - lastTap < 300){
-    const x = e.changedTouches[0].clientX;
-    triggerSpin(getSide(x));
+    const touchX = e.changedTouches[0].clientX;
+    triggerSpin(getSide(touchX));
   }
   lastTap = now;
 });
