@@ -20,7 +20,6 @@
       cursor:grab;touch-action:none;user-select:none;
       will-change:transform;
       position:relative;z-index:5;
-      /* no transition while we control transforms with JS */
     }
     .$ img.acc:active{cursor:grabbing}
 
@@ -92,7 +91,7 @@
     let startY = 0;
 
     let baseRotation = 0;
-    let clockwise = true; // true = +90° (right), false = -90° (left)
+    let direction = 1; // 1 = right (+90), -1 = left (-90)
 
     function updatePosition() {
       if (isSpinning) return;
@@ -147,7 +146,6 @@
       isSpinning = true;
       isDragging = false;
 
-      // Snapshot current values for the animation
       jet.style.setProperty('--x', currentX + 'px');
       jet.style.setProperty('--y', currentY + 'px');
       jet.style.setProperty('--base', baseRotation + 'deg');
@@ -155,22 +153,14 @@
       jet.classList.add('spinning');
 
       setTimeout(() => {
-        // 1. Kill the animation completely
         jet.classList.remove('spinning');
         jet.style.animation = 'none';
+        void jet.offsetWidth; // force reflow
 
-        // 2. Force reflow so the browser drops the old animated transform
-        void jet.offsetWidth;
+        // True alternating 90° turns that keep going
+        baseRotation += 90 * direction;
+        direction *= -1; // next time the opposite way
 
-        // 3. Apply the alternating 90° turn
-        if (clockwise) {
-          baseRotation += 90;   // right
-        } else {
-          baseRotation -= 90;   // left
-        }
-        clockwise = !clockwise;
-
-        // 4. Write a clean final transform
         jet.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${baseRotation}deg)`;
         jet.style.animation = '';
 
