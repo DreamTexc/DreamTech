@@ -6,33 +6,30 @@
   <title>Focus × Rollover $ Class</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;font-family:system-ui,sans-serif;color:#e0e0e0;overflow:hidden}
-    .${position:relative;display:inline-block;outline:none;border-radius:8px;cursor:pointer;perspective:1200px;transform-style:preserve-3d}
-    .$:hover{filter:brightness(1.15);box-shadow:0 0 24px rgba(255,255,255,.15)}
-    .$:focus{box-shadow:0 0 0 3px rgba(100,180,255,.6)}
-
-    /* Main image (entire acc.png) */
-    .$ > img.acc{
-      max-width:90vw;max-height:80vh;display:block;border-radius:8px;
-      transform-origin:center center;
-      transform-style:preserve-3d;
-      cursor:grab;
-      touch-action:none;
-      user-select:none;
-      will-change:transform;
-      transition:none; /* JS fully controls transform */
+    body{
+      min-height:100vh;display:flex;justify-content:center;align-items:center;
+      background:#0f0f0f;font-family:system-ui,sans-serif;color:#e0e0e0;overflow:hidden;
     }
-    .$ > img.acc:active{cursor:grabbing}
+    .${
+      position:relative;display:inline-block;outline:none;border-radius:8px;
+      perspective:1200px;transform-style:preserve-3d;
+    }
 
-    /* Disappear states */
-    .$ > img.acc.shrink{opacity:1}
-    .$ > img.acc.disappear{opacity:0}
+    /* The image you can physically drag */
+    .$ img.acc{
+      max-width:90vw;max-height:80vh;display:block;border-radius:8px;
+      cursor:grab;touch-action:none;user-select:none;
+      will-change:transform;
+      position:relative;z-index:5;
+    }
+    .$ img.acc:active{cursor:grabbing}
 
-    .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.8;pointer-events:none;z-index:1}
+    /* Corner decorations (non-interactive) */
+    .mod{position:absolute;top:6px;width:64px;height:40px;opacity:.7;pointer-events:none;z-index:1}
     .mod.left{left:6px}
     .mod.right{right:6px}
     .mod svg{width:100%;height:100%}
-    .mod .curve{stroke-dasharray:80;stroke-dashoffset:80;animation:draw 2.6s ease-in-out infinite alternate}
+    .mod .curve{stroke-dasharray:80;animation:draw 2.6s ease-in-out infinite alternate}
     @keyframes draw{to{stroke-dashoffset:0}}
 
     .venture{
@@ -52,7 +49,8 @@
 </head>
 <body>
 
-  <div class="$" tabindex="0" id="acc-target">
+  <div class="$" id="acc-target">
+    <!-- Cartesian graphs -->
     <div class="mod left">
       <svg viewBox="0 0 64 40">
         <line x1="4" y1="36" x2="60" y2="36" stroke="#555" stroke-width="1"/>
@@ -68,148 +66,72 @@
       </svg>
     </div>
 
+    <!-- Blurred corner images -->
     <div class="venture left"><img src="accr.png" alt=""></div>
     <div class="venture right"><img src="accr.png" alt=""></div>
 
+    <!-- THE DRAGGABLE IMAGE -->
     <img class="acc" src="acc.png" alt="acc" draggable="false">
   </div>
 
   <script>
     const jet = document.querySelector('img.acc');
-    const target = document.querySelector('.$');
 
-    // Position & state
-    let x = 0, y = 0;
-    let scale = 0.65;          // starts at the post-drop size
-    let z = 0;
     let isDragging = false;
-    let startX = 0, startY = 0;
-    let moveScale = 1;
-    let holdTimer = null;
-    let isDisappearing = false;
+    let currentX = 0;
+    let currentY = 0;
+    let startX = 0;
+    let startY = 0;
 
-    // Forcefully write the transform (overrides everything)
-    function render() {
-      jet.style.transform = `
-        translate(${x}px, ${y}px)
-        scale(${scale * moveScale})
-        translateZ(${z}px)
-      `;
+    // Apply position
+    function updatePosition() {
+      jet.style.transform = `translate(${currentX}px, ${currentY}px)`;
     }
 
-    // Initial drop animation (runs once)
-    let startTime = performance.now();
-    function initialDrop(now) {
-      const t = Math.min((now - startTime) / 4000, 1);
-      const ease = t * t;
-      y = -40 * (1 - ease) * (window.innerHeight / 100); // from -40vh
-      scale = 1 - 0.35 * ease; // → 0.65
-      render();
-      if (t < 1) requestAnimationFrame(initialDrop);
-      else {
-        // gentle forward fly after drop
-        requestAnimationFrame(flyLoop);
-      }
-    }
-    requestAnimationFrame(initialDrop);
+    // Start drag
+    function startDrag(e) {
+      isDragging = true;
+      jet.style.cursor = 'grabbing';
 
-    let flyDir = 1;
-    function flyLoop(now) {
-      if (isDragging || isDisappearing) return;
-      z += flyDir * 0.8;
-      scale = 0.65 + (z / 220) * 0.27;
-      if (z > 220) flyDir = -1;
-      if (z < 0) flyDir = 1;
-      render();
-      requestAnimationFrame(flyLoop);
-    }
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX - currentX;
+      startY = pt.clientY - currentY;
 
-    // ----- Drag / Parallax (works on whole image) -----
-    function pointerDown(e) {
       e.preventDefault();
       e.stopPropagation();
-      isDragging = true;
-      moveScale = 1.35;           // larger while moving
-      const pt = e.touches ? e.touches[0] : e;
-      startX = pt.clientX - x;
-      startY = pt.clientY - y;
-      jet.style.cursor = 'grabbing';
-      clearTimeout(holdTimer);
     }
 
-    function pointerMove(e) {
+    // Move
+    function duringDrag(e) {
+      if (!isDragging) return;
+
       const pt = e.touches ? e.touches[0] : e;
-      if (isDragging) {
-        x = pt.clientX - startX;
-        y = pt.clientY - startY;
-        render();
-      }
+      currentX = pt.clientX - startX;
+      currentY = pt.clientY - startY;
+
+      updatePosition();
+      e.preventDefault();
     }
 
-    function pointerUp() {
+    // End drag
+    function endDrag() {
       isDragging = false;
-      moveScale = 1;
       jet.style.cursor = 'grab';
-      render();
-      if (!isDisappearing) requestAnimationFrame(flyLoop);
     }
 
-    // Mouse
-    jet.addEventListener('mousedown', pointerDown);
-    window.addEventListener('mousemove', pointerMove);
-    window.addEventListener('mouseup', pointerUp);
+    // Desktop
+    jet.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', duringDrag);
+    window.addEventListener('mouseup', endDrag);
 
-    // Touch
-    jet.addEventListener('touchstart', pointerDown, {passive: false});
-    window.addEventListener('touchmove', pointerMove, {passive: false});
-    window.addEventListener('touchend', pointerUp);
-    window.addEventListener('touchcancel', pointerUp);
+    // Mobile
+    jet.addEventListener('touchstart', startDrag, {passive: false});
+    window.addEventListener('touchmove', duringDrag, {passive: false});
+    window.addEventListener('touchend', endDrag);
+    window.addEventListener('touchcancel', endDrag);
 
-    // ----- Hover / hold to shrink & disappear -----
-    function startDisappear() {
-      if (isDragging || isDisappearing) return;
-      isDisappearing = true;
-      jet.classList.add('shrink');
-      // slow shrink to 30% smaller
-      const startScale = scale;
-      const start = performance.now();
-      function shrinkStep(now) {
-        const t = Math.min((now - start) / 1800, 1);
-        scale = startScale + (0.70 - startScale) * t;
-        render();
-        if (t < 1) requestAnimationFrame(shrinkStep);
-        else {
-          // then drift up & back
-          const upStart = performance.now();
-          function disappearStep(n) {
-            const t2 = Math.min((n - upStart) / 2200, 1);
-            y -= 2.2;
-            z -= 4;
-            scale = 0.70 - 0.15 * t2;
-            jet.style.opacity = 1 - t2;
-            render();
-            if (t2 < 1) requestAnimationFrame(disappearStep);
-          }
-          requestAnimationFrame(disappearStep);
-        }
-      }
-      requestAnimationFrame(shrinkStep);
-    }
-
-    jet.addEventListener('mouseenter', () => {
-      holdTimer = setTimeout(startDisappear, 600);
-    });
-    jet.addEventListener('mouseleave', () => clearTimeout(holdTimer));
-
-    jet.addEventListener('touchstart', e => {
-      if (e.touches.length === 1) {
-        holdTimer = setTimeout(startDisappear, 400);
-      }
-    }, {passive: false});
-
-    // Prevent $ hover scale from fighting the jet
-    target.addEventListener('click', e => e.stopPropagation());
+    // Prevent image ghost dragging
+    jet.addEventListener('dragstart', e => e.preventDefault());
   </script>
-
 </body>
 </html>
