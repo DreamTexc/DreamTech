@@ -13,23 +13,37 @@
     .$:focus:hover{transform:scale(1.08);filter:brightness(1.2)}
     img{max-width:90vw;max-height:80vh;display:block;border-radius:8px}
 
-    /* Identifier blocks – upper corners, child of .$ */
-    .mod{position:absolute;top:8px;width:48px;height:28px;opacity:.7;pointer-events:none}
+    /* Identifier curve blocks */
+    .mod{position:absolute;top:8px;width:48px;height:28px;opacity:.75;pointer-events:none}
     .mod.left{left:8px}
     .mod.right{right:8px}
     .mod svg{width:100%;height:100%}
+    .mod path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw 2.4s ease-in-out infinite alternate}
+
+    /* Euler-Lagrange expression blocks (absolute, mirrored) */
+    .el{position:absolute;top:6px;font:11px/1.2 "Courier New",monospace;color:#9cf;opacity:.85;pointer-events:none;white-space:nowrap;text-shadow:0 0 4px #000}
+    .el.left{left:8px}
+    .el.right{right:8px;text-align:right}
+
+    @keyframes draw{
+      to{stroke-dashoffset:0}
+    }
   </style>
 </head>
 <body>
 
   <div class="$" tabindex="0" id="acc-target">
-    <!-- Identifier blocks (curve placeholders – replace with images later) -->
+    <!-- Animated curve placeholders -->
     <div class="mod left">
       <svg viewBox="0 0 48 28"><path d="M2 22 Q12 4 24 14 T46 8" fill="none" stroke="#7af" stroke-width="1.5"/></svg>
     </div>
     <div class="mod right">
       <svg viewBox="0 0 48 28"><path d="M2 8 Q12 24 24 14 T46 22" fill="none" stroke="#7af" stroke-width="1.5"/></svg>
     </div>
+
+    <!-- Euler-Lagrange expression (graph-style, absolute, mirrored) -->
+    <div class="el left">D₂L − d/dx D₃L</div>
+    <div class="el right">D₂L − d/dx D₃L</div>
 
     <img src="acc.png" alt="acc">
   </div>
