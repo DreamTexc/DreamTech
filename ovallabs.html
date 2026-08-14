@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Focus × Rollover Class</title>
+<title>Focus × Rollover – Flight Sim</title>
 
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-
   body{
     min-height:100vh;
     display:flex;
@@ -23,13 +22,14 @@
     position:relative;
     display:inline-block;
     border-radius:8px;
-    perspective:1200px;
+    perspective:1600px;
     transform-style:preserve-3d;
   }
 
+  /* Jet – 45% smaller */
   .acc{
-    max-width:90vw;
-    max-height:80vh;
+    max-width:49.5vw;          /* 90vw × 0.55 */
+    max-height:44vh;           /* 80vh × 0.55 */
     display:block;
     border-radius:8px;
     cursor:grab;
@@ -38,69 +38,42 @@
     will-change:transform;
     position:relative;
     z-index:5;
+    transition: filter 0.2s ease;
   }
   .acc:active{cursor:grabbing}
-
-  /* FIXED: Now includes real sideways movement */
-  .acc.spinning{
-    animation:fullManeuver 2.8s cubic-bezier(0.4,0,0.2,1) forwards;
-  }
-
-  @keyframes fullManeuver{
-    0%   {transform:translate(var(--x),var(--y)) rotate(var(--base)) translateX(0) rotateY(0deg)}
-    25%  {transform:translate(var(--x),var(--y)) rotate(var(--base)) translateX(-180px) rotateY(90deg)}
-    50%  {transform:translate(var(--x),var(--y)) rotate(var(--base)) translateX(180px) rotateY(180deg)}
-    75%  {transform:translate(var(--x),var(--y)) rotate(var(--base)) translateX(-180px) rotateY(270deg)}
-    100% {transform:translate(var(--x),var(--y)) rotate(var(--base)) translateX(0) rotateY(360deg)}
-  }
+  .acc.spinning{cursor:pointer}
 
   .mod{
-    position:absolute;
-    top:6px;
-    width:64px;
-    height:40px;
-    opacity:.7;
-    pointer-events:none;
-    z-index:1;
+    position:absolute;top:6px;width:64px;height:40px;
+    opacity:.7;pointer-events:none;z-index:1;
   }
   .mod.left{left:6px}
   .mod.right{right:6px}
   .mod svg{width:100%;height:100%}
-  .curve{
-    stroke-dasharray:80;
-    animation:draw 2.6s ease-in-out infinite alternate;
-  }
+  .curve{stroke-dasharray:80;animation:draw 2.6s ease-in-out infinite alternate}
   @keyframes draw{to{stroke-dashoffset:0}}
 
+  /* Corner images – 35% larger */
   .venture{
-    position:absolute;
-    top:4px;
-    width:180px;
-    height:120px;
-    perspective:300px;
-    pointer-events:none;
-    z-index:2;
-    filter:blur(1.2px);
-    opacity:.55;
+    position:absolute;top:4px;
+    width:243px;               /* 180px × 1.35 */
+    height:162px;              /* 120px × 1.35 */
+    perspective:300px;pointer-events:none;z-index:2;
+    filter:blur(1.2px);opacity:.55;
   }
   .venture.left{left:4px}
   .venture.right{right:4px}
   .venture img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    border-radius:8px;
+    width:100%;height:100%;object-fit:cover;border-radius:8px;
     transform:rotateY(18deg) rotateX(6deg);
     box-shadow:0 6px 18px rgba(0,0,0,.45);
   }
   .venture.right img{transform:rotateY(-18deg) rotateX(6deg)}
 </style>
 </head>
-
 <body>
 
-<div class="acc-container" id="acc-target">
-
+<div class="acc-container">
   <div class="mod left">
     <svg viewBox="0 0 64 40">
       <line x1="4" y1="36" x2="60" y2="36" stroke="#555" stroke-width="1"/>
@@ -108,7 +81,6 @@
       <path class="curve" d="M6 20 Q18 8 32 20 T58 20" fill="none" stroke="#7af" stroke-width="1.6"/>
     </svg>
   </div>
-
   <div class="mod right">
     <svg viewBox="0 0 64 40">
       <line x1="4" y1="36" x2="60" y2="36" stroke="#555" stroke-width="1"/>
@@ -117,32 +89,57 @@
     </svg>
   </div>
 
-  <div class="venture left"><img src="accr.png"></div>
-  <div class="venture right"><img src="accr.png"></div>
+  <div class="venture left"><img src="accr.png" alt=""></div>
+  <div class="venture right"><img src="accr.png" alt=""></div>
 
-  <img class="acc" src="acc.png" draggable="false">
-
+  <img class="acc" src="acc.png" draggable="false" alt="jet">
 </div>
 
 <script>
 const jet = document.querySelector('.acc');
 
+/* ---------- State ---------- */
+let x = 0, y = 0;
+let base = 0;
 let dragging = false;
 let spinning = false;
-let x = 0, y = 0;
-let startX = 0, startY = 0;
-let base = 0;
 
-function applyTransform(){
-  if(spinning) return;  // IMPORTANT FIX: prevents animation override
-  jet.style.transform = `translate(${x}px,${y}px) rotate(${base}deg)`;
-  jet.style.setProperty('--x', x + 'px');
-  jet.style.setProperty('--y', y + 'px');
-  jet.style.setProperty('--base', base + 'deg');
+let startX = 0, startY = 0;
+
+let anim = {
+  startTime: 0,
+  duration: 7800,
+  side: null,
+  fromBase: 0,
+  rafId: null
+};
+
+/* ---------- Core render ---------- */
+function render(extra = {}) {
+  const {
+    rotX = 0,
+    rotY = 0,
+    rotZ = 0,
+    scale = 1,
+    offsetX = 0
+  } = extra;
+
+  jet.style.transform = `
+    translate(${x + offsetX}px, ${y}px)
+    rotate(${base}deg)
+    rotateX(${rotX}deg)
+    rotateY(${rotY}deg)
+    rotateZ(${rotZ}deg)
+    scale(${scale})
+  `;
 }
 
-function startDrag(e){
-  if(spinning) return;
+/* ---------- Smooth drag ---------- */
+function startDrag(e) {
+  if (spinning) {
+    freezeManeuver();
+    return;
+  }
   dragging = true;
   const pt = e.touches ? e.touches[0] : e;
   startX = pt.clientX - x;
@@ -150,73 +147,116 @@ function startDrag(e){
   e.preventDefault();
 }
 
-function duringDrag(e){
-  if(!dragging || spinning) return;
+function duringDrag(e) {
+  if (!dragging || spinning) return;
   const pt = e.touches ? e.touches[0] : e;
   x = pt.clientX - startX;
   y = pt.clientY - startY;
-  applyTransform();
+  render();
   e.preventDefault();
 }
 
-function endDrag(){
+function endDrag() {
   dragging = false;
 }
 
-function getSide(clientX){
-  const rect = jet.getBoundingClientRect();
-  return clientX < rect.left + rect.width/2 ? 'left' : 'right';
+/* ---------- Realistic aerobatic maneuver ---------- */
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-function triggerSpin(side){
-  if(spinning) return;
+function startManeuver(side) {
+  if (spinning) {
+    freezeManeuver();
+    return;
+  }
+
   spinning = true;
   dragging = false;
-
-  const delta = side === 'left' ? -90 : 90;
+  anim.side = side;
+  anim.fromBase = base;
+  anim.startTime = performance.now();
 
   jet.classList.add('spinning');
 
-  setTimeout(()=>{
-    jet.classList.remove('spinning');
+  function frame(now) {
+    const elapsed = now - anim.startTime;
+    let t = Math.min(elapsed / anim.duration, 1);
+    t = easeInOutCubic(t);
 
-    jet.style.animation = 'none';
-    void jet.offsetWidth;
-    jet.style.animation = '';
+    const rotY = t * 720;
+    const rotZ = t * 720;
+    const rotX = Math.sin(t * Math.PI * 2) * 22;
+    const offsetX = Math.sin(t * Math.PI * 2) * 160;
+    const scale = 1 + Math.sin(t * Math.PI) * 0.08;
 
-    base += delta;
-    applyTransform();
+    render({ rotX, rotY, rotZ, scale, offsetX });
 
-    spinning = false;
-  }, 2850);
+    if (t < 1) {
+      anim.rafId = requestAnimationFrame(frame);
+    } else {
+      finishManeuver(true);
+    }
+  }
+
+  anim.rafId = requestAnimationFrame(frame);
 }
 
+function freezeManeuver() {
+  if (!spinning) return;
+  cancelAnimationFrame(anim.rafId);
+  spinning = false;
+  jet.classList.remove('spinning');
+}
+
+function finishManeuver(completed) {
+  cancelAnimationFrame(anim.rafId);
+  spinning = false;
+  jet.classList.remove('spinning');
+
+  if (completed) {
+    const delta = anim.side === 'left' ? -90 : 90;
+    base += delta;
+  }
+
+  render();
+}
+
+/* ---------- Side detection ---------- */
+function getSide(clientX) {
+  const rect = jet.getBoundingClientRect();
+  return clientX < rect.left + rect.width / 2 ? 'left' : 'right';
+}
+
+/* ---------- Events ---------- */
 jet.addEventListener('dblclick', e => {
-  triggerSpin(getSide(e.clientX));
+  startManeuver(getSide(e.clientX));
 });
 
 let lastTap = 0;
 jet.addEventListener('touchend', e => {
   const now = Date.now();
-  if(now - lastTap < 300){
-    const x = e.changedTouches[0].clientX;
-    triggerSpin(getSide(x));
+  if (now - lastTap < 320) {
+    startManeuver(getSide(e.changedTouches[0].clientX));
   }
   lastTap = now;
+});
+
+jet.addEventListener('click', () => {
+  if (spinning) freezeManeuver();
 });
 
 jet.addEventListener('mousedown', startDrag);
 window.addEventListener('mousemove', duringDrag);
 window.addEventListener('mouseup', endDrag);
 
-jet.addEventListener('touchstart', startDrag, {passive:false});
-window.addEventListener('touchmove', duringDrag, {passive:false});
+jet.addEventListener('touchstart', startDrag, {passive: false});
+window.addEventListener('touchmove', duringDrag, {passive: false});
 window.addEventListener('touchend', endDrag);
 
 jet.addEventListener('dragstart', e => e.preventDefault());
 
-applyTransform();
+render();
 </script>
-
 </body>
 </html>
