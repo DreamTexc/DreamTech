@@ -126,14 +126,14 @@ function gateAt(index) {
   const z = -85 - i * 98;
   const nx = Math.sin(t + 0.46) * 150 + Math.sin((t + 0.46) * 0.41) * 55;
   const nz = -85 - (i + 1) * 98;
-  return { x, y, z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: 9.5 };
+  return { x: x, y: y, z: z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: 9.5 };
 }
 function createSim() {
   return {
     x: 0, y: 48, z: 36, yaw: 0, pitch: 0, roll: 0, speed: 44, throttle: 0.62,
     alive: true, crashed: false, crashTimer: 0, maneuver: null, gForce: 1,
     nextGate: 0, score: 0, combo: 0, gatesHit: 0, time: 0, shake: 0,
-    barrelBonusArmed: false, spawnX: 0, spawnY: 48, spawnZ: 36, spawnYaw: 0, finished: false,
+    barrelBonusArmed: false, spawnX: 0, spawnY: 48, spawnZ: 36, spawnYaw: 0, finished: false
   };
 }
 function respawn(sim) {
@@ -143,7 +143,7 @@ function respawn(sim) {
   sim.alive = true; sim.crashed = false; sim.crashTimer = 0; sim.maneuver = null; sim.barrelBonusArmed = false; sim.combo = 0; sim.shake = 0.2;
 }
 function beginManeuver(sim, kind) {
-  sim.maneuver = { kind, t: 0, duration: kind === "loop" ? 2.05 : 1.35, startYaw: sim.yaw, startPitch: sim.pitch, startRoll: sim.roll, startY: sim.y };
+  sim.maneuver = { kind: kind, t: 0, duration: kind === "loop" ? 2.05 : 1.35, startYaw: sim.yaw, startPitch: sim.pitch, startRoll: sim.roll, startY: sim.y };
 }
 function stepManeuver(sim, dt) {
   const m = sim.maneuver; if (!m) return null;
@@ -160,16 +160,16 @@ function stepManeuver(sim, dt) {
   else if (m.kind === "barrel-right") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw - 0.18; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
   else { sim.pitch = wrapPi(m.startPitch); sim.roll = 0; }
   const kind = m.kind; sim.maneuver = null;
-  return { type: "maneuver-end", kind, completed: true };
+  return { type: "maneuver-end", kind: kind, completed: true };
 }
 function stepSim(sim, input, dt) {
   const events = [];
   if (!sim.alive) { sim.crashTimer += dt; return events; }
   sim.time += dt;
-  if (sim.maneuver && input.cancelManeuver) { const kind = sim.maneuver.kind; sim.maneuver = null; events.push({ type: "maneuver-end", kind, completed: false }); }
+  if (sim.maneuver && input.cancelManeuver) { const kind = sim.maneuver.kind; sim.maneuver = null; events.push({ type: "maneuver-end", kind: kind, completed: false }); }
   if (!sim.maneuver && input.startBarrel) {
     const kind = input.startBarrel === "left" ? "barrel-left" : "barrel-right";
-    beginManeuver(sim, kind); events.push({ type: "maneuver-start", kind });
+    beginManeuver(sim, kind); events.push({ type: "maneuver-start", kind: kind });
   } else if (!sim.maneuver && input.startLoop) { beginManeuver(sim, "loop"); events.push({ type: "maneuver-start", kind: "loop" }); }
   if (sim.maneuver) { const end = stepManeuver(sim, dt); if (end) events.push(end); }
   else {
@@ -203,7 +203,7 @@ function stepSim(sim, input, dt) {
       sim.barrelBonusArmed = false; sim.combo += 1;
       sim.score += (100 + Math.round(sim.speed)) * (bonus ? 2 : 1) * Math.min(sim.combo, 8);
       sim.gatesHit += 1; sim.nextGate += 1; sim.shake = Math.min(1, sim.shake + (bonus ? 0.45 : 0.28));
-      events.push({ type: "gate", bonus });
+      events.push({ type: "gate", bonus: bonus });
       if (sim.nextGate >= GATE_COUNT) { sim.finished = true; events.push({ type: "finish" }); }
     } else if (along < -16) { sim.combo = 0; sim.barrelBonusArmed = false; sim.nextGate += 1; }
   }
@@ -213,12 +213,12 @@ function stepSim(sim, input, dt) {
 const held = new Set();
 let touchRoll = 0, touchPitch = 0, touchThrottle = 0, touchBoost = false;
 let queuedBarrel = null, queuedLoop = false, queuedCancel = false;
-window.addEventListener("keydown", (e) => {
+window.addEventListener("keydown", function (e) {
   held.add(e.code);
-  if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") e.preventDefault();
 });
-window.addEventListener("keyup", (e) => held.delete(e.code));
-window.addEventListener("blur", () => held.clear());
+window.addEventListener("keyup", function (e) { held.delete(e.code); });
+window.addEventListener("blur", function () { held.clear(); });
 function readInput() {
   let roll = 0, pitch = 0, yaw = 0, throttleDelta = touchThrottle;
   if (held.has("KeyA") || held.has("ArrowLeft")) roll += 1;
@@ -237,13 +237,13 @@ function readInput() {
   return {
     roll: clamp(roll + touchRoll, -1, 1), pitch: clamp(pitch + touchPitch, -1, 1),
     yaw: clamp(yaw, -1, 1), throttleDelta: clamp(throttleDelta, -1, 1),
-    boost: touchBoost || held.has("Space"), startBarrel, startLoop, cancelManeuver,
+    boost: touchBoost || held.has("Space"), startBarrel: startBarrel, startLoop: startLoop, cancelManeuver: cancelManeuver
   };
 }
 
 const audio = {
   ctx: null, master: null, osc: null, filter: null, engine: null, noise: null, muted: false,
-  unlock() {
+  unlock: function () {
     if (!this.ctx) {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
@@ -262,8 +262,8 @@ const audio = {
     }
     if (this.ctx.state === "suspended") this.ctx.resume();
   },
-  setMuted(m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.22, this.ctx.currentTime, 0.03); },
-  setEngine(throttle, speed, boosting) {
+  setMuted: function (m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.22, this.ctx.currentTime, 0.03); },
+  setEngine: function (throttle, speed, boosting) {
     if (!this.osc) return;
     const t = this.ctx.currentTime;
     this.osc.frequency.setTargetAtTime(62 + throttle * 90 + speed * 0.35 + (boosting ? 28 : 0), t, 0.05);
@@ -271,16 +271,16 @@ const audio = {
     this.engine.gain.setTargetAtTime(0.03 + throttle * 0.07 + (boosting ? 0.04 : 0), t, 0.05);
     this.noise.gain.setTargetAtTime(0.012 + speed * 0.00035 + (boosting ? 0.02 : 0), t, 0.08);
   },
-  blip(start, end, dur, vol) {
+  blip: function (start, end, dur, vol) {
     if (!this.ctx || this.muted) return;
     const t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = "triangle"; o.frequency.setValueAtTime(start, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, end), t + dur);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
   },
-  whoosh() { this.blip(180, 70, 0.12, 0.22); },
-  gate(bonus) { this.blip(bonus ? 880 : 640, bonus ? 520 : 420, 0.07, bonus ? 0.16 : 0.11); },
-  crash() { this.blip(90, 28, 0.28, 0.35); },
+  whoosh: function () { this.blip(180, 70, 0.12, 0.22); },
+  gate: function (bonus) { this.blip(bonus ? 880 : 640, bonus ? 520 : 420, 0.07, bonus ? 0.16 : 0.11); },
+  crash: function () { this.blip(90, 28, 0.28, 0.35); }
 };
 
 const canvas = document.getElementById("c");
@@ -288,12 +288,13 @@ const ctx = canvas.getContext("2d", { alpha: false });
 let W = 1, H = 1, FOC = 1;
 const cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
 const jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
-const trail = Array.from({ length: 40 }, () => ({ x: 0, y: 48, z: 36 }));
+const trail = [];
+for (let i = 0; i < 40; i++) trail.push({ x: 0, y: 48, z: 36 });
 
 function setCam(px, py, pz, tx, ty, tz) {
   let fx = tx - px, fy = ty - py, fz = tz - pz;
   let len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
-  let rx = fy * 0 - 1 * fz, ry = fz * 0 - fx * 0, rz = fx * 1 - fy * 0;
+  let rx = -fz, ry = 0, rz = fx;
   len = Math.hypot(rx, ry, rz);
   if (len < 1e-5) { rx = 1; ry = 0; rz = 0; len = 1; }
   rx /= len; ry /= len; rz /= len;
@@ -318,7 +319,7 @@ function computeJetBasis(sim) {
   const fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
   let fl = Math.hypot(fx, fy, fz) || 1;
   jetF.x = fx / fl; jetF.y = fy / fl; jetF.z = fz / fl;
-  let rx = jetF.y * 0 - 1 * jetF.z, ry = jetF.z * 0 - jetF.x * 0, rz = jetF.x * 1 - jetF.y * 0;
+  let rx = -jetF.z, ry = 0, rz = jetF.x;
   let rl = Math.hypot(rx, ry, rz);
   if (rl < 1e-5) { rx = Math.cos(sim.yaw); ry = 0; rz = -Math.sin(sim.yaw); rl = Math.hypot(rx, ry, rz) || 1; }
   rx /= rl; ry /= rl; rz /= rl;
@@ -360,13 +361,6 @@ function drawWater() {
     wg.addColorStop(0, "#1a3340"); wg.addColorStop(1, "#071016");
     ctx.fillStyle = wg; ctx.fill();
   }
-  ctx.strokeStyle = "rgba(180,200,210,0.08)"; ctx.lineWidth = 1;
-  for (let k = 1; k <= 8; k++) {
-    const z = 40 + k * k * 18;
-    const a = project(cam.x - 400, 0.2, cam.z + cam.fz * z);
-    const b = project(cam.x + 400, 0.2, cam.z + cam.fz * z);
-    if (a && b) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
-  }
 }
 function drawIsland(isl) {
   const apex = project(isl.x, isl.h * 1.15, isl.z);
@@ -380,8 +374,7 @@ function drawIsland(isl) {
   if (apex && ring.length > 2) {
     for (let i = 0; i < ring.length; i++) {
       const n = ring[(i + 1) % ring.length];
-      const shade = i % 2 ? "#32362f" : "#3a3f38";
-      fillPoly([apex, ring[i], n], shade, "rgba(0,0,0,0.18)", 1);
+      fillPoly([apex, ring[i], n], i % 2 ? "#32362f" : "#3a3f38", "rgba(0,0,0,0.18)", 1);
     }
   }
 }
@@ -391,8 +384,7 @@ function drawGate(g, active) {
   const outer = [];
   for (let i = 0; i < 22; i++) {
     const a = (i / 22) * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
-    const ox = g.x + rx * ca * 9.5, oy = g.y + sa * 9.5, oz = g.z + rz * ca * 9.5;
-    const op = project(ox, oy, oz);
+    const op = project(g.x + rx * ca * 9.5, g.y + sa * 9.5, g.z + rz * ca * 9.5);
     if (op) outer.push(op);
   }
   if (outer.length > 3) {
@@ -404,16 +396,13 @@ function drawGate(g, active) {
     ctx.lineWidth = active ? 3.2 : 1.6;
     ctx.stroke();
   }
-  const post = project(g.x, g.y - 10.5, g.z);
-  const top = project(g.x, g.y - 9.2, g.z);
-  if (post && top) { ctx.strokeStyle = "#1c2026"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(post.x, post.y); ctx.stroke(); }
 }
 function drawJet(sim, boosting) {
   const o = { x: sim.x, y: sim.y, z: sim.z };
-  const P = function (lx, ly, lz) {
+  function P(lx, ly, lz) {
     const w = worldFromLocal(lx, ly, lz, o, jetR, jetU, jetF);
     return project(w.x, w.y, w.z);
-  };
+  }
   const tris = [
     [[0, 0.08, 1.55], [0.22, -0.06, 0.9], [-0.22, -0.06, 0.9], "#9aa3ae"],
     [[0.05, 0.02, 0.7], [2.25, -0.08, -0.55], [0.2, -0.08, -0.4], "#1b1d22"],
@@ -421,7 +410,7 @@ function drawJet(sim, boosting) {
     [[0.12, 0.06, 1.05], [0.72, 0.02, 0.85], [0.12, 0.02, 0.8], "#9aa3ae"],
     [[-0.12, 0.06, 1.05], [-0.72, 0.02, 0.85], [-0.12, 0.02, 0.8], "#9aa3ae"],
     [[0, 0.12, 0.2], [0.18, 0.42, -0.95], [-0.18, 0.42, -0.95], "#1b1d22"],
-    [[0.1, 0.02, -0.6], [0.22, -0.04, -1.15], [-0.22, -0.04, -1.15], "#0a0b0d"],
+    [[0.1, 0.02, -0.6], [0.22, -0.04, -1.15], [-0.22, -0.04, -1.15], "#0a0b0d"]
   ];
   const drawn = [];
   for (let i = 0; i < tris.length; i++) {
@@ -454,7 +443,7 @@ let sim = createSim();
 let phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
 let best = 0;
 try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (e) {}
-const $ = function (id) { return document.getElementById(id); };
+function $(id) { return document.getElementById(id); }
 
 function commitScore(score) {
   lastScore = score; best = Math.max(best, score);
@@ -466,7 +455,7 @@ function renderCard() {
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Bank through dusk gates over the water. Double-click the left or right side of the jet for a true barrel roll — left and right are different tricks.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>Q / E</dt><dd>Rudder</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Bank through dusk gates over the water. Double-click the left or right side of the jet for a barrel roll.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>Q / E</dt><dd>Rudder</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
     $("takeoff").onclick = takeOff;
   } else if (phase === "paused") {
     card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
@@ -532,9 +521,12 @@ addEventListener("keydown", function (e) {
   if (phase === "playing") setPhase("paused");
   else if (phase === "paused") setPhase("playing");
 });
-document.querySelectorAll("[data-barrel]").forEach(function (btn) {
-  btn.addEventListener("pointerdown", function () { queuedBarrel = btn.dataset.barrel; });
-});
+var barrelBtns = document.querySelectorAll("[data-barrel]");
+for (var bi = 0; bi < barrelBtns.length; bi++) {
+  (function (btn) {
+    btn.addEventListener("pointerdown", function () { queuedBarrel = btn.getAttribute("data-barrel"); });
+  })(barrelBtns[bi]);
+}
 $("loopBtn").onpointerdown = function () { queuedLoop = true; };
 $("thrUp").onpointerdown = function () { touchThrottle = 1; };
 $("thrUp").onpointerup = $("thrUp").onpointerleave = function () { touchThrottle = 0; };
@@ -553,7 +545,6 @@ stick.addEventListener("pointermove", function (e) { if (stick.hasPointerCapture
 function endStick() { touchRoll = 0; touchPitch = 0; knob.style.transform = "translate(-50%,-50%)"; }
 stick.addEventListener("pointerup", endStick);
 stick.addEventListener("pointercancel", endStick);
-document.addEventListener("visibilitychange", function () { if (!document.hidden) audio.unlock(); });
 
 setPhase("start");
 
