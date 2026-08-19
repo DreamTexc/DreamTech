@@ -410,7 +410,7 @@ function drawGate(g, active) {
 }
 function drawJet(sim, boosting) {
   const o = { x: sim.x, y: sim.y, z: sim.z };
-  const P = (lx, ly, lz) => {
+  const P = function (lx, ly, lz) {
     const w = worldFromLocal(lx, ly, lz, o, jetR, jetU, jetF);
     return project(w.x, w.y, w.z);
   };
@@ -430,10 +430,9 @@ function drawJet(sim, boosting) {
     const c = P(tris[i][2][0], tris[i][2][1], tris[i][2][2]);
     if (a && b && c) drawn.push({ z: (a.z + b.z + c.z) / 3, pts: [a, b, c], col: tris[i][3] });
   }
-  drawn.sort((a, b) => b.z - a.z);
+  drawn.sort(function (a, b) { return b.z - a.z; });
   for (let i = 0; i < drawn.length; i++) fillPoly(drawn[i].pts, drawn[i].col, "rgba(0,0,0,0.35)", 0.6);
-  const flame = boosting || sim.throttle > 0.4;
-  if (flame) {
+  if (boosting || sim.throttle > 0.4) {
     const b = P(0.12, 0, -1.2), c = P(-0.12, 0, -1.2);
     const tip = P(0, 0, -1.15 - (0.6 + sim.throttle * 1.4 + (boosting ? 0.5 : 0)));
     if (b && c && tip) fillPoly([b, tip, c], boosting ? "rgba(255,176,122,0.85)" : "rgba(255,160,90,0.55)");
@@ -454,12 +453,12 @@ function drawTrail() {
 let sim = createSim();
 let phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
 let best = 0;
-try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (_) {}
-const $ = (id) => document.getElementById(id);
+try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (e) {}
+const $ = function (id) { return document.getElementById(id); };
 
 function commitScore(score) {
   lastScore = score; best = Math.max(best, score);
-  try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
+  try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {}
 }
 function setFlash(text) { $("flash").textContent = text; $("flash").style.display = "block"; flashTimer = 0.7; }
 function renderCard() {
@@ -511,7 +510,7 @@ function resize() {
 }
 addEventListener("resize", resize); resize();
 
-canvas.addEventListener("click", (e) => {
+canvas.addEventListener("click", function (e) {
   const now = performance.now();
   const dbl = now - (canvas._lastTap || 0) < 320;
   canvas._lastTap = now;
@@ -520,27 +519,27 @@ canvas.addEventListener("click", (e) => {
   if (!dbl) return;
   queuedBarrel = e.clientX < W / 2 ? "left" : "right";
 });
-canvas.addEventListener("dblclick", (e) => {
+canvas.addEventListener("dblclick", function (e) {
   e.preventDefault();
   if (phase !== "playing") return;
   if (sim.maneuver) { queuedCancel = true; return; }
   queuedBarrel = e.clientX < W / 2 ? "left" : "right";
 });
-$("muteBtn").onclick = () => { audio.unlock(); audio.setMuted(!audio.muted); $("muteBtn").textContent = audio.muted ? "X" : "M"; };
-$("pauseBtn").onclick = () => { if (phase === "playing") setPhase("paused"); };
-addEventListener("keydown", (e) => {
+$("muteBtn").onclick = function () { audio.unlock(); audio.setMuted(!audio.muted); $("muteBtn").textContent = audio.muted ? "X" : "M"; };
+$("pauseBtn").onclick = function () { if (phase === "playing") setPhase("paused"); };
+addEventListener("keydown", function (e) {
   if (e.code !== "Escape") return;
   if (phase === "playing") setPhase("paused");
   else if (phase === "paused") setPhase("playing");
 });
-document.querySelectorAll("[data-barrel]").forEach((btn) => {
-  btn.addEventListener("pointerdown", () => { queuedBarrel = btn.dataset.barrel; });
+document.querySelectorAll("[data-barrel]").forEach(function (btn) {
+  btn.addEventListener("pointerdown", function () { queuedBarrel = btn.dataset.barrel; });
 });
-$("loopBtn").onpointerdown = () => { queuedLoop = true; };
-$("thrUp").onpointerdown = () => { touchThrottle = 1; };
-$("thrUp").onpointerup = $("thrUp").onpointerleave = () => { touchThrottle = 0; };
-$("abBtn").onpointerdown = () => { touchBoost = true; };
-$("abBtn").onpointerup = $("abBtn").onpointerleave = () => { touchBoost = false; };
+$("loopBtn").onpointerdown = function () { queuedLoop = true; };
+$("thrUp").onpointerdown = function () { touchThrottle = 1; };
+$("thrUp").onpointerup = $("thrUp").onpointerleave = function () { touchThrottle = 0; };
+$("abBtn").onpointerdown = function () { touchBoost = true; };
+$("abBtn").onpointerup = $("abBtn").onpointerleave = function () { touchBoost = false; };
 const stick = $("stick"), knob = $("knob");
 function onStick(x, y) {
   const r = stick.getBoundingClientRect();
@@ -549,12 +548,12 @@ function onStick(x, y) {
   touchRoll = -nx; touchPitch = -ny;
   knob.style.transform = "translate(calc(-50% + " + (nx * 22) + "px), calc(-50% + " + (ny * 22) + "px))";
 }
-stick.addEventListener("pointerdown", (e) => { stick.setPointerCapture(e.pointerId); onStick(e.clientX, e.clientY); });
-stick.addEventListener("pointermove", (e) => { if (stick.hasPointerCapture(e.pointerId)) onStick(e.clientX, e.clientY); });
-const endStick = () => { touchRoll = 0; touchPitch = 0; knob.style.transform = "translate(-50%,-50%)"; };
+stick.addEventListener("pointerdown", function (e) { stick.setPointerCapture(e.pointerId); onStick(e.clientX, e.clientY); });
+stick.addEventListener("pointermove", function (e) { if (stick.hasPointerCapture(e.pointerId)) onStick(e.clientX, e.clientY); });
+function endStick() { touchRoll = 0; touchPitch = 0; knob.style.transform = "translate(-50%,-50%)"; }
 stick.addEventListener("pointerup", endStick);
 stick.addEventListener("pointercancel", endStick);
-document.addEventListener("visibilitychange", () => { if (!document.hidden) audio.unlock(); });
+document.addEventListener("visibilitychange", function () { if (!document.hidden) audio.unlock(); });
 
 setPhase("start");
 
@@ -607,14 +606,14 @@ function frame() {
   for (let i = 0; i < ISLANDS.length; i++) {
     const isl = ISLANDS[i];
     const d = (isl.x - cam.x) * cam.fx + (0 - cam.y) * cam.fy + (isl.z - cam.z) * cam.fz;
-    if (d > 2) drawables.push({ z: d, kind: "island", isl });
+    if (d > 2) drawables.push({ z: d, kind: "island", isl: isl });
   }
   for (let i = 0; i < GATE_COUNT; i++) {
     const g = gateAt(i);
     const d = (g.x - cam.x) * cam.fx + (g.y - cam.y) * cam.fy + (g.z - cam.z) * cam.fz;
-    if (d > 2) drawables.push({ z: d, kind: "gate", g, active: i === sim.nextGate });
+    if (d > 2) drawables.push({ z: d, kind: "gate", g: g, active: i === sim.nextGate });
   }
-  drawables.sort((a, b) => b.z - a.z);
+  drawables.sort(function (a, b) { return b.z - a.z; });
   for (let i = 0; i < drawables.length; i++) {
     if (drawables[i].kind === "island") drawIsland(drawables[i].isl);
     else drawGate(drawables[i].g, drawables[i].active);
