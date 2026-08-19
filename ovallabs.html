@@ -113,6 +113,11 @@
     border: 1px solid var(--border); background: var(--surface); color: var(--fg);
     font-family: "IBM Plex Mono", monospace; font-size: 12px;
   }
+  #boot-error {
+    position: absolute; inset: 0; display: none; place-items: center;
+    padding: 24px; background: var(--bg); color: var(--fg); text-align: center;
+  }
+  #boot-error p { max-width: 28rem; color: var(--muted); line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -158,16 +163,22 @@
   <div id="panel" class="hit">
     <div class="card" id="card"></div>
   </div>
+  <div id="boot-error"><div><h2 class="display">Could not start</h2><p id="boot-msg"></p></div></div>
 </div>
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
-  }
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
+<script>
+(function () {
+function fail(msg) {
+  const el = document.getElementById("boot-error");
+  const p = document.getElementById("boot-msg");
+  if (p) p.textContent = msg;
+  if (el) el.style.display = "grid";
 }
-</script>
-<script type="module">
-import * as THREE from "three";
+if (!window.THREE) {
+  fail("The 3D engine did not load. Stay online and open this file in Chrome, Edge, or Firefox.");
+  return;
+}
+const THREE = window.THREE;
 
 const STEP = 1 / 60;
 const MIN_SPEED = 16;
@@ -558,7 +569,8 @@ function computeBasis(sim) {
 
 let sim = createSim();
 let phase = "start";
-let best = Number(localStorage.getItem(BEST_KEY) || "0") || 0;
+let best = 0;
+try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (_) {}
 let lastScore = 0;
 let acc = 0;
 let flashTimer = 0;
@@ -568,7 +580,7 @@ const $ = (id) => document.getElementById(id);
 function commitScore(score) {
   lastScore = score;
   best = Math.max(best, score);
-  localStorage.setItem(BEST_KEY, String(best));
+  try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
 }
 function setFlash(text) {
   $("flash").textContent = text;
@@ -785,6 +797,7 @@ function frame() {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
