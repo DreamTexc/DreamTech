@@ -30,6 +30,7 @@
   .bar { height: 6px; border-radius: 999px; background: #1b1e26; overflow: hidden; margin-bottom: 4px; }
   .bar > i { display: block; height: 100%; width: 62%; background: var(--accent); }
   #panel { position: absolute; inset: 0; display: grid; place-items: end center; background: color-mix(in srgb, var(--bg) 35%, transparent); padding: 20px 20px max(24px, env(safe-area-inset-bottom)); }
+  #panel[hidden] { display: none !important; }
   @media (min-width: 640px) { #panel { place-items: center; } }
   .card { width: min(100%, 440px); border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 92%, transparent); border-radius: 16px; padding: 28px 28px 24px; }
   .kicker { font-size: 12px; letter-spacing: .22em; color: var(--muted); font-weight: 500; }
@@ -41,8 +42,13 @@
   .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .go { height: 48px; padding: 0 28px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
   .ghost { height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
-  #crash { position: absolute; left: 0; right: 0; top: 32%; text-align: center; display: none; }
-  #crash b { font-size: 36px; letter-spacing: .12em; }
+  #crash { position: absolute; inset: 0; display: none; place-items: center; background: color-mix(in srgb, var(--bg) 55%, transparent); z-index: 8; }
+  #crash.show { display: grid; }
+  #crash .splash { text-align: center; animation: crashIn 0.45s ease-out; }
+  #crash .splash h2 { font-size: clamp(40px, 10vw, 72px); line-height: .92; font-weight: 600; letter-spacing: .04em; }
+  #crash .splash h2 span { display: block; color: var(--muted); }
+  #crash .count { margin-top: 14px; font-size: 13px; letter-spacing: .2em; color: var(--muted); }
+  @keyframes crashIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
   #touch { display: none; position: absolute; left: 12px; right: 12px; bottom: 16px; justify-content: space-between; align-items: end; }
   @media (max-width: 640px) { #touch { display: flex; } }
   #stick { width: 112px; height: 112px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); position: relative; }
@@ -74,7 +80,7 @@
     <div class="thr"><div class="bar"><i id="thrBar"></i></div><div id="thrLabel" style="font-size:10px;letter-spacing:.16em;color:var(--subtle)"></div></div>
     <div id="rightInst" style="text-align:right"></div>
   </footer>
-  <div id="crash"><b class="display">RECOVERING</b><div class="mono" style="margin-top:6px;font-size:12px;color:var(--muted)">Respawn at last gate</div></div>
+  <div id="crash"><div class="splash"><p class="kicker">FOCUS × ROLLOVER</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="count mono">RECOVERING · <span id="crashCount">5</span></p></div></div>
   <div id="touch" class="hit">
     <div id="stick"><div id="knob"></div></div>
     <div class="pads">
@@ -103,29 +109,29 @@ const ISLANDS = [
   { x: -40, z: -700, r: 80, h: 14 }, { x: -180, z: -980, r: 130, h: 28 },
   { x: 60, z: -1280, r: 95, h: 18 }, { x: 200, z: -1620, r: 120, h: 22 },
   { x: -90, z: -1980, r: 100, h: 20 }, { x: 20, z: -2400, r: 140, h: 26 },
-  { x: -160, z: -2860, r: 110, h: 19 }, { x: 110, z: -3300, r: 125, h: 23 },
+  { x: -160, z: -2860, r: 110, h: 19 }, { x: 110, z: -3300, r: 125, h: 23 }
 ];
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function wrapPi(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
 function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-function headingDeg(yaw) { let d = ((-yaw * 180) / Math.PI) % 360; return d < 0 ? d + 360 : d; }
+function headingDeg(yaw) { var d = ((-yaw * 180) / Math.PI) % 360; return d < 0 ? d + 360 : d; }
 function pad(n, w) { return Math.round(n).toString().padStart(w || 3, "0"); }
 function terrainHeight(x, z) {
-  let h = 0;
-  for (let i = 0; i < ISLANDS.length; i++) {
-    const isl = ISLANDS[i], dx = x - isl.x, dz = z - isl.z, d2 = dx * dx + dz * dz, r2 = isl.r * isl.r;
-    if (d2 < r2) { const t = 1 - d2 / r2; h = Math.max(h, isl.h * t * t); }
+  var h = 0;
+  for (var i = 0; i < ISLANDS.length; i++) {
+    var isl = ISLANDS[i], dx = x - isl.x, dz = z - isl.z, d2 = dx * dx + dz * dz, r2 = isl.r * isl.r;
+    if (d2 < r2) { var t = 1 - d2 / r2; h = Math.max(h, isl.h * t * t); }
   }
   return h;
 }
 function gateAt(index) {
-  const i = Math.max(0, index), t = i * 0.46;
-  const x = Math.sin(t) * 150 + Math.sin(t * 0.41) * 55;
-  const y = 50 + Math.sin(t * 0.72) * 20 + Math.sin(t * 1.15) * 7;
-  const z = -85 - i * 98;
-  const nx = Math.sin(t + 0.46) * 150 + Math.sin((t + 0.46) * 0.41) * 55;
-  const nz = -85 - (i + 1) * 98;
+  var i = Math.max(0, index), t = i * 0.46;
+  var x = Math.sin(t) * 150 + Math.sin(t * 0.41) * 55;
+  var y = 50 + Math.sin(t * 0.72) * 20 + Math.sin(t * 1.15) * 7;
+  var z = -85 - i * 98;
+  var nx = Math.sin(t + 0.46) * 150 + Math.sin((t + 0.46) * 0.41) * 55;
+  var nz = -85 - (i + 1) * 98;
   return { x: x, y: y, z: z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: 9.5 };
 }
 function createSim() {
@@ -137,7 +143,7 @@ function createSim() {
   };
 }
 function respawn(sim) {
-  const gate = sim.nextGate > 0 ? gateAt(sim.nextGate - 1) : null;
+  var gate = sim.nextGate > 0 ? gateAt(sim.nextGate - 1) : null;
   sim.x = gate ? gate.x : sim.spawnX; sim.y = gate ? gate.y + 6 : sim.spawnY; sim.z = gate ? gate.z + 28 : sim.spawnZ;
   sim.yaw = gate ? gate.yaw : sim.spawnYaw; sim.pitch = 0; sim.roll = 0; sim.speed = 42; sim.throttle = 0.62;
   sim.alive = true; sim.crashed = false; sim.crashTimer = 0; sim.maneuver = null; sim.barrelBonusArmed = false; sim.combo = 0; sim.shake = 0.2;
@@ -146,8 +152,8 @@ function beginManeuver(sim, kind) {
   sim.maneuver = { kind: kind, t: 0, duration: kind === "loop" ? 2.05 : 1.35, startYaw: sim.yaw, startPitch: sim.pitch, startRoll: sim.roll, startY: sim.y };
 }
 function stepManeuver(sim, dt) {
-  const m = sim.maneuver; if (!m) return null;
-  m.t += dt; const u = Math.min(m.t / m.duration, 1), e = easeInOutCubic(u);
+  var m = sim.maneuver; if (!m) return null;
+  m.t += dt; var u = Math.min(m.t / m.duration, 1), e = easeInOutCubic(u);
   if (m.kind === "barrel-left") {
     sim.roll = m.startRoll + e * Math.PI * 2; sim.yaw = m.startYaw + Math.sin(e * Math.PI) * 0.42;
     sim.y = m.startY + Math.sin(e * Math.PI) * 7; sim.pitch = m.startPitch * (1 - Math.sin(e * Math.PI) * 0.35);
@@ -159,19 +165,19 @@ function stepManeuver(sim, dt) {
   if (m.kind === "barrel-left") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw + 0.18; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
   else if (m.kind === "barrel-right") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw - 0.18; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
   else { sim.pitch = wrapPi(m.startPitch); sim.roll = 0; }
-  const kind = m.kind; sim.maneuver = null;
+  var kind = m.kind; sim.maneuver = null;
   return { type: "maneuver-end", kind: kind, completed: true };
 }
 function stepSim(sim, input, dt) {
-  const events = [];
+  var events = [];
   if (!sim.alive) { sim.crashTimer += dt; return events; }
   sim.time += dt;
-  if (sim.maneuver && input.cancelManeuver) { const kind = sim.maneuver.kind; sim.maneuver = null; events.push({ type: "maneuver-end", kind: kind, completed: false }); }
+  if (sim.maneuver && input.cancelManeuver) { var kind = sim.maneuver.kind; sim.maneuver = null; events.push({ type: "maneuver-end", kind: kind, completed: false }); }
   if (!sim.maneuver && input.startBarrel) {
-    const kind = input.startBarrel === "left" ? "barrel-left" : "barrel-right";
-    beginManeuver(sim, kind); events.push({ type: "maneuver-start", kind: kind });
+    var kind2 = input.startBarrel === "left" ? "barrel-left" : "barrel-right";
+    beginManeuver(sim, kind2); events.push({ type: "maneuver-start", kind: kind2 });
   } else if (!sim.maneuver && input.startLoop) { beginManeuver(sim, "loop"); events.push({ type: "maneuver-start", kind: "loop" }); }
-  if (sim.maneuver) { const end = stepManeuver(sim, dt); if (end) events.push(end); }
+  if (sim.maneuver) { var end = stepManeuver(sim, dt); if (end) events.push(end); }
   else {
     sim.roll += input.roll * ROLL_RATE * dt; sim.pitch += input.pitch * PITCH_RATE * dt; sim.yaw += input.yaw * YAW_RATE * dt;
     if (Math.abs(input.roll) < 0.08) sim.roll *= Math.exp(-0.7 * dt);
@@ -180,26 +186,26 @@ function stepSim(sim, input, dt) {
     sim.yaw += Math.sin(sim.roll) * COORD_TURN * clamp(sim.speed / 48, 0.35, 1.35) * dt;
   }
   sim.throttle = clamp(sim.throttle + input.throttleDelta * 0.55 * dt, 0.1, 1);
-  const target = MIN_SPEED + sim.throttle * (MAX_SPEED - MIN_SPEED) + (input.boost ? 26 : 0);
+  var target = MIN_SPEED + sim.throttle * (MAX_SPEED - MIN_SPEED) + (input.boost ? 26 : 0);
   sim.speed += (target - sim.speed) * (1 - Math.exp(-1.7 * dt));
   sim.speed += -Math.sin(sim.pitch) * 14 * dt;
   if (sim.speed < 22 && sim.pitch > 0.12) sim.pitch -= 0.85 * dt * (1 - sim.speed / 22);
   sim.speed = clamp(sim.speed, 8, 128);
-  const fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
+  var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
   sim.x += fx * sim.speed * dt; sim.y += fy * sim.speed * dt; sim.z += fz * sim.speed * dt;
-  const load = 1 + Math.abs(sim.roll) * 0.55 + Math.abs(sim.pitch) * 0.35 + (input.boost ? 0.4 : 0);
+  var load = 1 + Math.abs(sim.roll) * 0.55 + Math.abs(sim.pitch) * 0.35 + (input.boost ? 0.4 : 0);
   sim.gForce += (load - sim.gForce) * (1 - Math.exp(-6 * dt));
-  const floor = Math.max(1.8, terrainHeight(sim.x, sim.z) + 2.4);
+  var floor = Math.max(1.8, terrainHeight(sim.x, sim.z) + 2.4);
   if (sim.y < floor || sim.y > 240) {
     sim.alive = false; sim.crashed = true; sim.crashTimer = 0; sim.shake = 1; sim.speed = 0; sim.combo = 0;
     events.push({ type: "crash" }); return events;
   }
-  const gate = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
+  var gate = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
   if (gate) {
-    const dx = sim.x - gate.x, dy = sim.y - gate.y, dz = sim.z - gate.z, dist = Math.hypot(dx, dy, dz);
-    const along = dx * -Math.sin(gate.yaw) + dz * -Math.cos(gate.yaw);
+    var dx = sim.x - gate.x, dy = sim.y - gate.y, dz = sim.z - gate.z, dist = Math.hypot(dx, dy, dz);
+    var along = dx * -Math.sin(gate.yaw) + dz * -Math.cos(gate.yaw);
     if (dist < gate.radius) {
-      const bonus = sim.barrelBonusArmed || !!sim.maneuver;
+      var bonus = sim.barrelBonusArmed || !!sim.maneuver;
       sim.barrelBonusArmed = false; sim.combo += 1;
       sim.score += (100 + Math.round(sim.speed)) * (bonus ? 2 : 1) * Math.min(sim.combo, 8);
       sim.gatesHit += 1; sim.nextGate += 1; sim.shake = Math.min(1, sim.shake + (bonus ? 0.45 : 0.28));
@@ -210,9 +216,9 @@ function stepSim(sim, input, dt) {
   return events;
 }
 
-const held = new Set();
-let touchRoll = 0, touchPitch = 0, touchThrottle = 0, touchBoost = false;
-let queuedBarrel = null, queuedLoop = false, queuedCancel = false;
+var held = new Set();
+var touchRoll = 0, touchPitch = 0, touchThrottle = 0, touchBoost = false;
+var queuedBarrel = null, queuedLoop = false, queuedCancel = false;
 window.addEventListener("keydown", function (e) {
   held.add(e.code);
   if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") e.preventDefault();
@@ -220,7 +226,7 @@ window.addEventListener("keydown", function (e) {
 window.addEventListener("keyup", function (e) { held.delete(e.code); });
 window.addEventListener("blur", function () { held.clear(); });
 function readInput() {
-  let roll = 0, pitch = 0, yaw = 0, throttleDelta = touchThrottle;
+  var roll = 0, pitch = 0, yaw = 0, throttleDelta = touchThrottle;
   if (held.has("KeyA") || held.has("ArrowLeft")) roll += 1;
   if (held.has("KeyD") || held.has("ArrowRight")) roll -= 1;
   if (held.has("KeyW") || held.has("ArrowUp")) pitch += 1;
@@ -229,11 +235,11 @@ function readInput() {
   if (held.has("KeyE")) yaw -= 1;
   if (held.has("ShiftLeft") || held.has("ShiftRight") || held.has("KeyR")) throttleDelta += 1;
   if (held.has("ControlLeft") || held.has("ControlRight") || held.has("KeyF") || held.has("KeyZ")) throttleDelta -= 1;
-  let startBarrel = queuedBarrel; queuedBarrel = null;
+  var startBarrel = queuedBarrel; queuedBarrel = null;
   if (!startBarrel && held.has("Digit1")) startBarrel = "left";
   if (!startBarrel && held.has("Digit2")) startBarrel = "right";
-  const startLoop = queuedLoop || held.has("Digit3"); queuedLoop = false;
-  const cancelManeuver = queuedCancel; queuedCancel = false;
+  var startLoop = queuedLoop || held.has("Digit3"); queuedLoop = false;
+  var cancelManeuver = queuedCancel; queuedCancel = false;
   return {
     roll: clamp(roll + touchRoll, -1, 1), pitch: clamp(pitch + touchPitch, -1, 1),
     yaw: clamp(yaw, -1, 1), throttleDelta: clamp(throttleDelta, -1, 1),
@@ -241,11 +247,11 @@ function readInput() {
   };
 }
 
-const audio = {
+var audio = {
   ctx: null, master: null, osc: null, filter: null, engine: null, noise: null, muted: false,
   unlock: function () {
     if (!this.ctx) {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
+      var Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
       this.ctx = new Ctx({ latencyHint: "interactive" });
       this.master = this.ctx.createGain(); this.master.gain.value = 0.22; this.master.connect(this.ctx.destination);
@@ -253,10 +259,10 @@ const audio = {
       this.engine = this.ctx.createGain(); this.engine.gain.value = 0.0001;
       this.osc = this.ctx.createOscillator(); this.osc.type = "sawtooth"; this.osc.frequency.value = 68;
       this.osc.connect(this.filter); this.filter.connect(this.engine); this.engine.connect(this.master); this.osc.start();
-      const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
-      const data = buf.getChannelData(0); for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-      const src = this.ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-      const nf = this.ctx.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = 700;
+      var buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
+      var data = buf.getChannelData(0); for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      var src = this.ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      var nf = this.ctx.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = 700;
       this.noise = this.ctx.createGain(); this.noise.gain.value = 0.0001;
       src.connect(nf); nf.connect(this.noise); this.noise.connect(this.master); src.start();
     }
@@ -265,7 +271,7 @@ const audio = {
   setMuted: function (m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.22, this.ctx.currentTime, 0.03); },
   setEngine: function (throttle, speed, boosting) {
     if (!this.osc) return;
-    const t = this.ctx.currentTime;
+    var t = this.ctx.currentTime;
     this.osc.frequency.setTargetAtTime(62 + throttle * 90 + speed * 0.35 + (boosting ? 28 : 0), t, 0.05);
     this.filter.frequency.setTargetAtTime(360 + throttle * 900 + (boosting ? 400 : 0), t, 0.06);
     this.engine.gain.setTargetAtTime(0.03 + throttle * 0.07 + (boosting ? 0.04 : 0), t, 0.05);
@@ -273,7 +279,7 @@ const audio = {
   },
   blip: function (start, end, dur, vol) {
     if (!this.ctx || this.muted) return;
-    const t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    var t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = "triangle"; o.frequency.setValueAtTime(start, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, end), t + dur);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
@@ -283,48 +289,48 @@ const audio = {
   crash: function () { this.blip(90, 28, 0.28, 0.35); }
 };
 
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d", { alpha: false });
-let W = 1, H = 1, FOC = 1;
-const cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
-const jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
-const trail = [];
-for (let i = 0; i < 40; i++) trail.push({ x: 0, y: 48, z: 36 });
+var canvas = document.getElementById("c");
+var ctx = canvas.getContext("2d", { alpha: false });
+var W = 1, H = 1, FOC = 1;
+var cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
+var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
+var trail = [];
+for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 48, z: 36 });
 
 function setCam(px, py, pz, tx, ty, tz) {
-  let fx = tx - px, fy = ty - py, fz = tz - pz;
-  let len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
-  let rx = -fz, ry = 0, rz = fx;
+  var fx = tx - px, fy = ty - py, fz = tz - pz;
+  var len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
+  var rx = -fz, ry = 0, rz = fx;
   len = Math.hypot(rx, ry, rz);
   if (len < 1e-5) { rx = 1; ry = 0; rz = 0; len = 1; }
   rx /= len; ry /= len; rz /= len;
-  const ux = ry * fz - rz * fy, uy = rz * fx - rx * fz, uz = rx * fy - ry * fx;
+  var ux = ry * fz - rz * fy, uy = rz * fx - rx * fz, uz = rx * fy - ry * fx;
   cam.x = px; cam.y = py; cam.z = pz;
   cam.fx = fx; cam.fy = fy; cam.fz = fz;
   cam.rx = rx; cam.ry = ry; cam.rz = rz;
   cam.ux = ux; cam.uy = uy; cam.uz = uz;
 }
 function project(x, y, z) {
-  const dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
-  const cz = dx * cam.fx + dy * cam.fy + dz * cam.fz;
+  var dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
+  var cz = dx * cam.fx + dy * cam.fy + dz * cam.fz;
   if (cz < 0.35) return null;
-  const cx = dx * cam.rx + dy * cam.ry + dz * cam.rz;
-  const cy = dx * cam.ux + dy * cam.uy + dz * cam.uz;
+  var cx = dx * cam.rx + dy * cam.ry + dz * cam.rz;
+  var cy = dx * cam.ux + dy * cam.uy + dz * cam.uz;
   return { x: W * 0.5 + (cx * FOC) / cz, y: H * 0.5 - (cy * FOC) / cz, z: cz };
 }
 function worldFromLocal(lx, ly, lz, o, r, u, f) {
   return { x: o.x + r.x * lx + u.x * ly + f.x * lz, y: o.y + r.y * lx + u.y * ly + f.y * lz, z: o.z + r.z * lx + u.z * ly + f.z * lz };
 }
 function computeJetBasis(sim) {
-  const fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
-  let fl = Math.hypot(fx, fy, fz) || 1;
+  var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
+  var fl = Math.hypot(fx, fy, fz) || 1;
   jetF.x = fx / fl; jetF.y = fy / fl; jetF.z = fz / fl;
-  let rx = -jetF.z, ry = 0, rz = jetF.x;
-  let rl = Math.hypot(rx, ry, rz);
+  var rx = -jetF.z, ry = 0, rz = jetF.x;
+  var rl = Math.hypot(rx, ry, rz);
   if (rl < 1e-5) { rx = Math.cos(sim.yaw); ry = 0; rz = -Math.sin(sim.yaw); rl = Math.hypot(rx, ry, rz) || 1; }
   rx /= rl; ry /= rl; rz /= rl;
-  let ux = ry * jetF.z - rz * jetF.y, uy = rz * jetF.x - rx * jetF.z, uz = rx * jetF.y - ry * jetF.x;
-  const c = Math.cos(sim.roll), s = Math.sin(sim.roll);
+  var ux = ry * jetF.z - rz * jetF.y, uy = rz * jetF.x - rx * jetF.z, uz = rx * jetF.y - ry * jetF.x;
+  var c = Math.cos(sim.roll), s = Math.sin(sim.roll);
   jetR.x = rx * c + ux * s; jetR.y = ry * c + uy * s; jetR.z = rz * c + uz * s;
   jetU.x = -rx * s + ux * c; jetU.y = -ry * s + uy * c; jetU.z = -rz * s + uz * c;
 }
@@ -332,13 +338,13 @@ function fillPoly(pts, fill, stroke, width) {
   if (pts.length < 2) return;
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
   ctx.closePath();
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width || 1; ctx.stroke(); }
 }
 function drawSky() {
-  const g = ctx.createLinearGradient(0, 0, 0, H);
+  var g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, "#9aa8b4"); g.addColorStop(0.42, "#6d8498"); g.addColorStop(0.62, "#4a5d6a"); g.addColorStop(1, "#0d1c24");
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   ctx.beginPath(); ctx.fillStyle = "rgba(255,210,168,0.95)";
@@ -347,50 +353,50 @@ function drawSky() {
   ctx.arc(W * 0.78, H * 0.38, Math.max(70, W * 0.08), 0, Math.PI * 2); ctx.fill();
 }
 function drawWater() {
-  const far = [];
-  for (let i = -12; i <= 12; i++) {
-    const p = project(cam.x + cam.rx * i * 80, 0, cam.z + cam.fz * 900 + cam.rx * i * 12);
+  var far = [];
+  for (var i = -12; i <= 12; i++) {
+    var p = project(cam.x + cam.rx * i * 80, 0, cam.z + cam.fz * 900 + cam.rx * i * 12);
     if (p) far.push(p);
   }
   if (far.length > 1) {
     ctx.beginPath();
     ctx.moveTo(0, H); ctx.lineTo(far[0].x, far[0].y);
-    for (let i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
+    for (var i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
     ctx.lineTo(W, H); ctx.closePath();
-    const wg = ctx.createLinearGradient(0, H * 0.45, 0, H);
+    var wg = ctx.createLinearGradient(0, H * 0.45, 0, H);
     wg.addColorStop(0, "#1a3340"); wg.addColorStop(1, "#071016");
     ctx.fillStyle = wg; ctx.fill();
   }
 }
 function drawIsland(isl) {
-  const apex = project(isl.x, isl.h * 1.15, isl.z);
-  const ring = [];
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    const p = project(isl.x + Math.cos(a) * isl.r * 0.92, 0, isl.z + Math.sin(a) * isl.r * 0.92);
+  var apex = project(isl.x, isl.h * 1.15, isl.z);
+  var ring = [];
+  for (var i = 0; i < 8; i++) {
+    var a = (i / 8) * Math.PI * 2;
+    var p = project(isl.x + Math.cos(a) * isl.r * 0.92, 0, isl.z + Math.sin(a) * isl.r * 0.92);
     if (p) ring.push(p);
   }
   if (ring.length > 2) fillPoly(ring, "#1c221c", null);
   if (apex && ring.length > 2) {
-    for (let i = 0; i < ring.length; i++) {
-      const n = ring[(i + 1) % ring.length];
+    for (var i = 0; i < ring.length; i++) {
+      var n = ring[(i + 1) % ring.length];
       fillPoly([apex, ring[i], n], i % 2 ? "#32362f" : "#3a3f38", "rgba(0,0,0,0.18)", 1);
     }
   }
 }
 function drawGate(g, active) {
-  const gy = -Math.sin(g.yaw), gz = -Math.cos(g.yaw);
-  const rx = -gz, rz = gy;
-  const outer = [];
-  for (let i = 0; i < 22; i++) {
-    const a = (i / 22) * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
-    const op = project(g.x + rx * ca * 9.5, g.y + sa * 9.5, g.z + rz * ca * 9.5);
+  var gy = -Math.sin(g.yaw), gz = -Math.cos(g.yaw);
+  var rx = -gz, rz = gy;
+  var outer = [];
+  for (var i = 0; i < 22; i++) {
+    var a = (i / 22) * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
+    var op = project(g.x + rx * ca * 9.5, g.y + sa * 9.5, g.z + rz * ca * 9.5);
     if (op) outer.push(op);
   }
   if (outer.length > 3) {
     ctx.beginPath();
     ctx.moveTo(outer[0].x, outer[0].y);
-    for (let i = 1; i < outer.length; i++) ctx.lineTo(outer[i].x, outer[i].y);
+    for (var i = 1; i < outer.length; i++) ctx.lineTo(outer[i].x, outer[i].y);
     ctx.closePath();
     ctx.strokeStyle = active ? "rgba(232,237,243,0.95)" : "rgba(143,160,179,0.7)";
     ctx.lineWidth = active ? 3.2 : 1.6;
@@ -398,12 +404,12 @@ function drawGate(g, active) {
   }
 }
 function drawJet(sim, boosting) {
-  const o = { x: sim.x, y: sim.y, z: sim.z };
+  var o = { x: sim.x, y: sim.y, z: sim.z };
   function P(lx, ly, lz) {
-    const w = worldFromLocal(lx, ly, lz, o, jetR, jetU, jetF);
+    var w = worldFromLocal(lx, ly, lz, o, jetR, jetU, jetF);
     return project(w.x, w.y, w.z);
   }
-  const tris = [
+  var tris = [
     [[0, 0.08, 1.55], [0.22, -0.06, 0.9], [-0.22, -0.06, 0.9], "#9aa3ae"],
     [[0.05, 0.02, 0.7], [2.25, -0.08, -0.55], [0.2, -0.08, -0.4], "#1b1d22"],
     [[-0.05, 0.02, 0.7], [-2.25, -0.08, -0.55], [-0.2, -0.08, -0.4], "#24272d"],
@@ -412,26 +418,26 @@ function drawJet(sim, boosting) {
     [[0, 0.12, 0.2], [0.18, 0.42, -0.95], [-0.18, 0.42, -0.95], "#1b1d22"],
     [[0.1, 0.02, -0.6], [0.22, -0.04, -1.15], [-0.22, -0.04, -1.15], "#0a0b0d"]
   ];
-  const drawn = [];
-  for (let i = 0; i < tris.length; i++) {
-    const a = P(tris[i][0][0], tris[i][0][1], tris[i][0][2]);
-    const b = P(tris[i][1][0], tris[i][1][1], tris[i][1][2]);
-    const c = P(tris[i][2][0], tris[i][2][1], tris[i][2][2]);
+  var drawn = [];
+  for (var i = 0; i < tris.length; i++) {
+    var a = P(tris[i][0][0], tris[i][0][1], tris[i][0][2]);
+    var b = P(tris[i][1][0], tris[i][1][1], tris[i][1][2]);
+    var c = P(tris[i][2][0], tris[i][2][1], tris[i][2][2]);
     if (a && b && c) drawn.push({ z: (a.z + b.z + c.z) / 3, pts: [a, b, c], col: tris[i][3] });
   }
   drawn.sort(function (a, b) { return b.z - a.z; });
-  for (let i = 0; i < drawn.length; i++) fillPoly(drawn[i].pts, drawn[i].col, "rgba(0,0,0,0.35)", 0.6);
+  for (var i = 0; i < drawn.length; i++) fillPoly(drawn[i].pts, drawn[i].col, "rgba(0,0,0,0.35)", 0.6);
   if (boosting || sim.throttle > 0.4) {
-    const b = P(0.12, 0, -1.2), c = P(-0.12, 0, -1.2);
-    const tip = P(0, 0, -1.15 - (0.6 + sim.throttle * 1.4 + (boosting ? 0.5 : 0)));
+    var b = P(0.12, 0, -1.2), c = P(-0.12, 0, -1.2);
+    var tip = P(0, 0, -1.15 - (0.6 + sim.throttle * 1.4 + (boosting ? 0.5 : 0)));
     if (b && c && tip) fillPoly([b, tip, c], boosting ? "rgba(255,176,122,0.85)" : "rgba(255,160,90,0.55)");
   }
 }
 function drawTrail() {
   ctx.beginPath();
-  let started = false;
-  for (let i = 0; i < trail.length; i++) {
-    const p = project(trail[i].x, trail[i].y, trail[i].z);
+  var started = false;
+  for (var i = 0; i < trail.length; i++) {
+    var p = project(trail[i].x, trail[i].y, trail[i].z);
     if (!p) { started = false; continue; }
     if (!started) { ctx.moveTo(p.x, p.y); started = true; }
     else ctx.lineTo(p.x, p.y);
@@ -439,9 +445,9 @@ function drawTrail() {
   ctx.strokeStyle = "rgba(207,214,222,0.32)"; ctx.lineWidth = 1.4; ctx.stroke();
 }
 
-let sim = createSim();
-let phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
-let best = 0;
+var sim = createSim();
+var phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
+var best = 0;
 try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (e) {}
 function $(id) { return document.getElementById(id); }
 
@@ -451,7 +457,7 @@ function commitScore(score) {
 }
 function setFlash(text) { $("flash").textContent = text; $("flash").style.display = "block"; flashTimer = 0.7; }
 function renderCard() {
-  const card = $("card"), panel = $("panel");
+  var card = $("card"), panel = $("panel");
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
@@ -473,24 +479,32 @@ function setPhase(next) {
   $("instruments").hidden = next === "start";
   $("reticle").hidden = next === "start";
   $("horizon").hidden = next === "start";
-  $("crash").style.display = next === "crash" ? "block" : "none";
+  if (next === "crash") {
+    var el = $("crash");
+    el.classList.remove("show");
+    void el.offsetWidth;
+    el.classList.add("show");
+    $("crashCount").textContent = "5";
+  } else {
+    $("crash").classList.remove("show");
+  }
   $("pauseBtn").style.display = next === "playing" ? "grid" : "none";
   renderCard();
 }
-function takeOff() { audio.unlock(); sim = createSim(); setPhase("playing"); }
+function takeOff() { audio.unlock(); sim = createSim(); $("panel").hidden = true; setPhase("playing"); }
 function updateHud(input) {
   $("scoreline").textContent = "SCORE " + pad(sim.score, 5) + " · BEST " + pad(best, 5);
   $("gateline").textContent = "GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + (sim.combo > 1 ? " · COMBO ×" + sim.combo : "");
   $("leftInst").innerHTML = "IAS " + pad(sim.speed * 8) + "<br>ALT " + pad(sim.y) + "<br>HDG " + pad(headingDeg(sim.yaw));
-  const g = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
-  const dist = g ? Math.hypot(sim.x - g.x, sim.y - g.y, sim.z - g.z) : 0;
+  var g = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
+  var dist = g ? Math.hypot(sim.x - g.x, sim.y - g.y, sim.z - g.z) : 0;
   $("rightInst").innerHTML = "G " + sim.gForce.toFixed(1) + "<br>NXT " + pad(dist) + '<br><span style="color:var(--subtle)">1 / 2 ROLL</span>';
   $("thrBar").style.width = Math.round(sim.throttle * 100) + "%";
   $("thrLabel").textContent = (input.boost && phase === "playing" ? "AB " : "THR ") + Math.round(sim.throttle * 100) + (sim.maneuver ? " · " + sim.maneuver.kind.replace("-", " ").toUpperCase() : "");
   $("horizon").style.transform = "translateX(-50%) rotate(" + (clamp(sim.roll / 1.2, -1, 1) * -28) + "deg)";
 }
 function resize() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
   W = window.innerWidth; H = window.innerHeight;
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   canvas.style.width = W + "px"; canvas.style.height = H + "px";
@@ -500,8 +514,8 @@ function resize() {
 addEventListener("resize", resize); resize();
 
 canvas.addEventListener("click", function (e) {
-  const now = performance.now();
-  const dbl = now - (canvas._lastTap || 0) < 320;
+  var now = performance.now();
+  var dbl = now - (canvas._lastTap || 0) < 320;
   canvas._lastTap = now;
   if (phase !== "playing") return;
   if (sim.maneuver) { queuedCancel = true; return; }
@@ -532,11 +546,11 @@ $("thrUp").onpointerdown = function () { touchThrottle = 1; };
 $("thrUp").onpointerup = $("thrUp").onpointerleave = function () { touchThrottle = 0; };
 $("abBtn").onpointerdown = function () { touchBoost = true; };
 $("abBtn").onpointerup = $("abBtn").onpointerleave = function () { touchBoost = false; };
-const stick = $("stick"), knob = $("knob");
+var stick = $("stick"), knob = $("knob");
 function onStick(x, y) {
-  const r = stick.getBoundingClientRect();
-  const nx = clamp(((x - r.left) / r.width) * 2 - 1, -1, 1);
-  const ny = clamp(((y - r.top) / r.height) * 2 - 1, -1, 1);
+  var r = stick.getBoundingClientRect();
+  var nx = clamp(((x - r.left) / r.width) * 2 - 1, -1, 1);
+  var ny = clamp(((y - r.top) / r.height) * 2 - 1, -1, 1);
   touchRoll = -nx; touchPitch = -ny;
   knob.style.transform = "translate(calc(-50% + " + (nx * 22) + "px), calc(-50% + " + (ny * 22) + "px))";
 }
@@ -549,16 +563,16 @@ stick.addEventListener("pointercancel", endStick);
 setPhase("start");
 
 function frame() {
-  const now = performance.now();
-  const dt = Math.min((now - lastT) / 1000, 0.1);
+  var now = performance.now();
+  var dt = Math.min((now - lastT) / 1000, 0.1);
   lastT = now;
-  const input = readInput();
+  var input = readInput();
   if (phase === "playing" || phase === "crash") {
     acc += dt;
     while (acc >= STEP) {
-      const events = stepSim(sim, input, STEP);
-      for (let i = 0; i < events.length; i++) {
-        const ev = events[i];
+      var events = stepSim(sim, input, STEP);
+      for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
         if (ev.type === "gate") { audio.gate(ev.bonus); setFlash(ev.bonus ? "ROLL GATE  ×2" : "GATE"); }
         else if (ev.type === "maneuver-start") audio.whoosh();
         else if (ev.type === "crash") { audio.crash(); commitScore(sim.score); setPhase("crash"); }
@@ -567,16 +581,19 @@ function frame() {
       acc -= STEP;
     }
   } else acc = 0;
-  if (phase === "crash" && sim.crashed && sim.crashTimer > 1.6) { respawn(sim); setPhase("playing"); }
+  if (phase === "crash") {
+    $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
+  }
+  if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); setPhase("playing"); }
 
   computeJetBasis(sim);
-  const follow = phase === "playing" || phase === "paused" || phase === "crash";
+  var follow = phase === "playing" || phase === "paused" || phase === "crash";
   if (follow) {
-    let px = sim.x - jetF.x * 13.5 + jetU.x * 3.6;
-    let py = sim.y - jetF.y * 13.5 + jetU.y * 3.6;
-    let pz = sim.z - jetF.z * 13.5 + jetU.z * 3.6;
+    var px = sim.x - jetF.x * 13.5 + jetU.x * 3.6;
+    var py = sim.y - jetF.y * 13.5 + jetU.y * 3.6;
+    var pz = sim.z - jetF.z * 13.5 + jetU.z * 3.6;
     if (sim.shake > 0) {
-      const s = sim.shake * sim.shake;
+      var s = sim.shake * sim.shake;
       px += (Math.random() - 0.5) * s * 0.55;
       py += (Math.random() - 0.5) * s * 0.35;
       sim.shake = Math.max(0, sim.shake - dt * 1.7);
@@ -587,25 +604,25 @@ function frame() {
   }
 
   if (sim.alive && phase === "playing") {
-    for (let i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
+    for (var i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
     trail[0] = { x: sim.x - jetF.x * 1.4, y: sim.y - jetF.y * 1.4, z: sim.z - jetF.z * 1.4 };
   }
 
   drawSky();
   drawWater();
-  const drawables = [];
-  for (let i = 0; i < ISLANDS.length; i++) {
-    const isl = ISLANDS[i];
-    const d = (isl.x - cam.x) * cam.fx + (0 - cam.y) * cam.fy + (isl.z - cam.z) * cam.fz;
+  var drawables = [];
+  for (var i = 0; i < ISLANDS.length; i++) {
+    var isl = ISLANDS[i];
+    var d = (isl.x - cam.x) * cam.fx + (0 - cam.y) * cam.fy + (isl.z - cam.z) * cam.fz;
     if (d > 2) drawables.push({ z: d, kind: "island", isl: isl });
   }
-  for (let i = 0; i < GATE_COUNT; i++) {
-    const g = gateAt(i);
-    const d = (g.x - cam.x) * cam.fx + (g.y - cam.y) * cam.fy + (g.z - cam.z) * cam.fz;
+  for (var i = 0; i < GATE_COUNT; i++) {
+    var g = gateAt(i);
+    var d = (g.x - cam.x) * cam.fx + (g.y - cam.y) * cam.fy + (g.z - cam.z) * cam.fz;
     if (d > 2) drawables.push({ z: d, kind: "gate", g: g, active: i === sim.nextGate });
   }
   drawables.sort(function (a, b) { return b.z - a.z; });
-  for (let i = 0; i < drawables.length; i++) {
+  for (var i = 0; i < drawables.length; i++) {
     if (drawables[i].kind === "island") drawIsland(drawables[i].isl);
     else drawGate(drawables[i].g, drawables[i].active);
   }
@@ -613,7 +630,7 @@ function frame() {
   if (follow) {
     if (sim.alive) drawJet(sim, input.boost && phase === "playing");
   } else {
-    const pose = { x: 0, y: 48, z: 18, yaw: 0.42, pitch: 0.1, roll: 0.14, throttle: 0.62 };
+    var pose = { x: 0, y: 48, z: 18, yaw: 0.42, pitch: 0.1, roll: 0.14, throttle: 0.62 };
     computeJetBasis(pose);
     drawJet(pose, false);
   }
