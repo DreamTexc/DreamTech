@@ -165,16 +165,43 @@
   </div>
   <div id="boot-error"><div><h2 class="display">Could not start</h2><p id="boot-msg"></p></div></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
 <script>
 (function () {
+  var urls = [
+    "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js",
+    "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js",
+    "https://unpkg.com/three@0.160.1/build/three.min.js"
+  ];
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src;
+      s.onload = function () { resolve(true); };
+      s.onerror = function () { reject(new Error(src)); };
+      document.head.appendChild(s);
+    });
+  }
+  window.__focusBoot = (async function () {
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        await load(urls[i]);
+        if (window.THREE) return true;
+      } catch (e) {}
+    }
+    return false;
+  })();
+})();
+</script>
+<script>
+(async function () {
 function fail(msg) {
   const el = document.getElementById("boot-error");
   const p = document.getElementById("boot-msg");
   if (p) p.textContent = msg;
   if (el) el.style.display = "grid";
 }
-if (!window.THREE) {
+const ok = window.__focusBoot ? await window.__focusBoot : !!window.THREE;
+if (!ok || !window.THREE) {
   fail("The 3D engine did not load. Stay online and open this file in Chrome, Edge, or Firefox.");
   return;
 }
