@@ -64,25 +64,34 @@
     transform: translate(-50%, -50%);
     z-index: 1;
     pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0.95;
+    mix-blend-mode: soft-light;
+    opacity: 0.16;
   }
   #sun img {
     display: block;
     width: 100%;
     height: auto;
-    -webkit-mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 52%, rgba(0,0,0,0.45) 74%, transparent 100%);
-    mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 52%, rgba(0,0,0,0.45) 74%, transparent 100%);
-    filter: contrast(1.05) saturate(1.1) brightness(1.45);
+    -webkit-mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
+    mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
+    filter: contrast(0.92) saturate(0.75) brightness(1.15);
   }
+  #cockpit {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    display: none;
+  }
+  #cockpit.on { display: block; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="ui">
-  <div id="sun" aria-hidden="true">
-    <img src="iii.png" alt="" />
-  </div>
+  <div id="sun" aria-hidden="true"><img src="iii.png" alt="" /></div>
+  <canvas id="cockpit" aria-hidden="true"></canvas>
   <header class="hud" id="chrome" hidden>
     <div>
       <h1 class="display">FOCUS × ROLLOVER</h1>
@@ -122,7 +131,6 @@
 <script>
 (function () {
 "use strict";
-
 const STEP = 1 / 60, MIN_SPEED = 16, MAX_SPEED = 92;
 const ROLL_RATE = 2.35, PITCH_RATE = 1.15, YAW_RATE = 0.72, COORD_TURN = 1.05;
 const GATE_COUNT = 36, BEST_KEY = "focus-rollover-best";
@@ -133,7 +141,6 @@ const ISLANDS = [
   { x: -90, z: -1980, r: 100, h: 20 }, { x: 20, z: -2400, r: 140, h: 26 },
   { x: -160, z: -2860, r: 110, h: 19 }, { x: 110, z: -3300, r: 125, h: 23 }
 ];
-
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function wrapPi(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
 function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
@@ -237,7 +244,6 @@ function stepSim(sim, input, dt) {
   }
   return events;
 }
-
 var held = new Set();
 var touchRoll = 0, touchPitch = 0, touchThrottle = 0, touchBoost = false;
 var queuedBarrel = null, queuedLoop = false, queuedCancel = false;
@@ -256,7 +262,7 @@ function readInput() {
   if (held.has("KeyQ")) yaw += 1;
   if (held.has("KeyE")) yaw -= 1;
   if (held.has("ShiftLeft") || held.has("ShiftRight") || held.has("KeyR")) throttleDelta += 1;
-  if (held.has("ControlLeft") || held.has("ControlRight") || held.has("KeyF") || held.has("KeyZ")) throttleDelta -= 1;
+  if (held.has("ControlLeft") || held.has("ControlRight") || held.has("KeyF")) throttleDelta -= 1;
   var startBarrel = queuedBarrel; queuedBarrel = null;
   if (!startBarrel && held.has("Digit1")) startBarrel = "left";
   if (!startBarrel && held.has("Digit2")) startBarrel = "right";
@@ -268,7 +274,6 @@ function readInput() {
     boost: touchBoost || held.has("Space"), startBarrel: startBarrel, startLoop: startLoop, cancelManeuver: cancelManeuver
   };
 }
-
 var audio = {
   ctx: null, master: null, osc: null, filter: null, engine: null, noise: null, muted: false,
   unlock: function () {
@@ -310,15 +315,55 @@ var audio = {
   gate: function (bonus) { this.blip(bonus ? 880 : 640, bonus ? 520 : 420, 0.07, bonus ? 0.16 : 0.11); },
   crash: function () { this.blip(90, 28, 0.28, 0.35); }
 };
-
 var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d", { alpha: false });
-var W = 1, H = 1, FOC = 1;
+var W = 1, H = 1, FOC = 1, zoom = 1;
+var lookX = 0, lookY = 0;
+var pitCv = document.getElementById("cockpit");
+var pitCtx = pitCv.getContext("2d");
+var pitImg = new Image();
+var pitSrc = null;
+pitImg.decoding = "async";
+pitImg.onload = function () {
+  pitSrc = document.createElement("canvas");
+  pitSrc.width = pitImg.naturalWidth;
+  pitSrc.height = pitImg.naturalHeight;
+  var p = pitSrc.getContext("2d");
+  p.drawImage(pitImg, 0, 0);
+  p.globalCompositeOperation = "destination-out";
+  p.filter = "blur(7px)";
+  function pane(pts) {
+    p.beginPath();
+    p.moveTo(pts[0][0] * pitSrc.width, pts[0][1] * pitSrc.height);
+    for (var i = 1; i < pts.length; i++) p.lineTo(pts[i][0] * pitSrc.width, pts[i][1] * pitSrc.height);
+    p.closePath();
+    p.fill();
+  }
+  pane([[0.06, 0.05], [0.435, 0.04], [0.45, 0.47], [0.04, 0.51]]);
+  pane([[0.55, 0.04], [0.94, 0.05], [0.97, 0.51], [0.55, 0.47]]);
+  pane([[0.00, 0.14], [0.08, 0.07], [0.04, 0.51], [0.00, 0.46]]);
+  pane([[0.92, 0.07], [1.00, 0.14], [1.00, 0.46], [0.97, 0.51]]);
+  paintCockpit();
+};
+pitImg.src = "zrc.png";
+function paintCockpit() {
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  pitCv.width = Math.round(W * dpr);
+  pitCv.height = Math.round(H * dpr);
+  pitCv.style.width = W + "px";
+  pitCv.style.height = H + "px";
+  pitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  pitCtx.clearRect(0, 0, W, H);
+  if (!pitSrc) return;
+  var iw = pitSrc.width, ih = pitSrc.height;
+  var scale = Math.max(W / iw, H / ih);
+  var dw = iw * scale, dh = ih * scale;
+  pitCtx.drawImage(pitSrc, (W - dw) / 2, (H - dh) / 2 - dh * 0.04, dw, dh);
+}
 var cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
 var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
 var trail = [];
 for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 48, z: 36 });
-
 function setCam(px, py, pz, tx, ty, tz) {
   var fx = tx - px, fy = ty - py, fz = tz - pz;
   var len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
@@ -462,13 +507,11 @@ function drawTrail() {
   }
   ctx.strokeStyle = "rgba(207,214,222,0.32)"; ctx.lineWidth = 1.4; ctx.stroke();
 }
-
 var sim = createSim();
 var phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
 var best = 0;
 try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (e) {}
 function $(id) { return document.getElementById(id); }
-
 function commitScore(score) {
   lastScore = score; best = Math.max(best, score);
   try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {}
@@ -479,7 +522,7 @@ function renderCard() {
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Bank through dusk gates over the water. Double-click the left or right side of the jet for a barrel roll.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>Q / E</dt><dd>Rudder</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">You sit in the cockpit. The course shows through the windshield. Inverted pointer look, Z close in, X close out.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>POINTER</dt><dd>Look (inverted zx / zy)</dd><dt>Z / X</dt><dd>Close in / close out</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
     $("takeoff").onclick = takeOff;
   } else if (phase === "paused") {
     card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
@@ -507,9 +550,17 @@ function setPhase(next) {
     $("crash").classList.remove("show");
   }
   $("pauseBtn").style.display = next === "playing" ? "grid" : "none";
+  if (next !== "playing" && document.pointerLockElement) document.exitPointerLock();
   renderCard();
 }
-function takeOff() { audio.unlock(); sim = createSim(); $("panel").hidden = true; setPhase("playing"); }
+function takeOff() {
+  audio.unlock();
+  sim = createSim();
+  lookX = 0; lookY = 0; zoom = 1;
+  $("panel").hidden = true;
+  setPhase("playing");
+  if (canvas.requestPointerLock) canvas.requestPointerLock();
+}
 function updateHud(input) {
   $("scoreline").textContent = "SCORE " + pad(sim.score, 5) + " · BEST " + pad(best, 5);
   $("gateline").textContent = "GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + (sim.combo > 1 ? " · COMBO ×" + sim.combo : "");
@@ -527,15 +578,16 @@ function resize() {
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   canvas.style.width = W + "px"; canvas.style.height = H + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  FOC = (H * 0.5) / Math.tan((62 * Math.PI / 180) / 2);
+  FOC = ((H * 0.5) / Math.tan((62 * Math.PI / 180) / 2)) * zoom;
+  paintCockpit();
 }
 addEventListener("resize", resize); resize();
-
 canvas.addEventListener("click", function (e) {
   var now = performance.now();
   var dbl = now - (canvas._lastTap || 0) < 320;
   canvas._lastTap = now;
   if (phase !== "playing") return;
+  if (document.pointerLockElement !== canvas && canvas.requestPointerLock) canvas.requestPointerLock();
   if (sim.maneuver) { queuedCancel = true; return; }
   if (!dbl) return;
   queuedBarrel = e.clientX < W / 2 ? "left" : "right";
@@ -546,6 +598,18 @@ canvas.addEventListener("dblclick", function (e) {
   if (sim.maneuver) { queuedCancel = true; return; }
   queuedBarrel = e.clientX < W / 2 ? "left" : "right";
 });
+window.addEventListener("mousemove", function (e) {
+  if (phase !== "playing") return;
+  if (document.pointerLockElement !== canvas && !(e.buttons & 1)) return;
+  lookX = clamp(lookX - e.movementX * 0.0022, -0.85, 0.85);
+  lookY = clamp(lookY - e.movementY * 0.0022, -0.5, 0.5);
+});
+window.addEventListener("wheel", function (e) {
+  if (phase !== "playing") return;
+  e.preventDefault();
+  zoom = clamp(zoom + (e.deltaY < 0 ? 0.08 : -0.08), 0.7, 1.9);
+  FOC = ((H * 0.5) / Math.tan((62 * Math.PI / 180) / 2)) * zoom;
+}, { passive: false });
 $("muteBtn").onclick = function () { audio.unlock(); audio.setMuted(!audio.muted); $("muteBtn").textContent = audio.muted ? "X" : "M"; };
 $("pauseBtn").onclick = function () { if (phase === "playing") setPhase("paused"); };
 addEventListener("keydown", function (e) {
@@ -577,9 +641,7 @@ stick.addEventListener("pointermove", function (e) { if (stick.hasPointerCapture
 function endStick() { touchRoll = 0; touchPitch = 0; knob.style.transform = "translate(-50%,-50%)"; }
 stick.addEventListener("pointerup", endStick);
 stick.addEventListener("pointercancel", endStick);
-
 setPhase("start");
-
 function frame() {
   var now = performance.now();
   var dt = Math.min((now - lastT) / 1000, 0.1);
@@ -599,33 +661,37 @@ function frame() {
       acc -= STEP;
     }
   } else acc = 0;
-  if (phase === "crash") {
-    $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
-  }
+  if (phase === "crash") $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
   if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); setPhase("playing"); }
-
   computeJetBasis(sim);
   var follow = phase === "playing" || phase === "paused" || phase === "crash";
+  pitCv.classList.toggle("on", follow);
   if (follow) {
-    var px = sim.x - jetF.x * 13.5 + jetU.x * 3.6;
-    var py = sim.y - jetF.y * 13.5 + jetU.y * 3.6;
-    var pz = sim.z - jetF.z * 13.5 + jetU.z * 3.6;
+    if (held.has("KeyZ")) zoom = clamp(zoom + dt * 0.85, 0.7, 1.9);
+    if (held.has("KeyX")) zoom = clamp(zoom - dt * 0.85, 0.7, 1.9);
+    FOC = ((H * 0.5) / Math.tan((62 * Math.PI / 180) / 2)) * zoom;
+    var px = sim.x + jetU.x * 0.55 + jetF.x * 0.4;
+    var py = sim.y + jetU.y * 0.55 + jetF.y * 0.4;
+    var pz = sim.z + jetU.z * 0.55 + jetF.z * 0.4;
+    var cY = Math.cos(lookX), sY = Math.sin(lookX);
+    var fx = jetF.x * cY + jetR.x * sY, fy = jetF.y * cY + jetR.y * sY, fz = jetF.z * cY + jetR.z * sY;
+    var cP = Math.cos(lookY), sP = Math.sin(lookY);
+    fx = fx * cP + jetU.x * sP; fy = fy * cP + jetU.y * sP; fz = fz * cP + jetU.z * sP;
     if (sim.shake > 0) {
       var s = sim.shake * sim.shake;
-      px += (Math.random() - 0.5) * s * 0.55;
-      py += (Math.random() - 0.5) * s * 0.35;
+      px += (Math.random() - 0.5) * s * 0.18;
+      py += (Math.random() - 0.5) * s * 0.12;
       sim.shake = Math.max(0, sim.shake - dt * 1.7);
     }
-    setCam(px, py, pz, sim.x + jetF.x * 12 + jetU.x * 0.6, sim.y + jetF.y * 12 + jetU.y * 0.6, sim.z + jetF.z * 12 + jetU.z * 0.6);
+    setCam(px, py, pz, px + fx * 48, py + fy * 48, pz + fz * 48);
   } else {
+    lookX = 0; lookY = 0; zoom = 1;
     setCam(16, 57, 54, 0, 48, 8);
   }
-
   if (sim.alive && phase === "playing") {
     for (var i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
     trail[0] = { x: sim.x - jetF.x * 1.4, y: sim.y - jetF.y * 1.4, z: sim.z - jetF.z * 1.4 };
   }
-
   drawSky();
   drawWater();
   var drawables = [];
@@ -645,14 +711,11 @@ function frame() {
     else drawGate(drawables[i].g, drawables[i].active);
   }
   drawTrail();
-  if (follow) {
-    if (sim.alive) drawJet(sim, input.boost && phase === "playing");
-  } else {
+  if (!follow) {
     var pose = { x: 0, y: 48, z: 18, yaw: 0.42, pitch: 0.1, roll: 0.14, throttle: 0.62 };
     computeJetBasis(pose);
     drawJet(pose, false);
   }
-
   audio.setEngine(sim.throttle, sim.speed, input.boost && phase === "playing");
   if (flashTimer > 0) { flashTimer -= dt; if (flashTimer <= 0) $("flash").style.display = "none"; }
   if (phase !== "start") updateHud(input);
