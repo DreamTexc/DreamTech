@@ -314,7 +314,7 @@ pitImg.onload = function () {
   var p = pitSrc.getContext("2d");
   p.drawImage(pitImg, 0, 0);
   p.globalCompositeOperation = "destination-out";
-  p.filter = "blur(7px)";
+  p.filter = "blur(1.2px)";
   function pane(pts) {
     p.beginPath();
     p.moveTo(pts[0][0] * pitSrc.width, pts[0][1] * pitSrc.height);
@@ -515,37 +515,29 @@ function drawCockpitOnJet(sim, dt) {
   var m = measureJet(sim);
   if (!m) { pitReady = false; return; }
   var g = clamp(Math.max(sim.gForce, 5.4), 1, 6);
-  var recede = 1 / (1 + (g - 1) * 0.22);
+  var recede = 1 / (1 + (g - 1) * 0.16);
   var targetS = (m.w * 3.35 / pitSrc.width) * recede;
-  var sink = (g - 1) * 10;
+  var sink = (g - 1) * 8;
   var tx = m.x, ty = m.y + sink;
-  var follow = 2.35 / (1 + (g - 1) * 0.55);
+  var follow = 3.1 / (1 + (g - 1) * 0.4);
   var k = 1 - Math.exp(-follow * dt);
-  if (!pitReady) { pitFX = tx; pitFY = ty; pitFS = targetS; pitFA = 0.9; pitReady = true; }
+  if (!pitReady) { pitFX = tx; pitFY = ty; pitFS = targetS; pitFA = 1; pitReady = true; }
   else {
     pitFX += (tx - pitFX) * k;
     pitFY += (ty - pitFY) * k;
     pitFS += (targetS - pitFS) * k;
-    pitFA += (0.78 * recede + 0.16 - pitFA) * (1 - Math.exp(-3 * dt));
+    pitFA += (0.96 - pitFA) * (1 - Math.exp(-5 * dt));
   }
   var dw = pitSrc.width * pitFS, dh = pitSrc.height * pitFS;
   ctx.save();
-  ctx.translate(pitFX, pitFY);
+  ctx.translate(Math.round(pitFX), Math.round(pitFY));
   ctx.rotate(-sim.roll * 0.9);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.globalAlpha = pitFA;
-  if (g > 2.2) ctx.filter = "blur(" + ((g - 2.2) * 0.55).toFixed(2) + "px)";
-  ctx.drawImage(pitSrc, -dw / 2, -dh / 2 - dh * 0.06, dw, dh);
+  ctx.filter = "contrast(1.14) saturate(1.08) brightness(1.04)";
+  ctx.drawImage(pitSrc, Math.round(-dw / 2), Math.round(-dh / 2 - dh * 0.06), Math.round(dw), Math.round(dh));
   ctx.filter = "none";
-  if (g > 3) {
-    ctx.globalAlpha = Math.min(0.45, (g - 3) * 0.12);
-    var vg = ctx.createRadialGradient(0, 0, dw * 0.12, 0, 0, dw * 0.55);
-    vg.addColorStop(0, "rgba(40,0,0,0)");
-    vg.addColorStop(1, "rgba(20,0,0,0.85)");
-    ctx.fillStyle = vg;
-    ctx.beginPath();
-    ctx.arc(0, 0, dw * 0.55, 0, Math.PI * 2);
-    ctx.fill();
-  }
   ctx.restore();
 }
 var sim = createSim();
