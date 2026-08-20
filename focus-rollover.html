@@ -496,6 +496,64 @@ function drawTrail() {
   }
   ctx.strokeStyle = "rgba(207,214,222,0.32)"; ctx.lineWidth = 1.4; ctx.stroke();
 }
+var pitFX = 0, pitFY = 0, pitFS = 0, pitFA = 0, pitReady = false;
+function measureJet(sim) {
+  var o = { x: sim.x, y: sim.y, z: sim.z };
+  var pts = [
+    worldFromLocal(0, 0.1, 1.5, o, jetR, jetU, jetF),
+    worldFromLocal(2.25, -0.08, -0.55, o, jetR, jetU, jetF),
+    worldFromLocal(-2.25, -0.08, -0.55, o, jetR, jetU, jetF),
+    worldFromLocal(0, 0.2, -1.1, o, jetR, jetU, jetF)
+  ];
+  var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9, n = 0, z = 0;
+  for (var i = 0; i < pts.length; i++) {
+    var p = project(pts[i].x, pts[i].y, pts[i].z);
+    if (!p) continue;
+    n++; z += p.z;
+    if (p.x < minX) minX = p.x; if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x; if (p.y > maxY) maxY = p.y;
+  }
+  if (n < 3) return null;
+  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, w: Math.max(12, maxX - minX), h: Math.max(8, maxY - minY), z: z / n };
+}
+function drawCockpitOnJet(sim, dt) {
+  if (!pitSrc || !sim.alive) { pitReady = false; return; }
+  var m = measureJet(sim);
+  if (!m) { pitReady = false; return; }
+  var g = clamp(sim.gForce, 1, 6);
+  var recede = 1 / (1 + (g - 1) * 0.22);
+  var targetS = (m.w * 3.35 / pitSrc.width) * recede;
+  var sink = (g - 1) * 10;
+  var tx = m.x, ty = m.y + sink;
+  var follow = 2.35 / (1 + (g - 1) * 0.55);
+  var k = 1 - Math.exp(-follow * dt);
+  if (!pitReady) { pitFX = tx; pitFY = ty; pitFS = targetS; pitFA = 0.9; pitReady = true; }
+  else {
+    pitFX += (tx - pitFX) * k;
+    pitFY += (ty - pitFY) * k;
+    pitFS += (targetS - pitFS) * k;
+    pitFA += (0.78 * recede + 0.16 - pitFA) * (1 - Math.exp(-3 * dt));
+  }
+  var dw = pitSrc.width * pitFS, dh = pitSrc.height * pitFS;
+  ctx.save();
+  ctx.translate(pitFX, pitFY);
+  ctx.rotate(-sim.roll * 0.9);
+  ctx.globalAlpha = pitFA;
+  if (g > 2.2) ctx.filter = "blur(" + ((g - 2.2) * 0.55).toFixed(2) + "px)";
+  ctx.drawImage(pitSrc, -dw / 2, -dh / 2 - dh * 0.06, dw, dh);
+  ctx.filter = "none";
+  if (g > 3) {
+    ctx.globalAlpha = Math.min(0.45, (g - 3) * 0.12);
+    var vg = ctx.createRadialGradient(0, 0, dw * 0.12, 0, 0, dw * 0.55);
+    vg.addColorStop(0, "rgba(40,0,0,0)");
+    vg.addColorStop(1, "rgba(20,0,0,0.85)");
+    ctx.fillStyle = vg;
+    ctx.beginPath();
+    ctx.arc(0, 0, dw * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
 var sim = createSim();
 var phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
 var best = 0;
@@ -511,7 +569,7 @@ function renderCard() {
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Ten seconds in the cockpit looking through the glass, then the chase-cam jet.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>POINTER</dt><dd>Look (inverted, cockpit)</dd><dt>Z / X</dt><dd>Close in / close out</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Ten seconds in the cockpit, then the chase-cam jet with a matching cockpit overlay. High G pushes the glass back.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>POINTER</dt><dd>Look (inverted, cockpit)</dd><dt>Z / X</dt><dd>Close in / close out</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
     $("takeoff").onclick = takeOff;
   } else if (phase === "paused") {
     card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
@@ -545,7 +603,7 @@ function setPhase(next) {
 function takeOff() {
   audio.unlock();
   sim = createSim();
-  lookX = 0; lookY = 0; zoom = 1; cockpitT = 10;
+  lookX = 0; lookY = 0; zoom = 1; cockpitT = 10; pitReady = false;
   $("panel").hidden = true;
   setPhase("playing");
   if (canvas.requestPointerLock) canvas.requestPointerLock();
@@ -718,12 +776,16 @@ function frame() {
   }
   drawTrail();
   if (follow && !pitOn) {
-    if (sim.alive) drawJet(sim, input.boost && phase === "playing");
+    if (sim.alive) {
+      drawCockpitOnJet(sim, dt);
+      drawJet(sim, input.boost && phase === "playing");
+    } else pitReady = false;
   } else if (!follow) {
+    pitReady = false;
     var pose = { x: 0, y: 48, z: 18, yaw: 0.42, pitch: 0.1, roll: 0.14, throttle: 0.62 };
     computeJetBasis(pose);
     drawJet(pose, false);
-  }
+  } else pitReady = false;
   audio.setEngine(sim.throttle, sim.speed, input.boost && phase === "playing");
   if (flashTimer > 0) { flashTimer -= dt; if (flashTimer <= 0) $("flash").style.display = "none"; }
   if (phase !== "start") updateHud(input);
