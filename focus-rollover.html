@@ -153,7 +153,7 @@ function gateAt(index) {
 function createSim() {
   return {
     x: 0, y: 48, z: 36, yaw: 0, pitch: 0, roll: 0, speed: 44, throttle: 0.62,
-    alive: true, crashed: false, crashTimer: 0, maneuver: null, gForce: 1,
+    alive: true, crashed: false, crashTimer: 0, maneuver: null, gForce: 5.5,
     nextGate: 0, score: 0, combo: 0, gatesHit: 0, time: 0, shake: 0,
     barrelBonusArmed: false, spawnX: 0, spawnY: 48, spawnZ: 36, spawnYaw: 0, finished: false
   };
@@ -162,7 +162,7 @@ function respawn(sim) {
   var gate = sim.nextGate > 0 ? gateAt(sim.nextGate - 1) : null;
   sim.x = gate ? gate.x : sim.spawnX; sim.y = gate ? gate.y + 6 : sim.spawnY; sim.z = gate ? gate.z + 28 : sim.spawnZ;
   sim.yaw = gate ? gate.yaw : sim.spawnYaw; sim.pitch = 0; sim.roll = 0; sim.speed = 42; sim.throttle = 0.62;
-  sim.alive = true; sim.crashed = false; sim.crashTimer = 0; sim.maneuver = null; sim.barrelBonusArmed = false; sim.combo = 0; sim.shake = 0.2;
+  sim.alive = true; sim.crashed = false; sim.crashTimer = 0; sim.maneuver = null; sim.barrelBonusArmed = false; sim.combo = 0; sim.shake = 0.2; sim.gForce = 5.5;
 }
 function beginManeuver(sim, kind) {
   sim.maneuver = { kind: kind, t: 0, duration: kind === "loop" ? 2.05 : 1.35, startYaw: sim.yaw, startPitch: sim.pitch, startRoll: sim.roll, startY: sim.y };
@@ -209,8 +209,8 @@ function stepSim(sim, input, dt) {
   sim.speed = clamp(sim.speed, 8, 128);
   var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
   sim.x += fx * sim.speed * dt; sim.y += fy * sim.speed * dt; sim.z += fz * sim.speed * dt;
-  var load = 1 + Math.abs(sim.roll) * 0.55 + Math.abs(sim.pitch) * 0.35 + (input.boost ? 0.4 : 0);
-  sim.gForce += (load - sim.gForce) * (1 - Math.exp(-6 * dt));
+  var load = 5.35 + Math.abs(sim.roll) * 0.28 + Math.abs(sim.pitch) * 0.22 + (input.boost ? 0.35 : 0);
+  sim.gForce += (clamp(load, 5.2, 6) - sim.gForce) * (1 - Math.exp(-6 * dt));
   var floor = Math.max(1.8, terrainHeight(sim.x, sim.z) + 2.4);
   if (sim.y < floor || sim.y > 240) {
     sim.alive = false; sim.crashed = true; sim.crashTimer = 0; sim.shake = 1; sim.speed = 0; sim.combo = 0;
@@ -520,7 +520,7 @@ function drawCockpitOnJet(sim, dt) {
   if (!pitSrc || !sim.alive) { pitReady = false; return; }
   var m = measureJet(sim);
   if (!m) { pitReady = false; return; }
-  var g = clamp(sim.gForce, 1, 6);
+  var g = clamp(Math.max(sim.gForce, 5.4), 1, 6);
   var recede = 1 / (1 + (g - 1) * 0.22);
   var targetS = (m.w * 3.35 / pitSrc.width) * recede;
   var sink = (g - 1) * 10;
@@ -569,7 +569,7 @@ function renderCard() {
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Ten seconds in the cockpit, then the chase-cam jet with a matching cockpit overlay. High G pushes the glass back.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>POINTER</dt><dd>Look (inverted, cockpit)</dd><dt>Z / X</dt><dd>Close in / close out</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Ten seconds in the cockpit, then the chase-cam jet with high-G glass from takeoff — phone and desktop.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>POINTER</dt><dd>Look (inverted, cockpit)</dd><dt>Z / X</dt><dd>Close in / close out</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
     $("takeoff").onclick = takeOff;
   } else if (phase === "paused") {
     card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
