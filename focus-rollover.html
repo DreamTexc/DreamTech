@@ -592,7 +592,7 @@ function drawCockpitOnJet(sim, dt) {
   if (!m) { pitReady = false; return; }
   var g = clamp(Math.max(sim.gForce, 5.4), 1, 6);
   var recede = 1 / (1 + (g - 1) * 0.16);
-  var targetS = (m.w * 3.35 / pitSrc.width) * recede;
+  var targetS = (m.w * 4.1 / pitSrc.width) * recede;
   var sink = (g - 1) * 8;
   var tx = m.x, ty = m.y + sink;
   var follow = 3.1 / (1 + (g - 1) * 0.4);
