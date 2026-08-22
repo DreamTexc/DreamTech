@@ -330,7 +330,6 @@ pitImg.onload = function () {
 };
 pitImg.src = "zrc.png";
 
-// Ocean image (air.png)
 var oceanImg = new Image();
 oceanImg.decoding = "async";
 var oceanReady = false;
@@ -402,8 +401,6 @@ function fillPoly(pts, fill, stroke, width) {
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width || 1; ctx.stroke(); }
 }
 function drawSky() {
-  // Always fill the entire screen with a stable sky first.
-  // This prevents empty regions when the camera is inverted or looking straight up/down.
   var g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, "#a8b8c6");
   g.addColorStop(0.38, "#7a94a8");
@@ -412,9 +409,7 @@ function drawSky() {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
 
-  // Soft sun-glow wash so the sky still feels directional even when inverted
-  var sunX = W * 0.70;
-  var sunY = H * 0.28;
+  var sunX = W * 0.70, sunY = H * 0.28;
   var glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.55);
   glow.addColorStop(0, "rgba(255, 230, 190, 0.18)");
   glow.addColorStop(0.4, "rgba(180, 200, 220, 0.07)");
@@ -423,51 +418,35 @@ function drawSky() {
   ctx.fillRect(0, 0, W, H);
 }
 function drawWater() {
-  // Expand the projected surface significantly so the horizon
-  // stays visible under heavy pitch / roll / inversion.
   var far = [];
-  var steps = 28;               // more points = smoother + more coverage
-  var radius = 1400;            // much larger surface
+  var steps = 36, radius = 1600;
 
   for (var i = -steps; i <= steps; i++) {
     var t = i / steps;
-    var px = cam.x + cam.rx * t * radius * 1.4;
-    var pz = cam.z + cam.fz * radius + cam.rx * t * 40;
+    var px = cam.x + cam.rx * t * radius * 1.6;
+    var pz = cam.z + cam.fz * radius + cam.rx * t * 50;
     var p = project(px, 0, pz);
     if (p) far.push(p);
   }
-
-  // Also sample a few extra points further out and to the sides
-  // so the water doesn’t vanish when looking almost straight up.
-  for (var s = 0; s < 8; s++) {
-    var a = (s / 8) * Math.PI * 2;
-    var p2 = project(
-      cam.x + Math.cos(a) * 900,
-      0,
-      cam.z + Math.sin(a) * 900 - 600
-    );
+  for (var s = 0; s < 10; s++) {
+    var a = (s / 10) * Math.PI * 2;
+    var p2 = project(cam.x + Math.cos(a) * 1100, 0, cam.z + Math.sin(a) * 1100 - 700);
     if (p2) far.push(p2);
   }
 
-  if (far.length < 3) {
-    // Extreme case: horizon completely off-screen (looking almost straight up or inverted).
-    // Fall back to a soft lower-screen ocean wash so the scene never goes empty.
-    var fallback = ctx.createLinearGradient(0, H * 0.45, 0, H);
-    fallback.addColorStop(0, "rgba(20, 48, 62, 0)");
-    fallback.addColorStop(0.35, "rgba(12, 32, 44, 0.45)");
-    fallback.addColorStop(1, "rgba(4, 14, 22, 0.85)");
-    ctx.fillStyle = fallback;
-    ctx.fillRect(0, 0, W, H);
-    return;
-  }
+  far.sort(function (a, b) { return a.x - b.x; });
 
-  // Build the water polygon from the projected points
   ctx.beginPath();
   ctx.moveTo(0, H);
-  ctx.lineTo(far[0].x, far[0].y);
-  for (var i = 1; i < far.length; i++) {
-    ctx.lineTo(far[i].x, far[i].y);
+
+  if (far.length > 0) {
+    ctx.lineTo(far[0].x, far[0].y);
+    for (var i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
+  } else {
+    ctx.lineTo(0, H * 0.45);
+    ctx.lineTo(W, H * 0.45);
   }
+
   ctx.lineTo(W, H);
   ctx.closePath();
 
@@ -475,41 +454,34 @@ function drawWater() {
   ctx.clip();
 
   if (oceanReady) {
-    // Expanded ocean texture with stronger drift
     var t = performance.now() * 0.00007;
-    var imgW = oceanImg.naturalWidth;
-    var imgH = oceanImg.naturalHeight;
-
-    var scaleY = (H * 0.95) / imgH;
-    var scaleX = Math.max(W / imgW * 1.3, scaleY * 1.8);
-    var drawW = imgW * scaleX;
-    var drawH = imgH * scaleY;
-
+    var imgW = oceanImg.naturalWidth, imgH = oceanImg.naturalHeight;
+    var scaleY = (H * 1.05) / imgH;
+    var scaleX = Math.max(W / imgW * 1.4, scaleY * 1.9);
+    var drawW = imgW * scaleX, drawH = imgH * scaleY;
     var offsetX = (t * 55) % drawW;
 
-    ctx.globalAlpha = 0.90;
-    ctx.drawImage(oceanImg, -offsetX, H - drawH * 0.98, drawW, drawH);
-    ctx.drawImage(oceanImg, -offsetX + drawW, H - drawH * 0.98, drawW, drawH);
+    ctx.globalAlpha = 0.92;
+    ctx.drawImage(oceanImg, -offsetX - 50, H - drawH * 0.99, drawW + 100, drawH);
+    ctx.drawImage(oceanImg, -offsetX + drawW - 50, H - drawH * 0.99, drawW + 100, drawH);
 
-    // Depth + horizon highlight
-    var depth = ctx.createLinearGradient(0, H * 0.42, 0, H);
+    var depth = ctx.createLinearGradient(0, H * 0.38, 0, H);
     depth.addColorStop(0, "rgba(8, 22, 34, 0)");
-    depth.addColorStop(0.45, "rgba(5, 16, 26, 0.40)");
-    depth.addColorStop(1, "rgba(2, 8, 14, 0.78)");
+    depth.addColorStop(0.4, "rgba(5, 16, 26, 0.38)");
+    depth.addColorStop(1, "rgba(2, 8, 14, 0.82)");
     ctx.fillStyle = depth;
     ctx.fillRect(0, 0, W, H);
 
-    var highlight = ctx.createLinearGradient(0, H * 0.35, 0, H * 0.58);
-    highlight.addColorStop(0, "rgba(150, 200, 220, 0.22)");
-    highlight.addColorStop(0.5, "rgba(100, 160, 185, 0.10)");
+    var highlight = ctx.createLinearGradient(0, H * 0.32, 0, H * 0.55);
+    highlight.addColorStop(0, "rgba(150, 200, 220, 0.20)");
+    highlight.addColorStop(0.55, "rgba(100, 160, 185, 0.08)");
     highlight.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = highlight;
     ctx.fillRect(0, 0, W, H);
 
     ctx.globalAlpha = 1;
   } else {
-    // Fallback gradient while image loads
-    var wg = ctx.createLinearGradient(0, H * 0.40, 0, H);
+    var wg = ctx.createLinearGradient(0, H * 0.38, 0, H);
     wg.addColorStop(0, "#1a3340");
     wg.addColorStop(1, "#071016");
     ctx.fillStyle = wg;
