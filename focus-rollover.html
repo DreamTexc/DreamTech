@@ -5,325 +5,325 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Focus × Rollover</title>
 <style>
-  :root {
-    --bg: #08090c; --surface: #13151b; --fg: #eceef1; --muted: #8d939e;
-    --subtle: #636874; --accent: #c5ccd6; --accent-fg: #0b0c0f;
-    --border: #2a2e36; --hud: #d5dbe3;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
-  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-  button { font: inherit; cursor: pointer; }
-  #ui { position: fixed; inset: 0; pointer-events: none; }
-  #ui .hit { pointer-events: auto; }
-  .display { font-family: "Segoe UI Condensed", "Arial Narrow", sans-serif; letter-spacing: .02em; }
-  .mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
-  header.hud { display: flex; justify-content: space-between; gap: 12px; padding: 16px 16px 0; }
-  header.hud h1 { font-size: 18px; font-weight: 600; letter-spacing: .04em; }
-  .icon-btn { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
-  #flash { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 28px; letter-spacing: .18em; display: none; }
-  .reticle { position: absolute; left: 50%; top: 50%; width: 112px; height: 1px; background: color-mix(in srgb, var(--hud) 35%, transparent); transform: translate(-50%, -50%); }
-  #horizon { position: absolute; left: 50%; top: 58%; width: 128px; height: 1px; background: color-mix(in srgb, var(--hud) 70%, transparent); transform: translateX(-50%); transform-origin: center; }
-  footer.hud { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; align-items: end; gap: 12px; padding: 16px 16px max(16px, env(safe-area-inset-bottom)); font-size: 11px; line-height: 1.6; color: var(--muted); }
-  @media (max-width: 640px) { footer.hud { bottom: 148px; } }
-  .thr { width: 160px; text-align: center; }
-  .bar { height: 6px; border-radius: 999px; background: #1b1e26; overflow: hidden; margin-bottom: 4px; }
-  .bar > i { display: block; height: 100%; width: 62%; background: var(--accent); }
-  #panel { position: absolute; inset: 0; display: grid; place-items: end center; background: color-mix(in srgb, var(--bg) 20%, transparent); padding: 20px 20px max(24px, env(safe-area-inset-bottom)); }
-  #panel[hidden] { display: none !important; }
-  @media (min-width: 640px) { #panel { place-items: center; } }
-  .card { width: min(100%, 440px); border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); border-radius: 16px; padding: 28px 28px 24px; backdrop-filter: blur(8px); }
-  .kicker { font-size: 12px; letter-spacing: .22em; color: var(--muted); font-weight: 500; }
-  .card h2 { font-size: clamp(36px, 8vw, 48px); line-height: .95; font-weight: 600; margin: 6px 0 14px; }
-  .card h2 span { display: block; color: var(--muted); }
-  .card p.lead { color: var(--muted); font-size: 14px; line-height: 1.55; margin-bottom: 18px; }
-  dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 11px; color: var(--subtle); margin-bottom: 22px; }
-  dl dd { color: var(--muted); }
-  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .go { height: 48px; padding: 0 28px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
-  .ghost { height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
-  #crash { position: absolute; inset: 0; display: none; place-items: center; background: color-mix(in srgb, var(--bg) 55%, transparent); z-index: 8; }
-  #crash.show { display: grid; }
-  #crash .splash { text-align: center; animation: crashIn 0.45s ease-out; }
-  #crash .splash h2 { font-size: clamp(40px, 10vw, 72px); line-height: .92; font-weight: 600; letter-spacing: .04em; }
-  #crash .splash h2 span { display: block; color: var(--muted); }
-  #crash .count { margin-top: 14px; font-size: 13px; letter-spacing: .2em; color: var(--muted); }
-  @keyframes crashIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
-  #touch { display: none; position: absolute; left: 12px; right: 12px; bottom: 16px; justify-content: space-between; align-items: end; }
-  @media (max-width: 640px) { #touch { display: flex; } }
-  #stick { width: 112px; height: 112px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); position: relative; }
-  #knob { width: 44px; height: 44px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 80%, transparent); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-  .pads { display: flex; flex-direction: column; align-items: end; gap: 8px; }
-  .pads-row { display: flex; gap: 8px; }
-  .pad { min-width: 48px; height: 48px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); font-family: ui-monospace, monospace; font-size: 12px; }
-  #sun {
-    position: absolute; left: 70%; top: 30%; width: min(64vw, 560px);
-    transform: translate(-50%, -50%); z-index: 1; pointer-events: none;
-    mix-blend-mode: soft-light; opacity: 0.16;
-  }
-  #sun img {
-    display: block; width: 100%; height: auto;
-    -webkit-mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
-    mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
-    filter: contrast(0.92) saturate(0.75) brightness(1.15);
-  }
+  :root {
+    --bg: #08090c; --surface: #13151b; --fg: #eceef1; --muted: #8d939e;
+    --subtle: #636874; --accent: #c5ccd6; --accent-fg: #0b0c0f;
+    --border: #2a2e36; --hud: #d5dbe3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  button { font: inherit; cursor: pointer; }
+  #ui { position: fixed; inset: 0; pointer-events: none; }
+  #ui .hit { pointer-events: auto; }
+  .display { font-family: "Segoe UI Condensed", "Arial Narrow", sans-serif; letter-spacing: .02em; }
+  .mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+  header.hud { display: flex; justify-content: space-between; gap: 12px; padding: 16px 16px 0; }
+  header.hud h1 { font-size: 18px; font-weight: 600; letter-spacing: .04em; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+  #flash { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 28px; letter-spacing: .18em; display: none; }
+  .reticle { position: absolute; left: 50%; top: 50%; width: 112px; height: 1px; background: color-mix(in srgb, var(--hud) 35%, transparent); transform: translate(-50%, -50%); }
+  #horizon { position: absolute; left: 50%; top: 58%; width: 128px; height: 1px; background: color-mix(in srgb, var(--hud) 70%, transparent); transform: translateX(-50%); transform-origin: center; }
+  footer.hud { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; align-items: end; gap: 12px; padding: 16px 16px max(16px, env(safe-area-inset-bottom)); font-size: 11px; line-height: 1.6; color: var(--muted); }
+  @media (max-width: 640px) { footer.hud { bottom: 148px; } }
+  .thr { width: 160px; text-align: center; }
+  .bar { height: 6px; border-radius: 999px; background: #1b1e26; overflow: hidden; margin-bottom: 4px; }
+  .bar > i { display: block; height: 100%; width: 62%; background: var(--accent); }
+  #panel { position: absolute; inset: 0; display: grid; place-items: end center; background: color-mix(in srgb, var(--bg) 20%, transparent); padding: 20px 20px max(24px, env(safe-area-inset-bottom)); }
+  #panel[hidden] { display: none !important; }
+  @media (min-width: 640px) { #panel { place-items: center; } }
+  .card { width: min(100%, 440px); border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); border-radius: 16px; padding: 28px 28px 24px; backdrop-filter: blur(8px); }
+  .kicker { font-size: 12px; letter-spacing: .22em; color: var(--muted); font-weight: 500; }
+  .card h2 { font-size: clamp(36px, 8vw, 48px); line-height: .95; font-weight: 600; margin: 6px 0 14px; }
+  .card h2 span { display: block; color: var(--muted); }
+  .card p.lead { color: var(--muted); font-size: 14px; line-height: 1.55; margin-bottom: 18px; }
+  dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 11px; color: var(--subtle); margin-bottom: 22px; }
+  dl dd { color: var(--muted); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .go { height: 48px; padding: 0 28px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  .ghost { height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+  #crash { position: absolute; inset: 0; display: none; place-items: center; background: color-mix(in srgb, var(--bg) 55%, transparent); z-index: 8; }
+  #crash.show { display: grid; }
+  #crash .splash { text-align: center; animation: crashIn 0.45s ease-out; }
+  #crash .splash h2 { font-size: clamp(40px, 10vw, 72px); line-height: .92; font-weight: 600; letter-spacing: .04em; }
+  #crash .splash h2 span { display: block; color: var(--muted); }
+  #crash .count { margin-top: 14px; font-size: 13px; letter-spacing: .2em; color: var(--muted); }
+  @keyframes crashIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+  #touch { display: none; position: absolute; left: 12px; right: 12px; bottom: 16px; justify-content: space-between; align-items: end; }
+  @media (max-width: 640px) { #touch { display: flex; } }
+  #stick { width: 112px; height: 112px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); position: relative; }
+  #knob { width: 44px; height: 44px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 80%, transparent); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .pads { display: flex; flex-direction: column; align-items: end; gap: 8px; }
+  .pads-row { display: flex; gap: 8px; }
+  .pad { min-width: 48px; height: 48px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); font-family: ui-monospace, monospace; font-size: 12px; }
+  #sun {
+    position: absolute; left: 70%; top: 30%; width: min(64vw, 560px);
+    transform: translate(-50%, -50%); z-index: 1; pointer-events: none;
+    mix-blend-mode: soft-light; opacity: 0.16;
+  }
+  #sun img {
+    display: block; width: 100%; height: auto;
+    -webkit-mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
+    mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
+    filter: contrast(0.92) saturate(0.75) brightness(1.15);
+  }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="ui">
-  <div id="sun" aria-hidden="true"><img src="iii.png" alt="" /></div>
-  <header class="hud" id="chrome" hidden>
-    <div>
-      <h1 class="display">FOCUS × ROLLOVER</h1>
-      <div class="mono" id="scoreline" style="font-size:12px;color:var(--muted)"></div>
-      <div class="mono" id="gateline" style="font-size:12px;color:var(--subtle)"></div>
-    </div>
-    <div class="hit" style="display:flex;gap:8px">
-      <button class="icon-btn" id="muteBtn" type="button" aria-label="Mute">M</button>
-      <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause">II</button>
-    </div>
-  </header>
-  <div id="flash" class="display"></div>
-  <div class="reticle" id="reticle" hidden></div>
-  <div id="horizon" hidden></div>
-  <footer class="hud mono" id="instruments" hidden>
-    <div id="leftInst"></div>
-    <div class="thr"><div class="bar"><i id="thrBar"></i></div><div id="thrLabel" style="font-size:10px;letter-spacing:.16em;color:var(--subtle)"></div></div>
-    <div id="rightInst" style="text-align:right"></div>
-  </footer>
-  <div id="crash"><div class="splash"><p class="kicker">FOCUS × ROLLOVER</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="count mono">RECOVERING · <span id="crashCount">5</span></p></div></div>
-  <div id="touch" class="hit">
-    <div id="stick"><div id="knob"></div></div>
-    <div class="pads">
-      <div class="pads-row">
-        <button class="pad" type="button" data-barrel="left">L</button>
-        <button class="pad" type="button" data-barrel="right">R</button>
-        <button class="pad" type="button" id="loopBtn">LOOP</button>
-      </div>
-      <div class="pads-row">
-        <button class="pad" type="button" id="thrUp">+</button>
-        <button class="pad" type="button" id="abBtn">AB</button>
-      </div>
-    </div>
-  </div>
-  <div id="panel" class="hit"><div class="card" id="card"></div></div>
+  <div id="sun" aria-hidden="true"><img src="iii.png" alt="" /></div>
+  <header class="hud" id="chrome" hidden>
+    <div>
+      <h1 class="display">FOCUS × ROLLOVER</h1>
+      <div class="mono" id="scoreline" style="font-size:12px;color:var(--muted)"></div>
+      <div class="mono" id="gateline" style="font-size:12px;color:var(--subtle)"></div>
+    </div>
+    <div class="hit" style="display:flex;gap:8px">
+      <button class="icon-btn" id="muteBtn" type="button" aria-label="Mute">M</button>
+      <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause">II</button>
+    </div>
+  </header>
+  <div id="flash" class="display"></div>
+  <div class="reticle" id="reticle" hidden></div>
+  <div id="horizon" hidden></div>
+  <footer class="hud mono" id="instruments" hidden>
+    <div id="leftInst"></div>
+    <div class="thr"><div class="bar"><i id="thrBar"></i></div><div id="thrLabel" style="font-size:10px;letter-spacing:.16em;color:var(--subtle)"></div></div>
+    <div id="rightInst" style="text-align:right"></div>
+  </footer>
+  <div id="crash"><div class="splash"><p class="kicker">FOCUS × ROLLOVER</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="count mono">RECOVERING · <span id="crashCount">5</span></p></div></div>
+  <div id="touch" class="hit">
+    <div id="stick"><div id="knob"></div></div>
+    <div class="pads">
+      <div class="pads-row">
+        <button class="pad" type="button" data-barrel="left">L</button>
+        <button class="pad" type="button" data-barrel="right">R</button>
+        <button class="pad" type="button" id="loopBtn">LOOP</button>
+      </div>
+      <div class="pads-row">
+        <button class="pad" type="button" id="thrUp">+</button>
+        <button class="pad" type="button" id="abBtn">AB</button>
+      </div>
+    </div>
+  </div>
+  <div id="panel" class="hit"><div class="card" id="card"></div></div>
 </div>
 <script>
 (function () {
 "use strict";
-const STEP = 1 / 60, MIN_SPEED = 16, MAX_SPEED = 92;
-const ROLL_RATE = 2.35, PITCH_RATE = 1.15, YAW_RATE = 0.72, COORD_TURN = 1.05;
-const GATE_COUNT = 36, BEST_KEY = "focus-rollover-best";
-const ISLANDS = [
-  { x: 30, z: -220, r: 90, h: 16 }, { x: 150, z: -480, r: 110, h: 24 },
-  { x: -40, z: -700, r: 80, h: 14 }, { x: -180, z: -980, r: 130, h: 28 },
-  { x: 60, z: -1280, r: 95, h: 18 }, { x: 200, z: -1620, r: 120, h: 22 },
-  { x: -90, z: -1980, r: 100, h: 20 }, { x: 20, z: -2400, r: 140, h: 26 },
-  { x: -160, z: -2860, r: 110, h: 19 }, { x: 110, z: -3300, r: 125, h: 23 }
-];
+const STEP = 1 / 60, MIN_SPEED = 34, MAX_SPEED = 96;
+const ROLL_RATE = 2.2, PITCH_RATE = 1.05, YAW_RATE = 0.7, COORD_TURN = 1.05;
+const GATE_COUNT = 20, GATE_RADIUS = 11, BEST_KEY = "focus-rollover-best";
+const CHANNEL = 236, SLOPE = 0.068, SHORE = 190;
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function wrapPi(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
 function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 function headingDeg(yaw) { var d = ((-yaw * 180) / Math.PI) % 360; return d < 0 ? d + 360 : d; }
 function pad(n, w) { return Math.round(n).toString().padStart(w || 3, "0"); }
-function terrainHeight(x, z) {
-  var h = 0;
-  for (var i = 0; i < ISLANDS.length; i++) {
-    var isl = ISLANDS[i], dx = x - isl.x, dz = z - isl.z, d2 = dx * dx + dz * dz, r2 = isl.r * isl.r;
-    if (d2 < r2) { var t = 1 - d2 / r2; h = Math.max(h, isl.h * t * t); }
-  }
-  return h;
+function finite(n, fallback) { return Number.isFinite(n) ? n : fallback; }
+function heightAt(x, z) {
+  var absX = Math.abs(x);
+  if (absX < CHANNEL) return 0;
+  var inland = absX - CHANNEL;
+  var beach = inland < SHORE ? inland / SHORE : 1;
+  var ease = beach * beach * (3 - 2 * beach);
+  var ridge = inland * SLOPE
+    + Math.sin(z * 0.0024 + x * 0.001) * 8
+    + Math.sin(z * 0.006 + x * 0.0026) * 4.4
+    + Math.sin(x * 0.012) * 3;
+  var ranges = Math.max(0, (absX - 380) * 0.045);
+  return Math.max(0, Math.min((ridge + ranges) * ease, 110));
 }
 function gateAt(index) {
-  var i = Math.max(0, index), t = i * 0.46;
-  var x = Math.sin(t) * 150 + Math.sin(t * 0.41) * 55;
-  var y = 50 + Math.sin(t * 0.72) * 20 + Math.sin(t * 1.15) * 7;
-  var z = -85 - i * 98;
-  var nx = Math.sin(t + 0.46) * 150 + Math.sin((t + 0.46) * 0.41) * 55;
-  var nz = -85 - (i + 1) * 98;
-  return { x: x, y: y, z: z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: 9.5 };
+  var i = Math.max(0, index), t = i * 0.42;
+  var x = Math.sin(t) * 18 + Math.sin(t * 0.33) * 7;
+  var y = 52 + Math.sin(t * 0.7) * 7 + Math.sin(t * 1.05) * 3;
+  var z = -70 - i * 78;
+  var nx = Math.sin(t + 0.42) * 18 + Math.sin((t + 0.42) * 0.33) * 7;
+  var nz = -70 - (i + 1) * 78;
+  return { x: x, y: y, z: z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: GATE_RADIUS };
 }
+var LAST_GATE = gateAt(GATE_COUNT - 1);
+var SHIP = { x: 0, y: -2, z: LAST_GATE.z - 240, yaw: 0, scale: 4.6 };
 function createSim() {
-  return {
-    x: 0, y: 48, z: 36, yaw: 0, pitch: 0, roll: 0, speed: 44, throttle: 0.62,
-    alive: true, crashed: false, crashTimer: 0, maneuver: null, gForce: 5.5,
-    nextGate: 0, score: 0, combo: 0, gatesHit: 0, time: 0, shake: 0,
-    barrelBonusArmed: false, spawnX: 0, spawnY: 48, spawnZ: 36, spawnYaw: 0, finished: false
-  };
+  return {
+    x: 0, y: 52, z: 38, yaw: 0, pitch: 0, roll: 0, speed: 48, throttle: 0.68,
+    alive: true, crashed: false, crashTimer: 0, maneuver: null, gForce: 1.1,
+    nextGate: 0, score: 0, combo: 0, gatesHit: 0, time: 0, shake: 0,
+    barrelBonusArmed: false, spawnX: 0, spawnY: 52, spawnZ: 38, spawnYaw: 0, finished: false
+  };
+}
+function sanitize(sim) {
+  sim.x = clamp(finite(sim.x, 0), -900, 900);
+  sim.y = clamp(finite(sim.y, 48), 2, 280);
+  sim.z = clamp(finite(sim.z, 38), -4200, 400);
+  sim.yaw = finite(sim.yaw, 0);
+  sim.pitch = finite(sim.pitch, 0);
+  sim.roll = finite(sim.roll, 0);
+  sim.speed = clamp(finite(sim.speed, MIN_SPEED), MIN_SPEED, 130);
+  sim.throttle = clamp(finite(sim.throttle, 0.62), 0.28, 1);
+  sim.gForce = clamp(finite(sim.gForce, 1), 0.2, 7);
 }
 function respawn(sim) {
-  var gate = sim.nextGate > 0 ? gateAt(sim.nextGate - 1) : null;
-  sim.x = gate ? gate.x : sim.spawnX; sim.y = gate ? gate.y + 6 : sim.spawnY; sim.z = gate ? gate.z + 28 : sim.spawnZ;
-  sim.yaw = gate ? gate.yaw : sim.spawnYaw; sim.pitch = 0; sim.roll = 0; sim.speed = 42; sim.throttle = 0.62;
-  sim.alive = true; sim.crashed = false; sim.crashTimer = 0; sim.maneuver = null; sim.barrelBonusArmed = false; sim.combo = 0; sim.shake = 0.2; sim.gForce = 5.5;
+  var gate = sim.nextGate > 0 ? gateAt(sim.nextGate - 1) : null;
+  sim.x = gate ? gate.x : sim.spawnX; sim.y = gate ? gate.y + 8 : sim.spawnY; sim.z = gate ? gate.z + 36 : sim.spawnZ;
+  sim.yaw = gate ? gate.yaw : sim.spawnYaw; sim.pitch = 0; sim.roll = 0; sim.speed = 50; sim.throttle = 0.7;
+  sim.alive = true; sim.crashed = false; sim.crashTimer = 0; sim.maneuver = null; sim.barrelBonusArmed = false; sim.combo = 0; sim.shake = 0.15; sim.gForce = 1.1;
+  sanitize(sim);
 }
 function beginManeuver(sim, kind) {
-  sim.maneuver = { kind: kind, t: 0, duration: kind === "loop" ? 2.05 : 1.35, startYaw: sim.yaw, startPitch: sim.pitch, startRoll: sim.roll, startY: sim.y };
+  sim.maneuver = { kind: kind, t: 0, duration: kind === "loop" ? 2.05 : 1.35, startYaw: sim.yaw, startPitch: sim.pitch, startRoll: sim.roll, startY: sim.y };
 }
 function stepManeuver(sim, dt) {
-  var m = sim.maneuver; if (!m) return null;
-  m.t += dt; var u = Math.min(m.t / m.duration, 1), e = easeInOutCubic(u);
-  if (m.kind === "barrel-left") {
-    sim.roll = m.startRoll + e * Math.PI * 2; sim.yaw = m.startYaw + Math.sin(e * Math.PI) * 0.42;
-    sim.y = m.startY + Math.sin(e * Math.PI) * 7; sim.pitch = m.startPitch * (1 - Math.sin(e * Math.PI) * 0.35);
-  } else if (m.kind === "barrel-right") {
-    sim.roll = m.startRoll - e * Math.PI * 2; sim.yaw = m.startYaw - Math.sin(e * Math.PI) * 0.42;
-    sim.y = m.startY + Math.sin(e * Math.PI) * 7; sim.pitch = m.startPitch * (1 - Math.sin(e * Math.PI) * 0.35);
-  } else { sim.pitch = m.startPitch + e * Math.PI * 2; sim.roll = m.startRoll * (1 - e); }
-  if (u < 1) return null;
-  if (m.kind === "barrel-left") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw + 0.18; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
-  else if (m.kind === "barrel-right") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw - 0.18; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
-  else { sim.pitch = wrapPi(m.startPitch); sim.roll = 0; }
-  var kind = m.kind; sim.maneuver = null;
-  return { type: "maneuver-end", kind: kind, completed: true };
+  var m = sim.maneuver; if (!m) return null;
+  m.t += dt; var u = Math.min(m.t / m.duration, 1), e = easeInOutCubic(u);
+  if (m.kind === "barrel-left") {
+    sim.roll = m.startRoll + e * Math.PI * 2; sim.yaw = m.startYaw + Math.sin(e * Math.PI) * 0.38;
+    sim.y = m.startY + Math.sin(e * Math.PI) * 7; sim.pitch = m.startPitch * (1 - Math.sin(e * Math.PI) * 0.28);
+  } else if (m.kind === "barrel-right") {
+    sim.roll = m.startRoll - e * Math.PI * 2; sim.yaw = m.startYaw - Math.sin(e * Math.PI) * 0.38;
+    sim.y = m.startY + Math.sin(e * Math.PI) * 7; sim.pitch = m.startPitch * (1 - Math.sin(e * Math.PI) * 0.28);
+  } else { sim.pitch = m.startPitch + e * Math.PI * 2; sim.roll = m.startRoll * (1 - e); sim.y = m.startY + Math.sin(e * Math.PI) * 10; }
+  if (u < 1) return null;
+  if (m.kind === "barrel-left") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw + 0.16; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
+  else if (m.kind === "barrel-right") { sim.roll = wrapPi(m.startRoll); sim.yaw = m.startYaw - 0.16; sim.pitch = m.startPitch; sim.barrelBonusArmed = true; }
+  else { sim.pitch = wrapPi(m.startPitch); sim.roll = 0; }
+  var kind = m.kind; sim.maneuver = null;
+  return { type: "maneuver-end", kind: kind, completed: true };
+}
+function overDestroyer(x, y, z) {
+  var dx = Math.abs(x - SHIP.x);
+  var dz = Math.abs(z - SHIP.z);
+  return dx < 26 && dz < 210 && y < 24;
 }
 function stepSim(sim, input, dt) {
-  var events = [];
-  if (!sim.alive) { sim.crashTimer += dt; return events; }
-  sim.time += dt;
-  if (sim.maneuver && input.cancelManeuver) { var kind = sim.maneuver.kind; sim.maneuver = null; events.push({ type: "maneuver-end", kind: kind, completed: false }); }
-  if (!sim.maneuver && input.startBarrel) {
-    var kind2 = input.startBarrel === "left" ? "barrel-left" : "barrel-right";
-    beginManeuver(sim, kind2); events.push({ type: "maneuver-start", kind: kind2 });
-  } else if (!sim.maneuver && input.startLoop) { beginManeuver(sim, "loop"); events.push({ type: "maneuver-start", kind: "loop" }); }
-  if (sim.maneuver) { var end = stepManeuver(sim, dt); if (end) events.push(end); }
-  else {
-    sim.roll += input.roll * ROLL_RATE * dt; sim.pitch += input.pitch * PITCH_RATE * dt; sim.yaw += input.yaw * YAW_RATE * dt;
-    if (Math.abs(input.roll) < 0.08) sim.roll *= Math.exp(-0.7 * dt);
-    sim.pitch = clamp(sim.pitch, -1.15, 1.15);
-    if (Math.abs(sim.roll) > 1.45) sim.roll = clamp(sim.roll, -1.55, 1.55);
-    sim.yaw += Math.sin(sim.roll) * COORD_TURN * clamp(sim.speed / 48, 0.35, 1.35) * dt;
-  }
-  sim.throttle = clamp(sim.throttle + input.throttleDelta * 0.55 * dt, 0.1, 1);
-  var target = MIN_SPEED + sim.throttle * (MAX_SPEED - MIN_SPEED) + (input.boost ? 26 : 0);
-  sim.speed += (target - sim.speed) * (1 - Math.exp(-1.7 * dt));
-  sim.speed += -Math.sin(sim.pitch) * 14 * dt;
-  if (sim.speed < 22 && sim.pitch > 0.12) sim.pitch -= 0.85 * dt * (1 - sim.speed / 22);
-  sim.speed = clamp(sim.speed, 8, 128);
-  var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
-  sim.x += fx * sim.speed * dt; sim.y += fy * sim.speed * dt; sim.z += fz * sim.speed * dt;
-  var load = 5.35 + Math.abs(sim.roll) * 0.28 + Math.abs(sim.pitch) * 0.22 + (input.boost ? 0.35 : 0);
-  sim.gForce += (clamp(load, 5.2, 6) - sim.gForce) * (1 - Math.exp(-6 * dt));
-  var floor = Math.max(1.8, terrainHeight(sim.x, sim.z) + 2.4);
-  if (sim.y < floor || sim.y > 240) {
-    sim.alive = false; sim.crashed = true; sim.crashTimer = 0; sim.shake = 1; sim.speed = 0; sim.combo = 0;
-    events.push({ type: "crash" }); return events;
-  }
-  var gate = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
-  if (gate) {
-    var dx = sim.x - gate.x, dy = sim.y - gate.y, dz = sim.z - gate.z, dist = Math.hypot(dx, dy, dz);
-    var along = dx * -Math.sin(gate.yaw) + dz * -Math.cos(gate.yaw);
-    if (dist < gate.radius) {
-      var bonus = sim.barrelBonusArmed || !!sim.maneuver;
-      sim.barrelBonusArmed = false; sim.combo += 1;
-      sim.score += (100 + Math.round(sim.speed)) * (bonus ? 2 : 1) * Math.min(sim.combo, 8);
-      sim.gatesHit += 1; sim.nextGate += 1; sim.shake = Math.min(1, sim.shake + (bonus ? 0.45 : 0.28));
-      events.push({ type: "gate", bonus: bonus });
-      if (sim.nextGate >= GATE_COUNT) { sim.finished = true; events.push({ type: "finish" }); }
-    } else if (along < -16) { sim.combo = 0; sim.barrelBonusArmed = false; sim.nextGate += 1; }
-  }
-  return events;
+  var events = [];
+  if (!sim.alive) { sim.crashTimer += dt; return events; }
+  sim.time += dt;
+  if (sim.maneuver && input.cancelManeuver) { var kind = sim.maneuver.kind; sim.maneuver = null; events.push({ type: "maneuver-end", kind: kind, completed: false }); }
+  if (!sim.maneuver && input.startBarrel) {
+    var kind2 = input.startBarrel === "left" ? "barrel-left" : "barrel-right";
+    beginManeuver(sim, kind2); events.push({ type: "maneuver-start", kind: kind2 });
+  } else if (!sim.maneuver && input.startLoop) { beginManeuver(sim, "loop"); events.push({ type: "maneuver-start", kind: "loop" }); }
+  if (sim.maneuver) { var end = stepManeuver(sim, dt); if (end) events.push(end); }
+  else {
+    sim.roll += input.roll * ROLL_RATE * dt; sim.pitch += input.pitch * PITCH_RATE * dt; sim.yaw += input.yaw * YAW_RATE * dt;
+    if (Math.abs(input.roll) < 0.08) sim.roll *= Math.exp(-0.85 * dt);
+    sim.pitch = clamp(sim.pitch, -0.82, 0.82);
+    if (Math.abs(sim.roll) > 1.4) sim.roll = clamp(sim.roll, -1.5, 1.5);
+    sim.yaw += Math.sin(sim.roll) * COORD_TURN * clamp(sim.speed / 48, 0.4, 1.3) * dt;
+  }
+  sim.throttle = clamp(sim.throttle + input.throttleDelta * 0.5 * dt, 0.34, 1);
+  var target = MIN_SPEED + sim.throttle * (MAX_SPEED - MIN_SPEED) + (input.boost ? 22 : 0);
+  sim.speed += (target - sim.speed) * (1 - Math.exp(-2.1 * dt));
+  sim.speed += -Math.sin(sim.pitch) * 4 * dt;
+  sim.speed = clamp(sim.speed, MIN_SPEED, 128);
+  var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
+  var fl = Math.hypot(fx, fy, fz) || 1;
+  sim.x += (fx / fl) * sim.speed * dt; sim.y += (fy / fl) * sim.speed * dt; sim.z += (fz / fl) * sim.speed * dt;
+  var load = 1 + Math.abs(sim.roll) * 0.55 + Math.abs(sim.pitch) * 0.4 + (input.boost ? 0.35 : 0);
+  sim.gForce += (clamp(load, 0.6, 5.8) - sim.gForce) * (1 - Math.exp(-6 * dt));
+  if (!Number.isFinite(sim.x) || !Number.isFinite(sim.y) || !Number.isFinite(sim.z)) {
+    sim.alive = false; sim.crashed = true; sim.crashTimer = 0; sim.shake = 1; sim.speed = MIN_SPEED; sim.combo = 0; sim.maneuver = null;
+    events.push({ type: "crash" }); sanitize(sim); return events;
+  }
+  var floor = Math.max(4.2, heightAt(sim.x, sim.z) + 3.4);
+  if (sim.y < floor || sim.y > 260 || overDestroyer(sim.x, sim.y, sim.z)) {
+    sim.alive = false; sim.crashed = true; sim.crashTimer = 0; sim.shake = 1; sim.speed = MIN_SPEED; sim.combo = 0; sim.maneuver = null;
+    events.push({ type: "crash" }); sanitize(sim); return events;
+  }
+  var gate = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
+  if (gate) {
+    var dx = sim.x - gate.x, dy = sim.y - gate.y, dz = sim.z - gate.z, dist = Math.hypot(dx, dy, dz);
+    var along = dx * -Math.sin(gate.yaw) + dz * -Math.cos(gate.yaw);
+    if (dist < gate.radius) {
+      var bonus = sim.barrelBonusArmed || !!sim.maneuver;
+      sim.barrelBonusArmed = false; sim.combo += 1;
+      sim.score += (100 + Math.round(sim.speed)) * (bonus ? 2 : 1) * Math.min(sim.combo, 8);
+      sim.gatesHit += 1; sim.nextGate += 1; sim.shake = Math.min(1, sim.shake + (bonus ? 0.4 : 0.24));
+      events.push({ type: "gate", bonus: bonus });
+      if (sim.nextGate >= GATE_COUNT) { sim.finished = true; events.push({ type: "finish" }); }
+    } else if (along < -18) { sim.combo = 0; sim.barrelBonusArmed = false; sim.nextGate += 1; }
+  }
+  sanitize(sim);
+  return events;
 }
 var held = new Set();
 var touchRoll = 0, touchPitch = 0, touchThrottle = 0, touchBoost = false;
 var queuedBarrel = null, queuedLoop = false, queuedCancel = false;
 window.addEventListener("keydown", function (e) {
-  held.add(e.code);
-  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") e.preventDefault();
+  held.add(e.code);
+  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") e.preventDefault();
 });
 window.addEventListener("keyup", function (e) { held.delete(e.code); });
 window.addEventListener("blur", function () { held.clear(); });
 function readInput() {
-  var roll = 0, pitch = 0, yaw = 0, throttleDelta = touchThrottle;
-  if (held.has("KeyA") || held.has("ArrowLeft")) roll += 1;
-  if (held.has("KeyD") || held.has("ArrowRight")) roll -= 1;
-  if (held.has("KeyW") || held.has("ArrowUp")) pitch += 1;
-  if (held.has("KeyS") || held.has("ArrowDown")) pitch -= 1;
-  if (held.has("KeyQ")) yaw += 1;
-  if (held.has("KeyE")) yaw -= 1;
-  if (held.has("ShiftLeft") || held.has("ShiftRight") || held.has("KeyR")) throttleDelta += 1;
-  if (held.has("ControlLeft") || held.has("ControlRight") || held.has("KeyF") || held.has("KeyZ")) throttleDelta -= 1;
-  var startBarrel = queuedBarrel; queuedBarrel = null;
-  if (!startBarrel && held.has("Digit1")) startBarrel = "left";
-  if (!startBarrel && held.has("Digit2")) startBarrel = "right";
-  var startLoop = queuedLoop || held.has("Digit3"); queuedLoop = false;
-  var cancelManeuver = queuedCancel; queuedCancel = false;
-  return {
-    roll: clamp(roll + touchRoll, -1, 1), pitch: clamp(pitch + touchPitch, -1, 1),
-    yaw: clamp(yaw, -1, 1), throttleDelta: clamp(throttleDelta, -1, 1),
-    boost: touchBoost || held.has("Space"), startBarrel: startBarrel, startLoop: startLoop, cancelManeuver: cancelManeuver
-  };
+  var roll = 0, pitch = 0, yaw = 0, throttleDelta = touchThrottle;
+  if (held.has("KeyA") || held.has("ArrowLeft")) roll += 1;
+  if (held.has("KeyD") || held.has("ArrowRight")) roll -= 1;
+  if (held.has("KeyW") || held.has("ArrowUp")) pitch += 1;
+  if (held.has("KeyS") || held.has("ArrowDown")) pitch -= 1;
+  if (held.has("KeyQ")) yaw += 1;
+  if (held.has("KeyE")) yaw -= 1;
+  if (held.has("ShiftLeft") || held.has("ShiftRight") || held.has("KeyR")) throttleDelta += 1;
+  if (held.has("ControlLeft") || held.has("ControlRight") || held.has("KeyF") || held.has("KeyZ")) throttleDelta -= 1;
+  var startBarrel = queuedBarrel; queuedBarrel = null;
+  if (!startBarrel && held.has("Digit1")) startBarrel = "left";
+  if (!startBarrel && held.has("Digit2")) startBarrel = "right";
+  var startLoop = queuedLoop || held.has("Digit3"); queuedLoop = false;
+  var cancelManeuver = queuedCancel; queuedCancel = false;
+  return {
+    roll: clamp(roll + touchRoll, -1, 1), pitch: clamp(pitch + touchPitch, -1, 1),
+    yaw: clamp(yaw, -1, 1), throttleDelta: clamp(throttleDelta, -1, 1),
+    boost: touchBoost || held.has("Space"), startBarrel: startBarrel, startLoop: startLoop, cancelManeuver: cancelManeuver
+  };
 }
 var audio = {
-  ctx: null, master: null, osc: null, filter: null, engine: null, noise: null, muted: false,
-  unlock: function () {
-    if (!this.ctx) {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      this.ctx = new Ctx({ latencyHint: "interactive" });
-      this.master = this.ctx.createGain(); this.master.gain.value = 0.22; this.master.connect(this.ctx.destination);
-      this.filter = this.ctx.createBiquadFilter(); this.filter.type = "lowpass"; this.filter.frequency.value = 420;
-      this.engine = this.ctx.createGain(); this.engine.gain.value = 0.0001;
-      this.osc = this.ctx.createOscillator(); this.osc.type = "sawtooth"; this.osc.frequency.value = 68;
-      this.osc.connect(this.filter); this.filter.connect(this.engine); this.engine.connect(this.master); this.osc.start();
-      var buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
-      var data = buf.getChannelData(0); for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-      var src = this.ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-      var nf = this.ctx.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = 700;
-      this.noise = this.ctx.createGain(); this.noise.gain.value = 0.0001;
-      src.connect(nf); nf.connect(this.noise); this.noise.connect(this.master); src.start();
-    }
-    if (this.ctx.state === "suspended") this.ctx.resume();
-  },
-  setMuted: function (m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.22, this.ctx.currentTime, 0.03); },
-  setEngine: function (throttle, speed, boosting) {
-    if (!this.osc) return;
-    var t = this.ctx.currentTime;
-    this.osc.frequency.setTargetAtTime(62 + throttle * 90 + speed * 0.35 + (boosting ? 28 : 0), t, 0.05);
-    this.filter.frequency.setTargetAtTime(360 + throttle * 900 + (boosting ? 400 : 0), t, 0.06);
-    this.engine.gain.setTargetAtTime(0.03 + throttle * 0.07 + (boosting ? 0.04 : 0), t, 0.05);
-    this.noise.gain.setTargetAtTime(0.012 + speed * 0.00035 + (boosting ? 0.02 : 0), t, 0.08);
-  },
-  blip: function (start, end, dur, vol) {
-    if (!this.ctx || this.muted) return;
-    var t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "triangle"; o.frequency.setValueAtTime(start, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, end), t + dur);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
-  },
-  whoosh: function () { this.blip(180, 70, 0.12, 0.22); },
-  gate: function (bonus) { this.blip(bonus ? 880 : 640, bonus ? 520 : 420, 0.07, bonus ? 0.16 : 0.11); },
-  crash: function () { this.blip(90, 28, 0.28, 0.35); }
+  ctx: null, master: null, osc: null, filter: null, engine: null, noise: null, muted: false,
+  unlock: function () {
+    if (!this.ctx) {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      this.ctx = new Ctx({ latencyHint: "interactive" });
+      this.master = this.ctx.createGain(); this.master.gain.value = 0.22; this.master.connect(this.ctx.destination);
+      this.filter = this.ctx.createBiquadFilter(); this.filter.type = "lowpass"; this.filter.frequency.value = 420;
+      this.engine = this.ctx.createGain(); this.engine.gain.value = 0.0001;
+      this.osc = this.ctx.createOscillator(); this.osc.type = "sawtooth"; this.osc.frequency.value = 68;
+      this.osc.connect(this.filter); this.filter.connect(this.engine); this.engine.connect(this.master); this.osc.start();
+      var buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
+      var data = buf.getChannelData(0); for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      var src = this.ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      var nf = this.ctx.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = 700;
+      this.noise = this.ctx.createGain(); this.noise.gain.value = 0.0001;
+      src.connect(nf); nf.connect(this.noise); this.noise.connect(this.master); src.start();
+    }
+    if (this.ctx.state === "suspended") this.ctx.resume();
+  },
+  setMuted: function (m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.22, this.ctx.currentTime, 0.03); },
+  setEngine: function (throttle, speed, boosting) {
+    if (!this.osc) return;
+    var t = this.ctx.currentTime;
+    this.osc.frequency.setTargetAtTime(62 + throttle * 90 + speed * 0.35 + (boosting ? 28 : 0), t, 0.05);
+    this.filter.frequency.setTargetAtTime(360 + throttle * 900 + (boosting ? 400 : 0), t, 0.06);
+    this.engine.gain.setTargetAtTime(0.03 + throttle * 0.07 + (boosting ? 0.04 : 0), t, 0.05);
+    this.noise.gain.setTargetAtTime(0.012 + speed * 0.00035 + (boosting ? 0.02 : 0), t, 0.08);
+  },
+  blip: function (start, end, dur, vol) {
+    if (!this.ctx || this.muted) return;
+    var t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "triangle"; o.frequency.setValueAtTime(start, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, end), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
+  },
+  whoosh: function () { this.blip(180, 70, 0.12, 0.22); },
+  gate: function (bonus) { this.blip(bonus ? 880 : 640, bonus ? 520 : 420, 0.07, bonus ? 0.16 : 0.11); },
+  crash: function () { this.blip(90, 28, 0.28, 0.35); }
 };
 var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d", { alpha: false });
 var W = 1, H = 1, FOC = 1;
 function baseFoc() { return (H * 0.5) / Math.tan((62 * Math.PI / 180) / 2); }
-var pitImg = new Image();
-var pitSrc = null;
-pitImg.decoding = "async";
-pitImg.onload = function () {
-  pitSrc = document.createElement("canvas");
-  pitSrc.width = pitImg.naturalWidth;
-  pitSrc.height = pitImg.naturalHeight;
-  var p = pitSrc.getContext("2d");
-  p.drawImage(pitImg, 0, 0);
-  p.globalCompositeOperation = "destination-out";
-  p.filter = "blur(1.2px)";
-  function pane(pts) {
-    p.beginPath();
-    p.moveTo(pts[0][0] * pitSrc.width, pts[0][1] * pitSrc.height);
-    for (var i = 1; i < pts.length; i++) p.lineTo(pts[i][0] * pitSrc.width, pts[i][1] * pitSrc.height);
-    p.closePath();
-    p.fill();
-  }
-  pane([[0.06, 0.05], [0.435, 0.04], [0.45, 0.47], [0.04, 0.51]]);
-  pane([[0.55, 0.04], [0.94, 0.05], [0.97, 0.51], [0.55, 0.47]]);
-  pane([[0.00, 0.14], [0.08, 0.07], [0.04, 0.51], [0.00, 0.46]]);
-  pane([[0.92, 0.07], [1.00, 0.14], [1.00, 0.46], [0.97, 0.51]]);
-};
-pitImg.src = "zrc.png";
 var oceanImg = new Image();
 oceanImg.decoding = "async";
 var oceanReady = false;
@@ -334,352 +334,326 @@ shipImg.decoding = "async";
 var shipReady = false;
 shipImg.onload = function () { shipReady = true; };
 shipImg.src = "ship.png";
-var cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
+var mtnImg = new Image();
+mtnImg.decoding = "async";
+var mtnReady = false;
+mtnImg.onload = function () { mtnReady = true; };
+mtnImg.src = "mtn.png";
+var cam = { x: 22, y: 58, z: 96, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
 var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
 var trail = [];
-for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 48, z: 36 });
-var ship = { x: 0, y: 2.4, z: 0, yaw: 0, bob: 0, heel: 0, fx: 0, fy: 0, fz: -1, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0 };
+for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 52, z: 38 });
+var ship = { x: SHIP.x, y: 2.4, z: SHIP.z, yaw: 0, bob: 0, heel: 0, fx: 0, fy: 0, fz: -1, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0 };
 function resetShip() {
-  ship.x = 0; ship.y = 2.4; ship.z = 0; ship.yaw = 0; ship.bob = 0; ship.heel = 0;
-  ship.fx = 0; ship.fy = 0; ship.fz = -1; ship.rx = 1; ship.ry = 0; ship.rz = 0; ship.ux = 0; ship.uy = 1; ship.uz = 0;
+  ship.x = SHIP.x; ship.y = 2.4; ship.z = SHIP.z; ship.yaw = 0; ship.bob = 0; ship.heel = 0;
+  ship.fx = 0; ship.fy = 0; ship.fz = -1; ship.rx = 1; ship.ry = 0; ship.rz = 0; ship.ux = 0; ship.uy = 1; ship.uz = 0;
 }
 function computeShipMatrix() {
-  var c = Math.cos(ship.yaw), s = Math.sin(ship.yaw);
-  var hc = Math.cos(ship.heel), hs = Math.sin(ship.heel);
-  ship.fx = -s; ship.fy = 0; ship.fz = -c;
-  var rx = -ship.fz, rz = ship.fx;
-  ship.rx = rx * hc; ship.ry = hs; ship.rz = rz * hc;
-  ship.ux = -rx * hs; ship.uy = hc; ship.uz = -rz * hs;
+  var c = Math.cos(ship.yaw), s = Math.sin(ship.yaw);
+  var hc = Math.cos(ship.heel), hs = Math.sin(ship.heel);
+  ship.fx = -s; ship.fy = 0; ship.fz = -c;
+  var rx = -ship.fz, rz = ship.fx;
+  ship.rx = rx * hc; ship.ry = hs; ship.rz = rz * hc;
+  ship.ux = -rx * hs; ship.uy = hc; ship.uz = -rz * hs;
 }
 function setCam(px, py, pz, tx, ty, tz) {
-  var fx = tx - px, fy = ty - py, fz = tz - pz;
-  var len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
-  var rx = -fz, ry = 0, rz = fx;
-  len = Math.hypot(rx, ry, rz);
-  if (len < 1e-5) { rx = 1; ry = 0; rz = 0; len = 1; }
-  rx /= len; ry /= len; rz /= len;
-  var ux = ry * fz - rz * fy, uy = rz * fx - rx * fz, uz = rx * fy - ry * fx;
-  cam.x = px; cam.y = py; cam.z = pz;
-  cam.fx = fx; cam.fy = fy; cam.fz = fz;
-  cam.rx = rx; cam.ry = ry; cam.rz = rz;
-  cam.ux = ux; cam.uy = uy; cam.uz = uz;
+  var fx = tx - px, fy = ty - py, fz = tz - pz;
+  var len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
+  var rx = -fz, ry = 0, rz = fx;
+  len = Math.hypot(rx, ry, rz);
+  if (len < 1e-5) { rx = 1; ry = 0; rz = 0; len = 1; }
+  rx /= len; ry /= len; rz /= len;
+  var ux = ry * fz - rz * fy, uy = rz * fx - rx * fz, uz = rx * fy - ry * fx;
+  cam.x = px; cam.y = py; cam.z = pz;
+  cam.fx = fx; cam.fy = fy; cam.fz = fz;
+  cam.rx = rx; cam.ry = ry; cam.rz = rz;
+  cam.ux = ux; cam.uy = uy; cam.uz = uz;
 }
 function project(x, y, z) {
-  var dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
-  var cz = dx * cam.fx + dy * cam.fy + dz * cam.fz;
-  if (cz < 0.35) return null;
-  var cx = dx * cam.rx + dy * cam.ry + dz * cam.rz;
-  var cy = dx * cam.ux + dy * cam.uy + dz * cam.uz;
-  return { x: W * 0.5 + (cx * FOC) / cz, y: H * 0.5 - (cy * FOC) / cz, z: cz };
+  var dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
+  var cz = dx * cam.fx + dy * cam.fy + dz * cam.fz;
+  if (cz < 0.35) return null;
+  var cx = dx * cam.rx + dy * cam.ry + dz * cam.rz;
+  var cy = dx * cam.ux + dy * cam.uy + dz * cam.uz;
+  return { x: W * 0.5 + (cx * FOC) / cz, y: H * 0.5 - (cy * FOC) / cz, z: cz };
 }
 function worldFromLocal(lx, ly, lz, o, r, u, f) {
-  return { x: o.x + r.x * lx + u.x * ly + f.x * lz, y: o.y + r.y * lx + u.y * ly + f.y * lz, z: o.z + r.z * lx + u.z * ly + f.z * lz };
+  return { x: o.x + r.x * lx + u.x * ly + f.x * lz, y: o.y + r.y * lx + u.y * ly + f.y * lz, z: o.z + r.z * lx + u.z * ly + f.z * lz };
 }
 function computeJetBasis(sim) {
-  var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
-  var fl = Math.hypot(fx, fy, fz) || 1;
-  jetF.x = fx / fl; jetF.y = fy / fl; jetF.z = fz / fl;
-  var rx = -jetF.z, ry = 0, rz = jetF.x;
-  var rl = Math.hypot(rx, ry, rz);
-  if (rl < 1e-5) { rx = Math.cos(sim.yaw); ry = 0; rz = -Math.sin(sim.yaw); rl = Math.hypot(rx, ry, rz) || 1; }
-  rx /= rl; ry /= rl; rz /= rl;
-  var ux = ry * jetF.z - rz * jetF.y, uy = rz * jetF.x - rx * jetF.z, uz = rx * jetF.y - ry * jetF.x;
-  var c = Math.cos(sim.roll), s = Math.sin(sim.roll);
-  jetR.x = rx * c + ux * s; jetR.y = ry * c + uy * s; jetR.z = rz * c + uz * s;
-  jetU.x = -rx * s + ux * c; jetU.y = -ry * s + uy * c; jetU.z = -rz * s + uz * c;
+  var fx = -Math.sin(sim.yaw) * Math.cos(sim.pitch), fy = Math.sin(sim.pitch), fz = -Math.cos(sim.yaw) * Math.cos(sim.pitch);
+  var fl = Math.hypot(fx, fy, fz) || 1;
+  jetF.x = fx / fl; jetF.y = fy / fl; jetF.z = fz / fl;
+  var rx = -jetF.z, ry = 0, rz = jetF.x;
+  var rl = Math.hypot(rx, ry, rz);
+  if (rl < 1e-5) { rx = Math.cos(sim.yaw); ry = 0; rz = -Math.sin(sim.yaw); rl = Math.hypot(rx, ry, rz) || 1; }
+  rx /= rl; ry /= rl; rz /= rl;
+  var ux = ry * jetF.z - rz * jetF.y, uy = rz * jetF.x - rx * jetF.z, uz = rx * jetF.y - ry * jetF.x;
+  var c = Math.cos(sim.roll), s = Math.sin(sim.roll);
+  jetR.x = rx * c + ux * s; jetR.y = ry * c + uy * s; jetR.z = rz * c + uz * s;
+  jetU.x = -rx * s + ux * c; jetU.y = -ry * s + uy * c; jetU.z = -rz * s + uz * c;
 }
 function fillPoly(pts, fill, stroke, width) {
-  if (pts.length < 2) return;
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.closePath();
-  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width || 1; ctx.stroke(); }
+  if (pts.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width || 1; ctx.stroke(); }
+}
+function horizonY() {
+  var farZ = cam.z - 2480;
+  var mid = project(cam.x + cam.fx * 40, 0, farZ);
+  if (mid) return mid.y;
+  return H * 0.54;
 }
 function drawSky() {
-  var g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#a8b8c6");
-  g.addColorStop(0.38, "#7a94a8");
-  g.addColorStop(0.62, "#4e6778");
-  g.addColorStop(1, "#1a2c38");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-  var sunX = W * 0.70, sunY = H * 0.28;
-  var glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.55);
-  glow.addColorStop(0, "rgba(255, 230, 190, 0.18)");
-  glow.addColorStop(0.4, "rgba(180, 200, 220, 0.07)");
-  glow.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, H);
+  var hy = horizonY();
+  var g = ctx.createLinearGradient(0, 0, 0, Math.max(hy, H * 0.55));
+  g.addColorStop(0, "#a8b8c6");
+  g.addColorStop(0.42, "#7a94a8");
+  g.addColorStop(0.78, "#5c7688");
+  g.addColorStop(1, "#4a6574");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  var sunX = W * 0.70, sunY = H * 0.28;
+  var glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.55);
+  glow.addColorStop(0, "rgba(255, 230, 190, 0.18)");
+  glow.addColorStop(0.4, "rgba(180, 200, 220, 0.07)");
+  glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+}
+function drawMountains() {
+  var hy = horizonY();
+  if (mtnReady) {
+    var srcW = mtnImg.naturalWidth;
+    var srcH = mtnImg.naturalHeight * 0.62;
+    var cardH = Math.max(160, H * 0.40);
+    var cardW = Math.max(W * 1.55, cardH * (srcW / Math.max(1, srcH)) * 0.92);
+    ctx.save();
+    ctx.translate(W * 0.5, hy);
+    ctx.rotate(-0.026);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(mtnImg, 0, 0, srcW, srcH, -cardW * 0.5, -cardH + 2, cardW, cardH);
+    var fade = ctx.createLinearGradient(0, -18, 0, 10);
+    fade.addColorStop(0, "rgba(74, 101, 116, 0)");
+    fade.addColorStop(1, "rgba(26, 52, 64, 0.22)");
+    ctx.fillStyle = fade;
+    ctx.fillRect(-cardW * 0.5, -22, cardW, 36);
+    ctx.restore();
+  }
+  drawCoastSide(-1);
+  drawCoastSide(1);
+}
+function drawCoastSide(sign) {
+  var shore = [], ridge = [];
+  var n = 32;
+  var zNear = cam.z + 30;
+  var zFar = cam.z - 2600;
+  for (var i = 0; i <= n; i++) {
+    var z = zNear + (zFar - zNear) * (i / n);
+    var xs = sign * CHANNEL;
+    var xr = sign * (CHANNEL + 460);
+    var h = heightAt(xr, z);
+    var p0 = project(xs, 0.02, z);
+    var p1 = project(xr, h, z);
+    if (p0 && p1) { shore.push(p0); ridge.push(p1); }
+  }
+  if (shore.length < 3) return;
+  var poly = shore.concat(ridge.slice().reverse());
+  fillPoly(poly, sign < 0 ? "#6f746c" : "#7c8078", "rgba(20,24,22,0.18)", 1);
+  var wet = [];
+  for (var i = 0; i <= n; i++) {
+    var z = zNear + (zFar - zNear) * (i / n);
+    var xb = sign * (CHANNEL + 8);
+    var xi = sign * (CHANNEL + SHORE);
+    var pb = project(xb, 0.04, z);
+    var pi = project(xi, heightAt(xi, z) * 0.35, z);
+    if (pb && pi) wet.push({ b: pb, i: pi });
+  }
+  if (wet.length > 2) {
+    var beach = [];
+    for (var i = 0; i < wet.length; i++) beach.push(wet[i].b);
+    for (var i = wet.length - 1; i >= 0; i--) beach.push(wet[i].i);
+    fillPoly(beach, "rgba(154, 158, 148, 0.55)");
+  }
 }
 function drawWater() {
-  var far = [];
-  var steps = 36, radius = 1600;
-  for (var i = -steps; i <= steps; i++) {
-    var t = i / steps;
-    var px = cam.x + cam.rx * t * radius * 1.6;
-    var pz = cam.z + cam.fz * radius + cam.rx * t * 50;
-    var p = project(px, 0, pz);
-    if (p) far.push(p);
-  }
-  for (var s = 0; s < 10; s++) {
-    var a = (s / 10) * Math.PI * 2;
-    var p2 = project(cam.x + Math.cos(a) * 1100, 0, cam.z + Math.sin(a) * 1100 - 700);
-    if (p2) far.push(p2);
-  }
-  far.sort(function (a, b) { return a.x - b.x; });
-  ctx.beginPath();
-  ctx.moveTo(0, H);
-  if (far.length > 0) {
-    ctx.lineTo(far[0].x, far[0].y);
-    for (var i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
-  } else {
-    ctx.lineTo(0, H * 0.45);
-    ctx.lineTo(W, H * 0.45);
-  }
-  ctx.lineTo(W, H);
-  ctx.closePath();
-  ctx.save();
-  ctx.clip();
-  if (oceanReady) {
-    var t = performance.now() * 0.00007;
-    var imgW = oceanImg.naturalWidth, imgH = oceanImg.naturalHeight;
-    var scaleY = (H * 1.05) / imgH;
-    var scaleX = Math.max(W / imgW * 1.4, scaleY * 1.9);
-    var drawW = imgW * scaleX, drawH = imgH * scaleY;
-    var offsetX = (t * 55) % drawW;
-    ctx.globalAlpha = 0.92;
-    ctx.drawImage(oceanImg, -offsetX - 50, H - drawH * 0.99, drawW + 100, drawH);
-    ctx.drawImage(oceanImg, -offsetX + drawW - 50, H - drawH * 0.99, drawW + 100, drawH);
-    var depth = ctx.createLinearGradient(0, H * 0.38, 0, H);
-    depth.addColorStop(0, "rgba(8, 22, 34, 0)");
-    depth.addColorStop(0.4, "rgba(5, 16, 26, 0.38)");
-    depth.addColorStop(1, "rgba(2, 8, 14, 0.82)");
-    ctx.fillStyle = depth;
-    ctx.fillRect(0, 0, W, H);
-    var highlight = ctx.createLinearGradient(0, H * 0.32, 0, H * 0.55);
-    highlight.addColorStop(0, "rgba(150, 200, 220, 0.20)");
-    highlight.addColorStop(0.55, "rgba(100, 160, 185, 0.08)");
-    highlight.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = highlight;
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-  } else {
-    var wg = ctx.createLinearGradient(0, H * 0.38, 0, H);
-    wg.addColorStop(0, "#1a3340");
-    wg.addColorStop(1, "#071016");
-    ctx.fillStyle = wg;
-    ctx.fill();
-  }
-  ctx.restore();
+  var hy = horizonY();
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, hy - 4, W, H - hy + 8);
+  ctx.clip();
+  if (oceanReady) {
+    var t = performance.now() * 0.00005;
+    var imgW = oceanImg.naturalWidth, imgH = oceanImg.naturalHeight;
+    var scaleY = (H - hy + 40) / imgH * 1.15;
+    var scaleX = Math.max(W / imgW * 1.35, scaleY * 1.8);
+    var drawW = imgW * scaleX, drawH = imgH * scaleY;
+    var offsetX = (t * 40) % drawW;
+    ctx.globalAlpha = 0.94;
+    ctx.drawImage(oceanImg, -offsetX - 40, hy - 8, drawW + 80, drawH);
+    ctx.drawImage(oceanImg, -offsetX + drawW - 40, hy - 8, drawW + 80, drawH);
+    var depth = ctx.createLinearGradient(0, hy, 0, H);
+    depth.addColorStop(0, "rgba(90, 130, 145, 0.18)");
+    depth.addColorStop(0.22, "rgba(8, 22, 34, 0.08)");
+    depth.addColorStop(0.55, "rgba(5, 16, 26, 0.42)");
+    depth.addColorStop(1, "rgba(2, 8, 14, 0.78)");
+    ctx.fillStyle = depth;
+    ctx.fillRect(0, hy - 8, W, H - hy + 16);
+    ctx.globalAlpha = 1;
+  } else {
+    var wg = ctx.createLinearGradient(0, hy, 0, H);
+    wg.addColorStop(0, "#4a6574");
+    wg.addColorStop(0.18, "#1a3340");
+    wg.addColorStop(1, "#071016");
+    ctx.fillStyle = wg;
+    ctx.fillRect(0, hy - 4, W, H - hy + 8);
+  }
+  ctx.restore();
+  ctx.strokeStyle = "rgba(186, 214, 230, 0.22)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, hy);
+  ctx.lineTo(W, hy);
+  ctx.stroke();
 }
-function stepShip(dt) {
-  var hangar = phase === "start";
-  var t = performance.now() * 0.001;
-  var tx = hangar ? 0 : sim.x;
-  var tz = hangar ? 0 : sim.z;
-  var k = 1 - Math.exp(-(hangar ? 1.1 : 2.8) * dt);
-  ship.x += (tx - ship.x) * k;
-  ship.z += (tz - ship.z) * k;
-  ship.yaw = 0;
-  ship.bob = Math.sin(t * 1.2) * 0.7 + Math.sin(t * 0.55) * 0.35;
-  ship.heel = Math.sin(t * 0.8) * 0.05;
-  ship.y = 2.2 + ship.bob;
-  computeShipMatrix();
+function stepShip() {
+  var t = performance.now() * 0.001;
+  ship.x = SHIP.x;
+  ship.z = SHIP.z;
+  ship.yaw = SHIP.yaw;
+  ship.bob = Math.sin(t * 1.15) * 0.55 + Math.sin(t * 0.5) * 0.28;
+  ship.heel = Math.sin(t * 0.72) * 0.035;
+  ship.y = 2.2 + ship.bob;
+  computeShipMatrix();
 }
-function drawOriginVertex() {
-  var rings = [16, 34, 56];
-  for (var r = 0; r < rings.length; r++) {
-    var ring = [];
-    for (var i = 0; i < 28; i++) {
-      var a = (i / 28) * Math.PI * 2;
-      var p = project(Math.cos(a) * rings[r], 0.06, Math.sin(a) * rings[r]);
-      if (p) ring.push(p);
-    }
-    if (ring.length < 4) continue;
-    ctx.beginPath();
-    ctx.moveTo(ring[0].x, ring[0].y);
-    for (var i = 1; i < ring.length; i++) ctx.lineTo(ring[i].x, ring[i].y);
-    ctx.closePath();
-    ctx.strokeStyle = "rgba(186,214,230," + (0.16 - r * 0.03) + ")";
-    ctx.lineWidth = 1.15;
-    ctx.stroke();
-  }
+function drawAxisBox(cx, cy, cz, hx, hy, hz, fill, stroke) {
+  var sx = [-1, 1, 1, -1, -1, 1, 1, -1];
+  var sy = [-1, -1, -1, -1, 1, 1, 1, 1];
+  var sz = [-1, -1, 1, 1, -1, -1, 1, 1];
+  var proj = [];
+  for (var i = 0; i < 8; i++) {
+    proj.push(project(cx + sx[i] * hx, cy + sy[i] * hy, cz + sz[i] * hz));
+  }
+  var faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5]];
+  var drawn = [];
+  for (var f = 0; f < faces.length; f++) {
+    var pts = [];
+    var z = 0, ok = true;
+    for (var k = 0; k < 4; k++) {
+      var p = proj[faces[f][k]];
+      if (!p) { ok = false; break; }
+      pts.push(p);
+      z += p.z;
+    }
+    if (!ok) continue;
+    drawn.push({ z: z * 0.25, pts: pts, f: f });
+  }
+  drawn.sort(function (a, b) { return b.z - a.z; });
+  for (var i = 0; i < drawn.length; i++) {
+    var mul = drawn[i].f === 1 ? 1 : (drawn[i].f === 4 ? 0.55 : 0.78);
+    fillPoly(drawn[i].pts, fill, stroke, 0.7);
+    if (mul < 1) {
+      ctx.save();
+      ctx.globalAlpha = 1 - mul;
+      fillPoly(drawn[i].pts, "#000", null, 0);
+      ctx.restore();
+    }
+  }
 }
 function drawShipWake() {
-  var t = performance.now() * 0.001;
-  for (var i = 1; i <= 6; i++) {
-    var back = 8 + i * 10;
-    var spread = 2.8 + i * 2.1;
-    var wobble = Math.sin(t * 1.8 + i) * (0.8 + i * 0.12);
-    var a = project(ship.x - ship.fx * (back - 4) + ship.rx * wobble, 0.08, ship.z - ship.fz * (back - 4) + ship.rz * wobble);
-    var b = project(ship.x - ship.fx * back + ship.rx * spread, 0.04, ship.z - ship.fz * back + ship.rz * spread);
-    var c = project(ship.x - ship.fx * back - ship.rx * spread, 0.04, ship.z - ship.fz * back - ship.rz * spread);
-    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.14 - i * 0.018) + ")");
-  }
+  var t = performance.now() * 0.001;
+  for (var i = 1; i <= 7; i++) {
+    var back = 40 + i * 22;
+    var spread = 8 + i * 4;
+    var wobble = Math.sin(t * 1.6 + i) * (0.6 + i * 0.1);
+    var z = SHIP.z - back;
+    var a = project(SHIP.x + wobble, 0.08, z + 8);
+    var b = project(SHIP.x + spread, 0.04, z);
+    var c = project(SHIP.x - spread, 0.04, z);
+    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.16 - i * 0.018) + ")");
+  }
 }
 function drawShip() {
-  drawOriginVertex();
-  drawShipWake();
-  var hangar = phase === "start";
-  var mobile = W < 640;
-  var water = project(ship.x, 0.1, ship.z);
-  var mid = project(ship.x, ship.y + 10, ship.z);
-  var cx = water ? water.x : (mid ? mid.x : W * 0.5);
-  var bottom = water ? water.y : (mid ? mid.y + 28 : H * 0.68);
-  if (!shipReady) return;
-  var aspect = shipImg.naturalHeight / Math.max(1, shipImg.naturalWidth);
-  var minW = Math.min(W, H) * (hangar ? (mobile ? 0.58 : 0.46) : (mobile ? 0.42 : 0.34));
-  var maxW = Math.min(W, H) * (hangar ? (mobile ? 0.72 : 0.58) : (mobile ? 0.52 : 0.46));
-  var screenW = clamp(minW, minW, maxW);
-  var screenH = screenW * aspect;
-  if (hangar) bottom = clamp(bottom, H * (mobile ? 0.46 : 0.50), H * (mobile ? 0.58 : 0.62));
-  else bottom = clamp(bottom, H * 0.58, H * 0.84);
-  var left = clamp(cx, screenW * 0.5, W - screenW * 0.5);
-  ctx.save();
-  ctx.translate(left, bottom);
-  ctx.rotate(ship.heel * 0.45);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.save();
-  ctx.scale(1, -0.38);
-  ctx.globalAlpha = 0.26;
-  ctx.filter = "blur(1.1px) brightness(0.55)";
-  ctx.drawImage(shipImg, -screenW / 2, 0, screenW, screenH);
-  ctx.filter = "none";
-  ctx.restore();
-  ctx.globalAlpha = 1;
-  ctx.drawImage(shipImg, -screenW / 2, -screenH, screenW, screenH);
-  ctx.restore();
-}
-function drawIsland(isl) {
-  var apex = project(isl.x, isl.h * 1.15, isl.z);
-  var ring = [];
-  for (var i = 0; i < 8; i++) {
-    var a = (i / 8) * Math.PI * 2;
-    var p = project(isl.x + Math.cos(a) * isl.r * 0.92, 0, isl.z + Math.sin(a) * isl.r * 0.92);
-    if (p) ring.push(p);
-  }
-  if (ring.length > 2) fillPoly(ring, "#1c221c", null);
-  if (apex && ring.length > 2) {
-    for (var i = 0; i < ring.length; i++) {
-      var n = ring[(i + 1) % ring.length];
-      fillPoly([apex, ring[i], n], i % 2 ? "#32362f" : "#3a3f38", "rgba(0,0,0,0.18)", 1);
-    }
-  }
+  ship.x = SHIP.x;
+  ship.z = SHIP.z;
+  ship.yaw = 0;
+  var y = 2.2 + ship.bob;
+  var x = SHIP.x;
+  var z = SHIP.z;
+  drawShipWake();
+  drawAxisBox(x, y + 7.2, z, 20, 7.2, 190, "#1a2026", "rgba(0,0,0,0.35)");
+  drawAxisBox(x, y + 13.2, z + 10, 17, 2.0, 168, "#3e444b", "rgba(0,0,0,0.25)");
+  drawAxisBox(x, y + 6.2, z + 178, 14, 5.0, 22, "#1a2026", "rgba(0,0,0,0.3)");
+  drawAxisBox(x, y + 6.4, z - 172, 14, 5.2, 24, "#1a2026", "rgba(0,0,0,0.3)");
+  drawAxisBox(x, y + 22, z - 18, 12, 11, 32, "#d2d6db", "rgba(0,0,0,0.28)");
+  drawAxisBox(x, y + 36, z - 12, 8, 7, 14, "#b4b9c1", "rgba(0,0,0,0.25)");
+  drawAxisBox(x, y + 17, z + 70, 8, 3.6, 12, "#8f969f", "rgba(0,0,0,0.2)");
+  drawAxisBox(x, y + 17, z - 80, 8, 3.6, 12, "#8f969f", "rgba(0,0,0,0.2)");
 }
 function drawGate(g, active) {
-  var gy = -Math.sin(g.yaw), gz = -Math.cos(g.yaw);
-  var rx = -gz, rz = gy;
-  var outer = [];
-  for (var i = 0; i < 22; i++) {
-    var a = (i / 22) * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
-    var op = project(g.x + rx * ca * 9.5, g.y + sa * 9.5, g.z + rz * ca * 9.5);
-    if (op) outer.push(op);
-  }
-  if (outer.length > 3) {
-    ctx.beginPath();
-    ctx.moveTo(outer[0].x, outer[0].y);
-    for (var i = 1; i < outer.length; i++) ctx.lineTo(outer[i].x, outer[i].y);
-    ctx.closePath();
-    ctx.strokeStyle = active ? "rgba(232,237,243,0.95)" : "rgba(143,160,179,0.7)";
-    ctx.lineWidth = active ? 3.2 : 1.6;
-    ctx.stroke();
-  }
+  var gy = -Math.sin(g.yaw), gz = -Math.cos(g.yaw);
+  var rx = -gz, rz = gy;
+  var outer = [];
+  for (var i = 0; i < 22; i++) {
+    var a = (i / 22) * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
+    var op = project(g.x + rx * ca * GATE_RADIUS, g.y + sa * GATE_RADIUS, g.z + rz * ca * GATE_RADIUS);
+    if (op) outer.push(op);
+  }
+  if (outer.length > 3) {
+    ctx.beginPath();
+    ctx.moveTo(outer[0].x, outer[0].y);
+    for (var i = 1; i < outer.length; i++) ctx.lineTo(outer[i].x, outer[i].y);
+    ctx.closePath();
+    ctx.strokeStyle = active ? "rgba(232,237,243,0.95)" : "rgba(143,160,179,0.7)";
+    ctx.lineWidth = active ? 3.2 : 1.6;
+    ctx.stroke();
+  }
 }
 function drawJet(sim, boosting) {
-  var o = { x: sim.x, y: sim.y, z: sim.z };
-  function P(lx, ly, lz) {
-    var w = worldFromLocal(lx, ly, lz, o, jetR, jetU, jetF);
-    return project(w.x, w.y, w.z);
-  }
-  var tris = [
-    [[0, 0.08, 1.55], [0.22, -0.06, 0.9], [-0.22, -0.06, 0.9], "#9aa3ae"],
-    [[0.05, 0.02, 0.7], [2.25, -0.08, -0.55], [0.2, -0.08, -0.4], "#1b1d22"],
-    [[-0.05, 0.02, 0.7], [-2.25, -0.08, -0.55], [-0.2, -0.08, -0.4], "#24272d"],
-    [[0.12, 0.06, 1.05], [0.72, 0.02, 0.85], [0.12, 0.02, 0.8], "#9aa3ae"],
-    [[-0.12, 0.06, 1.05], [-0.72, 0.02, 0.85], [-0.12, 0.02, 0.8], "#9aa3ae"],
-    [[0, 0.12, 0.2], [0.18, 0.42, -0.95], [-0.18, 0.42, -0.95], "#1b1d22"],
-    [[0.1, 0.02, -0.6], [0.22, -0.04, -1.15], [-0.22, -0.04, -1.15], "#0a0b0d"]
-  ];
-  var drawn = [];
-  for (var i = 0; i < tris.length; i++) {
-    var a = P(tris[i][0][0], tris[i][0][1], tris[i][0][2]);
-    var b = P(tris[i][1][0], tris[i][1][1], tris[i][1][2]);
-    var c = P(tris[i][2][0], tris[i][2][1], tris[i][2][2]);
-    if (a && b && c) drawn.push({ z: (a.z + b.z + c.z) / 3, pts: [a, b, c], col: tris[i][3] });
-  }
-  drawn.sort(function (a, b) { return b.z - a.z; });
-  for (var i = 0; i < drawn.length; i++) fillPoly(drawn[i].pts, drawn[i].col, "rgba(0,0,0,0.35)", 0.6);
-  if (boosting || sim.throttle > 0.4) {
-    var b = P(0.12, 0, -1.2), c = P(-0.12, 0, -1.2);
-    var tip = P(0, 0, -1.15 - (0.6 + sim.throttle * 1.4 + (boosting ? 0.5 : 0)));
-    if (b && c && tip) fillPoly([b, tip, c], boosting ? "rgba(255,176,122,0.85)" : "rgba(255,160,90,0.55)");
-  }
+  var o = { x: sim.x, y: sim.y, z: sim.z };
+  function P(lx, ly, lz) {
+    var w = worldFromLocal(lx, ly, lz, o, jetR, jetU, jetF);
+    return project(w.x, w.y, w.z);
+  }
+  var tris = [
+    [[0, 0.08, 1.55], [0.22, -0.06, 0.9], [-0.22, -0.06, 0.9], "#9aa3ae"],
+    [[0.05, 0.02, 0.7], [2.25, -0.08, -0.55], [0.2, -0.08, -0.4], "#1b1d22"],
+    [[-0.05, 0.02, 0.7], [-2.25, -0.08, -0.55], [-0.2, -0.08, -0.4], "#24272d"],
+    [[0.12, 0.06, 1.05], [0.72, 0.02, 0.85], [0.12, 0.02, 0.8], "#9aa3ae"],
+    [[-0.12, 0.06, 1.05], [-0.72, 0.02, 0.85], [-0.12, 0.02, 0.8], "#9aa3ae"],
+    [[0, 0.12, 0.2], [0.18, 0.42, -0.95], [-0.18, 0.42, -0.95], "#1b1d22"],
+    [[0.1, 0.02, -0.6], [0.22, -0.04, -1.15], [-0.22, -0.04, -1.15], "#0a0b0d"]
+  ];
+  var drawn = [];
+  for (var i = 0; i < tris.length; i++) {
+    var a = P(tris[i][0][0], tris[i][0][1], tris[i][0][2]);
+    var b = P(tris[i][1][0], tris[i][1][1], tris[i][1][2]);
+    var c = P(tris[i][2][0], tris[i][2][1], tris[i][2][2]);
+    if (a && b && c) drawn.push({ z: (a.z + b.z + c.z) / 3, pts: [a, b, c], col: tris[i][3] });
+  }
+  drawn.sort(function (a, b) { return b.z - a.z; });
+  for (var i = 0; i < drawn.length; i++) fillPoly(drawn[i].pts, drawn[i].col, "rgba(0,0,0,0.35)", 0.6);
+  if (boosting || sim.throttle > 0.4) {
+    var b = P(0.12, 0, -1.2), c = P(-0.12, 0, -1.2);
+    var tip = P(0, 0, -1.15 - (0.6 + sim.throttle * 1.4 + (boosting ? 0.5 : 0)));
+    if (b && c && tip) fillPoly([b, tip, c], boosting ? "rgba(255,176,122,0.85)" : "rgba(255,160,90,0.55)");
+  }
 }
 function drawTrail() {
-  ctx.beginPath();
-  var started = false;
-  for (var i = 0; i < trail.length; i++) {
-    var p = project(trail[i].x, trail[i].y, trail[i].z);
-    if (!p) { started = false; continue; }
-    if (!started) { ctx.moveTo(p.x, p.y); started = true; }
-    else ctx.lineTo(p.x, p.y);
-  }
-  ctx.strokeStyle = "rgba(207,214,222,0.32)"; ctx.lineWidth = 1.4; ctx.stroke();
-}
-var pitFX = 0, pitFY = 0, pitFS = 0, pitFA = 0, pitReady = false;
-function measureJet(sim) {
-  var o = { x: sim.x, y: sim.y, z: sim.z };
-  var pts = [
-    worldFromLocal(0, 0.1, 1.5, o, jetR, jetU, jetF),
-    worldFromLocal(2.25, -0.08, -0.55, o, jetR, jetU, jetF),
-    worldFromLocal(-2.25, -0.08, -0.55, o, jetR, jetU, jetF),
-    worldFromLocal(0, 0.2, -1.1, o, jetR, jetU, jetF)
-  ];
-  var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9, n = 0, z = 0;
-  for (var i = 0; i < pts.length; i++) {
-    var p = project(pts[i].x, pts[i].y, pts[i].z);
-    if (!p) continue;
-    n++; z += p.z;
-    if (p.x < minX) minX = p.x; if (p.y < minY) minY = p.y;
-    if (p.x > maxX) maxX = p.x; if (p.y > maxY) maxY = p.y;
-  }
-  if (n < 3) return null;
-  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, w: Math.max(12, maxX - minX), h: Math.max(8, maxY - minY), z: z / n };
-}
-function drawCockpitOnJet(sim, dt) {
-  if (!pitSrc || !sim.alive) { pitReady = false; return; }
-  var m = measureJet(sim);
-  if (!m) { pitReady = false; return; }
-  var g = clamp(Math.max(sim.gForce, 5.4), 1, 6);
-  var recede = 1 / (1 + (g - 1) * 0.16);
-  var targetS = (m.w * 3.35 / pitSrc.width) * recede;
-  var sink = (g - 1) * 8;
-  var tx = m.x, ty = m.y + sink;
-  var followK = 3.1 / (1 + (g - 1) * 0.4);
-  var k = 1 - Math.exp(-followK * dt);
-  if (!pitReady) { pitFX = tx; pitFY = ty; pitFS = targetS; pitFA = 1; pitReady = true; }
-  else {
-    pitFX += (tx - pitFX) * k;
-    pitFY += (ty - pitFY) * k;
-    pitFS += (targetS - pitFS) * k;
-    pitFA += (0.96 - pitFA) * (1 - Math.exp(-5 * dt));
-  }
-  var dw = pitSrc.width * pitFS, dh = pitSrc.height * pitFS;
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  ctx.save();
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.translate(Math.round(pitFX), Math.round(pitFY));
-  ctx.rotate(-sim.roll * 0.9);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.globalAlpha = pitFA;
-  ctx.filter = "contrast(1.14) saturate(1.08) brightness(1.04)";
-  ctx.drawImage(pitSrc, Math.round(-dw / 2), Math.round(-dh / 2 - dh * 0.06), Math.round(dw), Math.round(dh));
-  ctx.filter = "none";
-  ctx.restore();
+  ctx.beginPath();
+  var started = false;
+  for (var i = 0; i < trail.length; i++) {
+    var p = project(trail[i].x, trail[i].y, trail[i].z);
+    if (!p) { started = false; continue; }
+    if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.strokeStyle = "rgba(207,214,222,0.32)"; ctx.lineWidth = 1.4; ctx.stroke();
 }
 var sim = createSim();
 var phase = "start", lastScore = 0, acc = 0, flashTimer = 0, lastT = performance.now();
@@ -687,100 +661,103 @@ var best = 0;
 try { best = Number(localStorage.getItem(BEST_KEY) || "0") || 0; } catch (e) {}
 function $(id) { return document.getElementById(id); }
 function commitScore(score) {
-  lastScore = score; best = Math.max(best, score);
-  try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {}
+  lastScore = score; best = Math.max(best, score);
+  try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {}
 }
 function setFlash(text) { $("flash").textContent = text; $("flash").style.display = "block"; flashTimer = 0.7; }
 function renderCard() {
-  var card = $("card"), panel = $("panel");
-  if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
-  panel.hidden = false;
-  if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">A destroyer holds station on the water under the jet. Visual only — it never steers the camera.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
-    $("takeoff").onclick = takeOff;
-  } else if (phase === "paused") {
-    card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
-    $("resume").onclick = function () { setPhase("playing"); };
-    $("hangar").onclick = function () { sim = createSim(); resetShip(); pitReady = false; setPhase("start"); };
-  } else if (phase === "finish") {
-    card.innerHTML = '<p class="kicker">COURSE COMPLETE</p><h2 class="display" style="font-size:32px">On the deck</h2><p class="mono" style="color:var(--muted);margin:12px 0 20px">SCORE ' + lastScore + " · BEST " + best + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="again" type="button">Fly again</button><button class="ghost" id="hangar2" type="button">Hangar</button></div>';
-    $("again").onclick = takeOff;
-    $("hangar2").onclick = function () { sim = createSim(); resetShip(); pitReady = false; setPhase("start"); };
-  }
+  var card = $("card"), panel = $("panel");
+  if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
+  panel.hidden = false;
+  if (phase === "start") {
+    card.innerHTML = '<p class="kicker">COASTAL CHANNEL</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Twenty rings down a still seaway. The destroyer holds station past the last gate — fly the axis toward it.</p><dl class="mono"><dt>BANK</dt><dd>A / D · left stick</dd><dt>PITCH</dt><dd>W / S · stick vertical</dd><dt>ROLL / LOOP</dt><dd>1 / 2 barrel · 3 loop</dd><dt>BOOST</dt><dd>Space · AB pad</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + pad(best, 6) + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    $("takeoff").onclick = takeOff;
+  } else if (phase === "paused") {
+    card.innerHTML = '<p class="kicker">HOLDING</p><h2 class="display">PAUSED<span>COURSE</span></h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-end;gap:8px"><button class="ghost" id="hangar" type="button">Hangar</button><button class="go" id="resume" type="button">Resume</button></div>';
+    $("resume").onclick = function () { setPhase("playing"); };
+    $("hangar").onclick = function () { sim = createSim(); resetShip(); setPhase("start"); };
+  } else if (phase === "finish") {
+    card.innerHTML = '<p class="kicker">STATION</p><h2 class="display">ON AXIS<span>' + pad(lastScore, 6) + '</span></h2><p class="lead">Last ring cleared. The destroyer is dead ahead.</p><div class="row" style="justify-content:flex-end;gap:8px"><button class="go" id="again" type="button">Fly again</button></div>';
+    $("again").onclick = takeOff;
+  }
 }
 function setPhase(next) {
-  phase = next;
-  $("chrome").hidden = next === "start";
-  $("instruments").hidden = next === "start";
-  $("reticle").hidden = next === "start";
-  $("horizon").hidden = next === "start";
-  if (next === "crash") {
-    var el = $("crash");
-    el.classList.remove("show");
-    void el.offsetWidth;
-    el.classList.add("show");
-    $("crashCount").textContent = "5";
-  } else {
-    $("crash").classList.remove("show");
-  }
-  $("pauseBtn").style.display = next === "playing" ? "grid" : "none";
-  renderCard();
+  phase = next;
+  $("chrome").hidden = next === "start";
+  $("instruments").hidden = next === "start";
+  $("reticle").hidden = next === "start";
+  $("horizon").hidden = next === "start";
+  if (next === "crash") {
+    var el = $("crash");
+    el.classList.remove("show");
+    void el.offsetWidth;
+    el.classList.add("show");
+    $("crashCount").textContent = "5";
+  } else {
+    $("crash").classList.remove("show");
+  }
+  $("pauseBtn").style.display = next === "playing" || next === "paused" ? "grid" : "none";
+  renderCard();
 }
 function takeOff() {
-  audio.unlock();
-  sim = createSim();
-  pitReady = false;
-  $("panel").hidden = true;
-  setPhase("playing");
+  audio.unlock();
+  sim = createSim();
+  $("panel").hidden = true;
+  setPhase("playing");
 }
 function updateHud(input) {
-  $("scoreline").textContent = "SCORE " + pad(sim.score, 5) + " · BEST " + pad(best, 5);
-  $("gateline").textContent = "GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + (sim.combo > 1 ? " · COMBO ×" + sim.combo : "");
-  $("leftInst").innerHTML = "IAS " + pad(sim.speed * 8) + "<br>ALT " + pad(sim.y) + "<br>HDG " + pad(headingDeg(sim.yaw));
-  var g = sim.nextGate < GATE_COUNT ? gateAt(sim.nextGate) : null;
-  var dist = g ? Math.hypot(sim.x - g.x, sim.y - g.y, sim.z - g.z) : 0;
-  $("rightInst").innerHTML = "G " + sim.gForce.toFixed(1) + "<br>NXT " + pad(dist) + '<br><span style="color:var(--subtle)">1 / 2 ROLL</span>';
-  $("thrBar").style.width = Math.round(sim.throttle * 100) + "%";
-  $("thrLabel").textContent = (input.boost && phase === "playing" ? "AB " : "THR ") + Math.round(sim.throttle * 100) + (sim.maneuver ? " · " + sim.maneuver.kind.replace("-", " ").toUpperCase() : "");
-  $("horizon").style.transform = "translateX(-50%) rotate(" + (clamp(sim.roll / 1.2, -1, 1) * -28) + "deg)";
+  $("scoreline").textContent = pad(sim.score, 6) + " · BEST " + pad(best, 6) + (sim.combo > 1 ? " · x" + sim.combo : "");
+  $("gateline").textContent = "GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + (sim.maneuver ? " · " + sim.maneuver.kind.replace("-", " ").toUpperCase() : "");
+  $("leftInst").innerHTML = "ALT " + pad(sim.y) + "<br>HDG " + pad(headingDeg(sim.yaw));
+  var shipDist = Math.hypot(sim.x - SHIP.x, sim.y - 18 - SHIP.y, sim.z - SHIP.z);
+  $("rightInst").innerHTML = "G " + sim.gForce.toFixed(1) + "<br>SHIP " + pad(shipDist);
+  $("thrBar").style.width = Math.round(sim.throttle * 100) + "%";
+  $("thrLabel").textContent = (input.boost && phase === "playing" ? "AB " : "THR ") + Math.round(sim.speed);
+  $("horizon").style.transform = "translateX(-50%) rotate(" + (clamp(sim.roll / 1.2, -1, 1) * -28) + "deg)";
 }
 function resize() {
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  W = window.innerWidth; H = window.innerHeight;
-  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-  canvas.style.width = W + "px";
-  canvas.style.height = H + "px";
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  FOC = baseFoc();
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  FOC = baseFoc();
 }
 addEventListener("resize", resize); resize();
 canvas.addEventListener("click", function (e) {
-  var now = performance.now();
-  var dbl = now - (canvas._lastTap || 0) < 320;
-  canvas._lastTap = now;
-  if (phase !== "playing") return;
-  if (sim.maneuver) { queuedCancel = true; return; }
-  if (!dbl) return;
-  queuedBarrel = e.clientX < W / 2 ? "left" : "right";
+  var now = performance.now();
+  var dbl = now - (canvas._lastTap || 0) < 320;
+  canvas._lastTap = now;
+  if (phase !== "playing") return;
+  if (sim.maneuver) { queuedCancel = true; return; }
+  if (!dbl) return;
+  queuedBarrel = e.clientX < W / 2 ? "left" : "right";
 });
 canvas.addEventListener("dblclick", function (e) {
-  e.preventDefault();
-  if (phase !== "playing") return;
-  if (sim.maneuver) { queuedCancel = true; return; }
-  queuedBarrel = e.clientX < W / 2 ? "left" : "right";
+  e.preventDefault();
+  if (phase !== "playing") return;
+  if (sim.maneuver) { queuedCancel = true; return; }
+  queuedBarrel = e.clientX < W / 2 ? "left" : "right";
 });
 $("muteBtn").onclick = function () { audio.unlock(); audio.setMuted(!audio.muted); $("muteBtn").textContent = audio.muted ? "X" : "M"; };
-$("pauseBtn").onclick = function () { if (phase === "playing") setPhase("paused"); };
+$("pauseBtn").onclick = function () {
+  if (phase === "playing") setPhase("paused");
+  else if (phase === "paused") setPhase("playing");
+};
 addEventListener("keydown", function (e) {
-  if (e.code !== "Escape") return;
-  if (phase === "playing") setPhase("paused");
-  else if (phase === "paused") setPhase("playing");
+  if (e.code === "KeyP" && (phase === "playing" || phase === "paused")) {
+    setPhase(phase === "paused" ? "playing" : "paused");
+  }
+  if (e.code !== "Escape") return;
+  if (phase === "playing") setPhase("paused");
+  else if (phase === "paused") setPhase("playing");
 });
 var barrelBtns = document.querySelectorAll("[data-barrel]");
 for (var bi = 0; bi < barrelBtns.length; bi++) {
-  (function (btn) {
-    btn.addEventListener("pointerdown", function () { queuedBarrel = btn.getAttribute("data-barrel"); });
-  })(barrelBtns[bi]);
+  (function (btn) {
+    btn.addEventListener("pointerdown", function () { queuedBarrel = btn.getAttribute("data-barrel"); });
+  })(barrelBtns[bi]);
 }
 $("loopBtn").onpointerdown = function () { queuedLoop = true; };
 $("thrUp").onpointerdown = function () { touchThrottle = 1; };
@@ -789,96 +766,95 @@ $("abBtn").onpointerdown = function () { touchBoost = true; };
 $("abBtn").onpointerup = $("abBtn").onpointerleave = function () { touchBoost = false; };
 var stick = $("stick"), knob = $("knob");
 function onStick(x, y) {
-  var r = stick.getBoundingClientRect();
-  var nx = clamp(((x - r.left) / r.width) * 2 - 1, -1, 1);
-  var ny = clamp(((y - r.top) / r.height) * 2 - 1, -1, 1);
-  touchRoll = -nx; touchPitch = -ny;
-  knob.style.transform = "translate(calc(-50% + " + (nx * 22) + "px), calc(-50% + " + (ny * 22) + "px))";
+  var r = stick.getBoundingClientRect();
+  var nx = clamp(((x - r.left) / r.width) * 2 - 1, -1, 1);
+  var ny = clamp(((y - r.top) / r.height) * 2 - 1, -1, 1);
+  touchRoll = -nx; touchPitch = -ny;
+  knob.style.transform = "translate(calc(-50% + " + (nx * 22) + "px), calc(-50% + " + (ny * 22) + "px))";
 }
 stick.addEventListener("pointerdown", function (e) { stick.setPointerCapture(e.pointerId); onStick(e.clientX, e.clientY); });
 stick.addEventListener("pointermove", function (e) { if (stick.hasPointerCapture(e.pointerId)) onStick(e.clientX, e.clientY); });
 function endStick() { touchRoll = 0; touchPitch = 0; knob.style.transform = "translate(-50%,-50%)"; }
 stick.addEventListener("pointerup", endStick);
 stick.addEventListener("pointercancel", endStick);
+window.__controlsTest = {
+  getYaw: function () { return sim.yaw; },
+  getSpeed: function () { return sim.speed; },
+  getRoll: function () { return sim.roll; },
+  getShip: function () { return { x: SHIP.x, y: SHIP.y, z: SHIP.z }; },
+  setKeys: function (codes) {
+    held.clear();
+    for (var i = 0; i < codes.length; i++) held.add(codes[i]);
+  }
+};
 setPhase("start");
 function frame() {
-  var now = performance.now();
-  var dt = Math.min((now - lastT) / 1000, 0.1);
-  lastT = now;
-  var input = readInput();
-  if (phase === "playing" || phase === "crash") {
-    acc += dt;
-    while (acc >= STEP) {
-      var events = stepSim(sim, input, STEP);
-      for (var i = 0; i < events.length; i++) {
-        var ev = events[i];
-        if (ev.type === "gate") { audio.gate(ev.bonus); setFlash(ev.bonus ? "ROLL GATE ×2" : "GATE"); }
-        else if (ev.type === "maneuver-start") audio.whoosh();
-        else if (ev.type === "crash") { audio.crash(); commitScore(sim.score); setPhase("crash"); }
-        else if (ev.type === "finish") { commitScore(sim.score); setPhase("finish"); }
-      }
-      acc -= STEP;
-    }
-  } else acc = 0;
-  if (phase === "crash") $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
-  if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); pitReady = false; setPhase("playing"); }
-  computeJetBasis(sim);
-  var follow = phase === "playing" || phase === "paused" || phase === "crash";
-  FOC = baseFoc();
-  if (follow) {
-    var px = sim.x - jetF.x * 13.5 + jetU.x * 3.6;
-    var py = sim.y - jetF.y * 13.5 + jetU.y * 3.6;
-    var pz = sim.z - jetF.z * 13.5 + jetU.z * 3.6;
-    if (sim.shake > 0) {
-      var s = sim.shake * sim.shake;
-      px += (Math.random() - 0.5) * s * 0.55;
-      py += (Math.random() - 0.5) * s * 0.35;
-      sim.shake = Math.max(0, sim.shake - dt * 1.7);
-    }
-    setCam(px, py, pz, sim.x + jetF.x * 12 + jetU.x * 0.6, sim.y + jetF.y * 12 + jetU.y * 0.6, sim.z + jetF.z * 12 + jetU.z * 0.6);
-  } else {
-    setCam(16, 57, 54, 0, 48, 8);
-  }
-  stepShip(dt);
-  if (sim.alive && phase === "playing") {
-    for (var i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
-    trail[0] = { x: sim.x - jetF.x * 1.4, y: sim.y - jetF.y * 1.4, z: sim.z - jetF.z * 1.4 };
-  }
-  drawSky();
-  drawWater();
-  drawShip();
-  var drawables = [];
-  for (var i = 0; i < ISLANDS.length; i++) {
-    var isl = ISLANDS[i];
-    var d = (isl.x - cam.x) * cam.fx + (0 - cam.y) * cam.fy + (isl.z - cam.z) * cam.fz;
-    if (d > 2) drawables.push({ z: d, kind: "island", isl: isl });
-  }
-  for (var i = 0; i < GATE_COUNT; i++) {
-    var g = gateAt(i);
-    var d = (g.x - cam.x) * cam.fx + (g.y - cam.y) * cam.fy + (g.z - cam.z) * cam.fz;
-    if (d > 2) drawables.push({ z: d, kind: "gate", g: g, active: i === sim.nextGate });
-  }
-  drawables.sort(function (a, b) { return b.z - a.z; });
-  for (var i = 0; i < drawables.length; i++) {
-    if (drawables[i].kind === "island") drawIsland(drawables[i].isl);
-    else drawGate(drawables[i].g, drawables[i].active);
-  }
-  drawTrail();
-  if (follow) {
-    if (sim.alive) {
-      drawCockpitOnJet(sim, dt);
-      drawJet(sim, input.boost && phase === "playing");
-    } else pitReady = false;
-  } else {
-    var pose = { x: 0, y: 48, z: 18, yaw: 0.42, pitch: 0.1, roll: 0.14, throttle: 0.62, gForce: 5.5, alive: true };
-    computeJetBasis(pose);
-    drawCockpitOnJet(pose, dt);
-    drawJet(pose, false);
-  }
-  audio.setEngine(sim.throttle, sim.speed, input.boost && phase === "playing");
-  if (flashTimer > 0) { flashTimer -= dt; if (flashTimer <= 0) $("flash").style.display = "none"; }
-  if (phase !== "start") updateHud(input);
-  requestAnimationFrame(frame);
+  var now = performance.now();
+  var dt = Math.min((now - lastT) / 1000, 0.1);
+  lastT = now;
+  var input = readInput();
+  if (phase === "playing" || phase === "crash") {
+    acc += dt;
+    var guard = 0;
+    while (acc >= STEP && guard++ < 8) {
+      var events = stepSim(sim, input, STEP);
+      for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        if (ev.type === "gate") { audio.gate(ev.bonus); setFlash(ev.bonus ? "ROLL GATE ×2" : "GATE"); }
+        else if (ev.type === "maneuver-start") audio.whoosh();
+        else if (ev.type === "crash") { audio.crash(); commitScore(sim.score); setPhase("crash"); }
+        else if (ev.type === "finish") { commitScore(sim.score); setPhase("finish"); }
+      }
+      acc -= STEP;
+    }
+  } else acc = 0;
+  if (phase === "crash") $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
+  if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); setPhase("playing"); }
+  var follow = phase === "playing" || phase === "paused" || phase === "crash";
+  var pose = follow ? sim : { x: 0, y: 46, z: 28, yaw: 0, pitch: 0.04, roll: 0, throttle: 0.68, gForce: 1.1, alive: true };
+  computeJetBasis(pose);
+  FOC = baseFoc();
+  if (follow) {
+    var px = pose.x - jetF.x * 13.2 + jetU.x * 3.4;
+    var py = pose.y - jetF.y * 13.2 + jetU.y * 3.4;
+    var pz = pose.z - jetF.z * 13.2 + jetU.z * 3.4;
+    if (sim.shake > 0) {
+      var s = sim.shake * sim.shake;
+      px += (Math.random() - 0.5) * s * 0.45;
+      py += (Math.random() - 0.5) * s * 0.28;
+      sim.shake = Math.max(0, sim.shake - dt * 1.7);
+    }
+    setCam(px, py, pz, pose.x + jetF.x * 16 + jetU.x * 0.5, pose.y + jetF.y * 16 + jetU.y * 0.5, pose.z + jetF.z * 16 + jetU.z * 0.5);
+  } else {
+    setCam(20, 40, 70, SHIP.x, 10, SHIP.z + 80);
+  }
+  stepShip();
+  if (sim.alive && phase === "playing") {
+    for (var i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
+    trail[0] = { x: sim.x - jetF.x * 1.4, y: sim.y - jetF.y * 1.4, z: sim.z - jetF.z * 1.4 };
+  }
+  drawSky();
+  drawMountains();
+  drawWater();
+  var drawables = [];
+  var shipDepth = (SHIP.x - cam.x) * cam.fx + (SHIP.y - cam.y) * cam.fy + (SHIP.z - cam.z) * cam.fz;
+  if (shipDepth > 2) drawables.push({ z: shipDepth, kind: "ship" });
+  for (var i = 0; i < GATE_COUNT; i++) {
+    var g = gateAt(i);
+    var d = (g.x - cam.x) * cam.fx + (g.y - cam.y) * cam.fy + (g.z - cam.z) * cam.fz;
+    if (d > 2) drawables.push({ z: d, kind: "gate", g: g, active: i === sim.nextGate });
+  }
+  drawables.sort(function (a, b) { return b.z - a.z; });
+  for (var i = 0; i < drawables.length; i++) {
+    if (drawables[i].kind === "ship") drawShip();
+    else drawGate(drawables[i].g, drawables[i].active);
+  }
+  drawTrail();
+  if (follow && sim.alive) drawJet(sim, input.boost && phase === "playing");
+  audio.setEngine(sim.throttle, sim.speed, input.boost && phase === "playing");
+  if (flashTimer > 0) { flashTimer -= dt; if (flashTimer <= 0) $("flash").style.display = "none"; }
+  if (phase !== "start") updateHud(input);
+  requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 })();
