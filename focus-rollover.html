@@ -137,10 +137,10 @@ function heightAt(x, z) {
 }
 function gateAt(index) {
   var i = Math.max(0, index), t = i * 0.42;
-  var x = Math.sin(t) * 18 + Math.sin(t * 0.33) * 7;
-  var y = 52 + Math.sin(t * 0.7) * 7 + Math.sin(t * 1.05) * 3;
+  var x = Math.sin(t) * 12 + Math.sin(t * 0.33) * 4;
+  var y = 68 + i * 9.6 + Math.sin(t * 0.55) * 5;
   var z = -70 - i * 78;
-  var nx = Math.sin(t + 0.42) * 18 + Math.sin((t + 0.42) * 0.33) * 7;
+  var nx = Math.sin(t + 0.42) * 12 + Math.sin((t + 0.42) * 0.33) * 4;
   var nz = -70 - (i + 1) * 78;
   return { x: x, y: y, z: z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: GATE_RADIUS };
 }
@@ -153,15 +153,15 @@ var SHIP_FLEET = [
 ];
 function createSim() {
   return {
-    x: 0, y: 52, z: 38, yaw: 0, pitch: 0, roll: 0, speed: 48, throttle: 0.68,
+    x: 0, y: 68, z: 38, yaw: 0, pitch: 0.12, roll: 0, speed: 48, throttle: 0.68,
     alive: true, crashed: false, crashTimer: 0, maneuver: null, gForce: 1.1,
     nextGate: 0, score: 0, combo: 0, gatesHit: 0, time: 0, shake: 0,
-    barrelBonusArmed: false, spawnX: 0, spawnY: 52, spawnZ: 38, spawnYaw: 0, finished: false
+    barrelBonusArmed: false, spawnX: 0, spawnY: 68, spawnZ: 38, spawnYaw: 0, finished: false
   };
 }
 function sanitize(sim) {
   sim.x = clamp(finite(sim.x, 0), -900, 900);
-  sim.y = clamp(finite(sim.y, 48), 2, 280);
+  sim.y = clamp(finite(sim.y, 68), 2, 360);
   sim.z = clamp(finite(sim.z, 38), -4200, 400);
   sim.yaw = finite(sim.yaw, 0);
   sim.pitch = finite(sim.pitch, 0);
@@ -237,7 +237,7 @@ function stepSim(sim, input, dt) {
     events.push({ type: "crash" }); sanitize(sim); return events;
   }
   var floor = Math.max(4.2, heightAt(sim.x, sim.z) + 3.4);
-  if (sim.y < floor || sim.y > 260 || overDestroyer(sim.x, sim.y, sim.z)) {
+  if (sim.y < floor || sim.y > 340 || overDestroyer(sim.x, sim.y, sim.z)) {
     sim.alive = false; sim.crashed = true; sim.crashTimer = 0; sim.shake = 1; sim.speed = MIN_SPEED; sim.combo = 0; sim.maneuver = null;
     events.push({ type: "crash" }); sanitize(sim); return events;
   }
@@ -386,7 +386,7 @@ mtnImg.src = "mtn.png";
 var cam = { x: 22, y: 58, z: 96, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
 var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
 var trail = [];
-for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 52, z: 38 });
+for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 68, z: 38 });
 var ship = { x: SHIP.x, y: 2.4, z: SHIP.z, yaw: 0, bob: 0, heel: 0, fx: 0, fy: 0, fz: -1, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0 };
 function resetShip() {
   ship.x = SHIP.x; ship.y = 2.4; ship.z = SHIP.z; ship.yaw = 0; ship.bob = 0; ship.heel = 0;
@@ -874,7 +874,7 @@ function frame() {
   if (phase === "crash") $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
   if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); setPhase("playing"); }
   var follow = phase === "playing" || phase === "paused" || phase === "crash";
-  var pose = follow ? sim : { x: 0, y: 46, z: 28, yaw: 0, pitch: 0.04, roll: 0, throttle: 0.68, gForce: 1.1, alive: true };
+  var pose = follow ? sim : { x: 0, y: 68, z: 28, yaw: 0, pitch: 0.12, roll: 0, throttle: 0.68, gForce: 1.1, alive: true };
   computeJetBasis(pose);
   FOC = baseFoc();
   if (follow) {
