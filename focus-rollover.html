@@ -329,6 +329,14 @@ pitImg.onload = function () {
   paintCockpit();
 };
 pitImg.src = "zrc.png";
+
+// Ocean image (air.png)
+var oceanImg = new Image();
+oceanImg.decoding = "async";
+var oceanReady = false;
+oceanImg.onload = function () { oceanReady = true; };
+oceanImg.src = "air.png";
+
 function paintCockpit() {
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   pitCv.width = Math.round(W * dpr);
@@ -404,15 +412,67 @@ function drawWater() {
     var p = project(cam.x + cam.rx * i * 80, 0, cam.z + cam.fz * 900 + cam.rx * i * 12);
     if (p) far.push(p);
   }
-  if (far.length > 1) {
-    ctx.beginPath();
-    ctx.moveTo(0, H); ctx.lineTo(far[0].x, far[0].y);
-    for (var i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
-    ctx.lineTo(W, H); ctx.closePath();
+  if (far.length < 2) return;
+
+  // Horizon line of the water surface
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  ctx.lineTo(far[0].x, far[0].y);
+  for (var i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
+  ctx.lineTo(W, H);
+  ctx.closePath();
+
+  // Clip everything to the water shape
+  ctx.save();
+  ctx.clip();
+
+  if (oceanReady) {
+    // Lifelike ocean: slow horizontal drift + slight vertical perspective stretch
+    var t = performance.now() * 0.00008;
+    var imgW = oceanImg.naturalWidth;
+    var imgH = oceanImg.naturalHeight;
+
+    // Stretch the image across the lower half of the screen with gentle parallax
+    var scaleY = (H * 0.78) / imgH;
+    var scaleX = Math.max(W / imgW, scaleY * 1.6);
+    var drawW = imgW * scaleX;
+    var drawH = imgH * scaleY;
+
+    // Soft horizontal drift for wave movement
+    var offsetX = (t * 40) % drawW;
+
+    // Draw the ocean image twice so it tiles seamlessly while drifting
+    ctx.globalAlpha = 0.92;
+    ctx.drawImage(oceanImg, -offsetX, H - drawH * 0.92, drawW, drawH);
+    ctx.drawImage(oceanImg, -offsetX + drawW, H - drawH * 0.92, drawW, drawH);
+
+    // Subtle darker depth near the bottom
+    var depth = ctx.createLinearGradient(0, H * 0.55, 0, H);
+    depth.addColorStop(0, "rgba(6, 18, 28, 0)");
+    depth.addColorStop(0.55, "rgba(4, 14, 22, 0.35)");
+    depth.addColorStop(1, "rgba(2, 8, 14, 0.65)");
+    ctx.fillStyle = depth;
+    ctx.fillRect(0, 0, W, H);
+
+    // Soft highlight near the horizon for a wet / reflective feel
+    var highlight = ctx.createLinearGradient(0, H * 0.42, 0, H * 0.62);
+    highlight.addColorStop(0, "rgba(140, 190, 210, 0.18)");
+    highlight.addColorStop(0.5, "rgba(90, 150, 175, 0.08)");
+    highlight.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = highlight;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalAlpha = 1;
+  } else {
+    // Fallback while the image is loading
     var wg = ctx.createLinearGradient(0, H * 0.45, 0, H);
-    wg.addColorStop(0, "#1a3340"); wg.addColorStop(1, "#071016");
-    ctx.fillStyle = wg; ctx.fill();
+    wg.addColorStop(0, "#1a3340");
+    wg.addColorStop(1, "#071016");
+    ctx.fillStyle = wg;
+    ctx.fill();
   }
+
+  ctx.restore();
 }
 function drawIsland(isl) {
   var apex = project(isl.x, isl.h * 1.15, isl.z);
@@ -607,7 +667,8 @@ function resize() {
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   W = window.innerWidth; H = window.innerHeight;
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   FOC = baseFoc();
   paintCockpit();
