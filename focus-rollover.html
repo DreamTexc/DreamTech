@@ -338,9 +338,18 @@ var cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0
 var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
 var trail = [];
 for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 48, z: 36 });
-var ship = { x: 0, y: 2.6, z: 0, yaw: -0.42, bob: 0, heel: 0, speed: 0 };
+var ship = { x: 0, y: 2.4, z: 0, yaw: 0, bob: 0, heel: 0, fx: 0, fy: 0, fz: -1, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0 };
 function resetShip() {
-  ship.x = 0; ship.y = 2.6; ship.z = 0; ship.yaw = -0.42; ship.bob = 0; ship.heel = 0; ship.speed = 0;
+  ship.x = 0; ship.y = 2.4; ship.z = 0; ship.yaw = 0; ship.bob = 0; ship.heel = 0;
+  ship.fx = 0; ship.fy = 0; ship.fz = -1; ship.rx = 1; ship.ry = 0; ship.rz = 0; ship.ux = 0; ship.uy = 1; ship.uz = 0;
+}
+function computeShipMatrix() {
+  var c = Math.cos(ship.yaw), s = Math.sin(ship.yaw);
+  var hc = Math.cos(ship.heel), hs = Math.sin(ship.heel);
+  ship.fx = -s; ship.fy = 0; ship.fz = -c;
+  var rx = -ship.fz, rz = ship.fx;
+  ship.rx = rx * hc; ship.ry = hs; ship.rz = rz * hc;
+  ship.ux = -rx * hs; ship.uy = hc; ship.uz = -rz * hs;
 }
 function setCam(px, py, pz, tx, ty, tz) {
   var fx = tx - px, fy = ty - py, fz = tz - pz;
@@ -468,36 +477,16 @@ function drawWater() {
 function stepShip(dt) {
   var hangar = phase === "start";
   var t = performance.now() * 0.001;
-  var jfx = -Math.sin(sim.yaw);
-  var jfz = -Math.cos(sim.yaw);
-  var tx, tz, catchUp, wantYaw, dx, dz, dist, ahead, k;
-  if (hangar) {
-    tx = Math.sin(t * 0.22) * 10;
-    tz = Math.cos(t * 0.17) * 12;
-    catchUp = 0.55;
-    wantYaw = -0.55 + Math.sin(t * 0.31) * 0.18;
-    ship.yaw += wrapPi(wantYaw - ship.yaw) * (1 - Math.exp(-1.4 * dt));
-  } else {
-    tx = sim.x + jfx * 88;
-    tz = sim.z + jfz * 88;
-    dx = tx - ship.x; dz = tz - ship.z;
-    dist = Math.hypot(dx, dz);
-    catchUp = dist > 140 ? 5.4 : dist > 50 ? 3.2 : 1.5;
-    if (dist > 1e-3) {
-      wantYaw = Math.atan2(-dx, -dz);
-      ship.yaw += wrapPi(wantYaw - ship.yaw) * (1 - Math.exp(-2.6 * dt));
-    }
-    ahead = (ship.x - cam.x) * cam.fx + (ship.z - cam.z) * cam.fz;
-    if (ahead < 6) { ship.x = tx; ship.z = tz; }
-  }
-  dx = tx - ship.x; dz = tz - ship.z;
-  k = 1 - Math.exp(-catchUp * dt);
-  ship.x += dx * k;
-  ship.z += dz * k;
-  ship.speed = Math.hypot(dx, dz) * k / Math.max(dt, 1e-3);
-  ship.bob = Math.sin(t * 1.35) * 1.05 + Math.sin(t * 0.72) * 0.5;
-  ship.heel = Math.sin(t * 0.9) * 0.07;
-  ship.y = 2.5 + ship.bob;
+  var tx = hangar ? 0 : sim.x;
+  var tz = hangar ? 0 : sim.z;
+  var k = 1 - Math.exp(-(hangar ? 1.1 : 2.4) * dt);
+  ship.x += (tx - ship.x) * k;
+  ship.z += (tz - ship.z) * k;
+  ship.yaw = 0;
+  ship.bob = Math.sin(t * 1.2) * 0.7 + Math.sin(t * 0.55) * 0.35;
+  ship.heel = Math.sin(t * 0.8) * 0.05;
+  ship.y = 2.2 + ship.bob;
+  computeShipMatrix();
 }
 function drawOriginVertex() {
   var rings = [16, 34, 56];
@@ -519,67 +508,55 @@ function drawOriginVertex() {
   }
 }
 function drawShipWake() {
-  var fx = -Math.sin(ship.yaw), fz = -Math.cos(ship.yaw);
-  var rx = -fz, rz = fx;
   var t = performance.now() * 0.001;
   for (var i = 1; i <= 6; i++) {
-    var back = 7 + i * 9;
-    var spread = 3.2 + i * 2.4;
-    var wobble = Math.sin(t * 2.1 + i) * (1.1 + i * 0.15);
-    var a = project(ship.x - fx * (back - 4) + rx * wobble, 0.08, ship.z - fz * (back - 4) + rz * wobble);
-    var b = project(ship.x - fx * back + rx * spread, 0.04, ship.z - fz * back + rz * spread);
-    var c = project(ship.x - fx * back - rx * spread, 0.04, ship.z - fz * back - rz * spread);
-    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.16 - i * 0.02) + ")");
+    var back = 8 + i * 10;
+    var spread = 2.8 + i * 2.1;
+    var wobble = Math.sin(t * 1.8 + i) * (0.8 + i * 0.12);
+    var a = project(ship.x - ship.fx * (back - 4) + ship.rx * wobble, 0.08, ship.z - ship.fz * (back - 4) + ship.rz * wobble);
+    var b = project(ship.x - ship.fx * back + ship.rx * spread, 0.04, ship.z - ship.fz * back + ship.rz * spread);
+    var c = project(ship.x - ship.fx * back - ship.rx * spread, 0.04, ship.z - ship.fz * back - ship.rz * spread);
+    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.14 - i * 0.018) + ")");
   }
-  var bowL = project(ship.x + fx * 10 + rx * 7, 0.12, ship.z + fz * 10 + rz * 7);
-  var bowR = project(ship.x + fx * 10 - rx * 7, 0.12, ship.z + fz * 10 - rz * 7);
-  var bowN = project(ship.x + fx * 18, 0.18, ship.z + fz * 18);
-  if (bowL && bowR && bowN) fillPoly([bowN, bowL, bowR], "rgba(230,244,252,0.22)");
+}
+function drawTexturedQuad(img, p00, p10, p01, alpha) {
+  var iw = img.naturalWidth, ih = img.naturalHeight;
+  if (iw < 2 || ih < 2) return;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.setTransform(
+    dpr * (p10.x - p00.x) / iw,
+    dpr * (p10.y - p00.y) / iw,
+    dpr * (p01.x - p00.x) / ih,
+    dpr * (p01.y - p00.y) / ih,
+    dpr * p00.x,
+    dpr * p00.y
+  );
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 function drawShip() {
   drawOriginVertex();
   drawShipWake();
   if (!shipReady) return;
-  var hangar = phase === "start";
-  var fx = -Math.sin(ship.yaw), fz = -Math.cos(ship.yaw);
-  var rx = -fz, rz = fx;
-  var half = hangar ? 28 : 36;
-  var height = hangar ? 16 : 22;
-  var pL = project(ship.x - rx * half, 0.15 + ship.bob * 0.15, ship.z - rz * half);
-  var pR = project(ship.x + rx * half, 0.15 + ship.bob * 0.15, ship.z + rz * half);
-  var pWater = project(ship.x, 0.08, ship.z);
-  var pMid = project(ship.x, ship.y + height * 0.35, ship.z);
-  if (!pWater && !pMid) return;
-  var cx = pMid ? pMid.x : (pWater ? pWater.x : W * 0.5);
-  var bottom = pWater ? pWater.y : (pMid ? pMid.y + 40 : H * 0.62);
-  var screenW = 40;
-  if (pL && pR) screenW = Math.abs(pR.x - pL.x);
-  var mobile = W < 640;
-  var minW = Math.min(W, H) * (hangar ? (mobile ? 0.32 : 0.20) : 0.24);
-  var maxW = Math.min(W, H) * (hangar ? (mobile ? 0.40 : 0.32) : 0.42);
-  screenW = clamp(Math.max(screenW, minW), minW, maxW);
-  var aspect = shipImg.naturalHeight / Math.max(1, shipImg.naturalWidth);
-  var screenH = screenW * aspect;
-  if (hangar) bottom = clamp(bottom, H * (mobile ? 0.40 : 0.44), H * (mobile ? 0.48 : 0.52));
-  else bottom = clamp(bottom, H * 0.52, H * 0.78);
-  var left = hangar
-    ? clamp(cx, screenW * 0.52, W - screenW * 0.52)
-    : clamp(cx, screenW * 0.42, W - screenW * 0.42);
-  ctx.save();
-  ctx.translate(left, bottom);
-  ctx.rotate(ship.heel * 0.55);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.save();
-  ctx.scale(1, -0.42);
-  ctx.globalAlpha = 0.28;
-  ctx.filter = "blur(1.2px) brightness(0.55)";
-  ctx.drawImage(shipImg, -screenW / 2, 0, screenW, screenH);
-  ctx.filter = "none";
-  ctx.restore();
-  ctx.globalAlpha = 0.97;
-  ctx.drawImage(shipImg, -screenW / 2, -screenH, screenW, screenH);
-  ctx.restore();
+  var halfL = 34, height = 16;
+  var dx = cam.x - ship.x, dz = cam.z - ship.z;
+  var len = Math.hypot(dx, dz) || 1;
+  var bx = dz / len, bz = -dx / len;
+  var y0 = 0.12 + ship.bob * 0.05;
+  var p00 = project(ship.x - bx * halfL, y0, ship.z - bz * halfL);
+  var p10 = project(ship.x + bx * halfL, y0, ship.z + bz * halfL);
+  var p01 = project(ship.x - bx * halfL, y0 + height, ship.z - bz * halfL);
+  if (!p00 || !p10 || !p01) return;
+  var r00 = project(ship.x - bx * halfL, 0.04, ship.z - bz * halfL);
+  var r10 = project(ship.x + bx * halfL, 0.04, ship.z + bz * halfL);
+  var r01 = project(ship.x - bx * halfL, -height * 0.36, ship.z - bz * halfL);
+  if (r00 && r10 && r01) drawTexturedQuad(shipImg, r00, r10, r01, 0.22);
+  drawTexturedQuad(shipImg, p00, p10, p01, 0.96);
 }
 function drawIsland(isl) {
   var apex = project(isl.x, isl.h * 1.15, isl.z);
@@ -724,7 +701,7 @@ function renderCard() {
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">A destroyer holds the origin on the water. Chase the jet — the ship coasts with you, visual only.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">A destroyer holds station on the water under the jet. Visual only — it never steers the camera.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
     $("takeoff").onclick = takeOff;
   } else if (phase === "paused") {
     card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
