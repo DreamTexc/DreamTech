@@ -479,7 +479,7 @@ function stepShip(dt) {
   var t = performance.now() * 0.001;
   var tx = hangar ? 0 : sim.x;
   var tz = hangar ? 0 : sim.z;
-  var k = 1 - Math.exp(-(hangar ? 1.1 : 2.4) * dt);
+  var k = 1 - Math.exp(-(hangar ? 1.1 : 2.8) * dt);
   ship.x += (tx - ship.x) * k;
   ship.z += (tz - ship.z) * k;
   ship.yaw = 0;
@@ -519,44 +519,39 @@ function drawShipWake() {
     if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.14 - i * 0.018) + ")");
   }
 }
-function drawTexturedQuad(img, p00, p10, p01, alpha) {
-  var iw = img.naturalWidth, ih = img.naturalHeight;
-  if (iw < 2 || ih < 2) return;
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.setTransform(
-    dpr * (p10.x - p00.x) / iw,
-    dpr * (p10.y - p00.y) / iw,
-    dpr * (p01.x - p00.x) / ih,
-    dpr * (p01.y - p00.y) / ih,
-    dpr * p00.x,
-    dpr * p00.y
-  );
-  ctx.drawImage(img, 0, 0);
-  ctx.restore();
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
 function drawShip() {
   drawOriginVertex();
   drawShipWake();
+  var hangar = phase === "start";
+  var mobile = W < 640;
+  var water = project(ship.x, 0.1, ship.z);
+  var mid = project(ship.x, ship.y + 10, ship.z);
+  var cx = water ? water.x : (mid ? mid.x : W * 0.5);
+  var bottom = water ? water.y : (mid ? mid.y + 28 : H * 0.68);
   if (!shipReady) return;
-  var halfL = 34, height = 16;
-  var dx = cam.x - ship.x, dz = cam.z - ship.z;
-  var len = Math.hypot(dx, dz) || 1;
-  var bx = dz / len, bz = -dx / len;
-  var y0 = 0.12 + ship.bob * 0.05;
-  var p00 = project(ship.x - bx * halfL, y0, ship.z - bz * halfL);
-  var p10 = project(ship.x + bx * halfL, y0, ship.z + bz * halfL);
-  var p01 = project(ship.x - bx * halfL, y0 + height, ship.z - bz * halfL);
-  if (!p00 || !p10 || !p01) return;
-  var r00 = project(ship.x - bx * halfL, 0.04, ship.z - bz * halfL);
-  var r10 = project(ship.x + bx * halfL, 0.04, ship.z + bz * halfL);
-  var r01 = project(ship.x - bx * halfL, -height * 0.36, ship.z - bz * halfL);
-  if (r00 && r10 && r01) drawTexturedQuad(shipImg, r00, r10, r01, 0.22);
-  drawTexturedQuad(shipImg, p00, p10, p01, 0.96);
+  var aspect = shipImg.naturalHeight / Math.max(1, shipImg.naturalWidth);
+  var minW = Math.min(W, H) * (hangar ? (mobile ? 0.58 : 0.46) : (mobile ? 0.42 : 0.34));
+  var maxW = Math.min(W, H) * (hangar ? (mobile ? 0.72 : 0.58) : (mobile ? 0.52 : 0.46));
+  var screenW = clamp(minW, minW, maxW);
+  var screenH = screenW * aspect;
+  if (hangar) bottom = clamp(bottom, H * (mobile ? 0.46 : 0.50), H * (mobile ? 0.58 : 0.62));
+  else bottom = clamp(bottom, H * 0.58, H * 0.84);
+  var left = clamp(cx, screenW * 0.5, W - screenW * 0.5);
+  ctx.save();
+  ctx.translate(left, bottom);
+  ctx.rotate(ship.heel * 0.45);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.save();
+  ctx.scale(1, -0.38);
+  ctx.globalAlpha = 0.26;
+  ctx.filter = "blur(1.1px) brightness(0.55)";
+  ctx.drawImage(shipImg, -screenW / 2, 0, screenW, screenH);
+  ctx.filter = "none";
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  ctx.drawImage(shipImg, -screenW / 2, -screenH, screenW, screenH);
+  ctx.restore();
 }
 function drawIsland(isl) {
   var apex = project(isl.x, isl.h * 1.15, isl.z);
