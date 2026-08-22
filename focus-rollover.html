@@ -29,10 +29,10 @@
   .thr { width: 160px; text-align: center; }
   .bar { height: 6px; border-radius: 999px; background: #1b1e26; overflow: hidden; margin-bottom: 4px; }
   .bar > i { display: block; height: 100%; width: 62%; background: var(--accent); }
-  #panel { position: absolute; inset: 0; display: grid; place-items: end center; background: color-mix(in srgb, var(--bg) 35%, transparent); padding: 20px 20px max(24px, env(safe-area-inset-bottom)); }
+  #panel { position: absolute; inset: 0; display: grid; place-items: end center; background: color-mix(in srgb, var(--bg) 20%, transparent); padding: 20px 20px max(24px, env(safe-area-inset-bottom)); }
   #panel[hidden] { display: none !important; }
   @media (min-width: 640px) { #panel { place-items: center; } }
-  .card { width: min(100%, 440px); border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 92%, transparent); border-radius: 16px; padding: 28px 28px 24px; }
+  .card { width: min(100%, 440px); border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); border-radius: 16px; padding: 28px 28px 24px; backdrop-filter: blur(8px); }
   .kicker { font-size: 12px; letter-spacing: .22em; color: var(--muted); font-weight: 500; }
   .card h2 { font-size: clamp(36px, 8vw, 48px); line-height: .95; font-weight: 600; margin: 6px 0 14px; }
   .card h2 span { display: block; color: var(--muted); }
@@ -67,14 +67,12 @@
     mask-image: radial-gradient(ellipse 82% 78% at 50% 48%, #000 40%, rgba(0,0,0,0.25) 70%, transparent 100%);
     filter: contrast(0.92) saturate(0.75) brightness(1.15);
   }
-  #cockpit { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; display: block; opacity: 0; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="ui">
   <div id="sun" aria-hidden="true"><img src="iii.png" alt="" /></div>
-  <canvas id="cockpit" aria-hidden="true"></canvas>
   <header class="hud" id="chrome" hidden>
     <div>
       <h1 class="display">FOCUS × ROLLOVER</h1>
@@ -302,8 +300,6 @@ var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d", { alpha: false });
 var W = 1, H = 1, FOC = 1;
 function baseFoc() { return (H * 0.5) / Math.tan((62 * Math.PI / 180) / 2); }
-var pitCv = document.getElementById("cockpit");
-var pitCtx = pitCv.getContext("2d");
 var pitImg = new Image();
 var pitSrc = null;
 pitImg.decoding = "async";
@@ -326,40 +322,26 @@ pitImg.onload = function () {
   pane([[0.55, 0.04], [0.94, 0.05], [0.97, 0.51], [0.55, 0.47]]);
   pane([[0.00, 0.14], [0.08, 0.07], [0.04, 0.51], [0.00, 0.46]]);
   pane([[0.92, 0.07], [1.00, 0.14], [1.00, 0.46], [0.97, 0.51]]);
-  paintCockpit();
 };
 pitImg.src = "zrc.png";
-
 var oceanImg = new Image();
 oceanImg.decoding = "async";
 var oceanReady = false;
 oceanImg.onload = function () { oceanReady = true; };
 oceanImg.src = "air.png";
-
 var shipImg = new Image();
 shipImg.decoding = "async";
 var shipReady = false;
 shipImg.onload = function () { shipReady = true; };
 shipImg.src = "ship.png";
-
-function paintCockpit() {
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  pitCv.width = Math.round(W * dpr);
-  pitCv.height = Math.round(H * dpr);
-  pitCv.style.width = W + "px";
-  pitCv.style.height = H + "px";
-  pitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  pitCtx.clearRect(0, 0, W, H);
-  if (!pitSrc) return;
-  var iw = pitSrc.width, ih = pitSrc.height;
-  var scale = Math.max(W / iw, H / ih);
-  var dw = iw * scale, dh = ih * scale;
-  pitCtx.drawImage(pitSrc, (W - dw) / 2, (H - dh) / 2 - dh * 0.04, dw, dh);
-}
 var cam = { x: 16, y: 57, z: 54, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0, fy: 0, fz: -1 };
 var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
 var trail = [];
 for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 48, z: 36 });
+var ship = { x: 0, y: 2.6, z: 0, yaw: -0.42, bob: 0, heel: 0, speed: 0 };
+function resetShip() {
+  ship.x = 0; ship.y = 2.6; ship.z = 0; ship.yaw = -0.42; ship.bob = 0; ship.heel = 0; ship.speed = 0;
+}
 function setCam(px, py, pz, tx, ty, tz) {
   var fx = tx - px, fy = ty - py, fz = tz - pz;
   var len = Math.hypot(fx, fy, fz) || 1; fx /= len; fy /= len; fz /= len;
@@ -414,7 +396,6 @@ function drawSky() {
   g.addColorStop(1, "#1a2c38");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
-
   var sunX = W * 0.70, sunY = H * 0.28;
   var glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.55);
   glow.addColorStop(0, "rgba(255, 230, 190, 0.18)");
@@ -426,7 +407,6 @@ function drawSky() {
 function drawWater() {
   var far = [];
   var steps = 36, radius = 1600;
-
   for (var i = -steps; i <= steps; i++) {
     var t = i / steps;
     var px = cam.x + cam.rx * t * radius * 1.6;
@@ -439,12 +419,9 @@ function drawWater() {
     var p2 = project(cam.x + Math.cos(a) * 1100, 0, cam.z + Math.sin(a) * 1100 - 700);
     if (p2) far.push(p2);
   }
-
   far.sort(function (a, b) { return a.x - b.x; });
-
   ctx.beginPath();
   ctx.moveTo(0, H);
-
   if (far.length > 0) {
     ctx.lineTo(far[0].x, far[0].y);
     for (var i = 1; i < far.length; i++) ctx.lineTo(far[i].x, far[i].y);
@@ -452,13 +429,10 @@ function drawWater() {
     ctx.lineTo(0, H * 0.45);
     ctx.lineTo(W, H * 0.45);
   }
-
   ctx.lineTo(W, H);
   ctx.closePath();
-
   ctx.save();
   ctx.clip();
-
   if (oceanReady) {
     var t = performance.now() * 0.00007;
     var imgW = oceanImg.naturalWidth, imgH = oceanImg.naturalHeight;
@@ -466,25 +440,21 @@ function drawWater() {
     var scaleX = Math.max(W / imgW * 1.4, scaleY * 1.9);
     var drawW = imgW * scaleX, drawH = imgH * scaleY;
     var offsetX = (t * 55) % drawW;
-
     ctx.globalAlpha = 0.92;
     ctx.drawImage(oceanImg, -offsetX - 50, H - drawH * 0.99, drawW + 100, drawH);
     ctx.drawImage(oceanImg, -offsetX + drawW - 50, H - drawH * 0.99, drawW + 100, drawH);
-
     var depth = ctx.createLinearGradient(0, H * 0.38, 0, H);
     depth.addColorStop(0, "rgba(8, 22, 34, 0)");
     depth.addColorStop(0.4, "rgba(5, 16, 26, 0.38)");
     depth.addColorStop(1, "rgba(2, 8, 14, 0.82)");
     ctx.fillStyle = depth;
     ctx.fillRect(0, 0, W, H);
-
     var highlight = ctx.createLinearGradient(0, H * 0.32, 0, H * 0.55);
     highlight.addColorStop(0, "rgba(150, 200, 220, 0.20)");
     highlight.addColorStop(0.55, "rgba(100, 160, 185, 0.08)");
     highlight.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = highlight;
     ctx.fillRect(0, 0, W, H);
-
     ctx.globalAlpha = 1;
   } else {
     var wg = ctx.createLinearGradient(0, H * 0.38, 0, H);
@@ -493,45 +463,122 @@ function drawWater() {
     ctx.fillStyle = wg;
     ctx.fill();
   }
-
   ctx.restore();
 }
-function drawShip() {
-  if (!shipReady) return;
-
-  var sx = 15;
-  var sy = 0;
-  var sz = -1650;
-
-  var halfW = 42;
-  var height = 32;
-
-  var right = { x: cam.rx, y: 0, z: cam.rz };
-  var len = Math.hypot(right.x, right.z) || 1;
-  right.x /= len; right.z /= len;
-
-  var p1 = project(sx - right.x * halfW, sy, sz - right.z * halfW);
-  var p2 = project(sx + right.x * halfW, sy, sz + right.z * halfW);
-  var p3 = project(sx + right.x * halfW, sy + height, sz + right.z * halfW);
-  var p4 = project(sx - right.x * halfW, sy + height, sz - right.z * halfW);
-
-  if (!p1 || !p2 || !p3 || !p4) return;
-
-  ctx.save();
-  ctx.globalAlpha = 0.95;
-
-  var minX = Math.min(p1.x, p2.x, p3.x, p4.x);
-  var maxX = Math.max(p1.x, p2.x, p3.x, p4.x);
-  var minY = Math.min(p1.y, p2.y, p3.y, p4.y);
-  var maxY = Math.max(p1.y, p2.y, p3.y, p4.y);
-
-  var dw = maxX - minX;
-  var dh = maxY - minY;
-
-  if (dw > 4 && dh > 4) {
-    ctx.drawImage(shipImg, minX, minY, dw, dh);
+function stepShip(dt) {
+  var hangar = phase === "start";
+  var t = performance.now() * 0.001;
+  var jfx = -Math.sin(sim.yaw);
+  var jfz = -Math.cos(sim.yaw);
+  var tx, tz, catchUp, wantYaw, dx, dz, dist, ahead, k;
+  if (hangar) {
+    tx = Math.sin(t * 0.22) * 10;
+    tz = Math.cos(t * 0.17) * 12;
+    catchUp = 0.55;
+    wantYaw = -0.55 + Math.sin(t * 0.31) * 0.18;
+    ship.yaw += wrapPi(wantYaw - ship.yaw) * (1 - Math.exp(-1.4 * dt));
+  } else {
+    tx = sim.x + jfx * 88;
+    tz = sim.z + jfz * 88;
+    dx = tx - ship.x; dz = tz - ship.z;
+    dist = Math.hypot(dx, dz);
+    catchUp = dist > 140 ? 5.4 : dist > 50 ? 3.2 : 1.5;
+    if (dist > 1e-3) {
+      wantYaw = Math.atan2(-dx, -dz);
+      ship.yaw += wrapPi(wantYaw - ship.yaw) * (1 - Math.exp(-2.6 * dt));
+    }
+    ahead = (ship.x - cam.x) * cam.fx + (ship.z - cam.z) * cam.fz;
+    if (ahead < 6) { ship.x = tx; ship.z = tz; }
   }
-
+  dx = tx - ship.x; dz = tz - ship.z;
+  k = 1 - Math.exp(-catchUp * dt);
+  ship.x += dx * k;
+  ship.z += dz * k;
+  ship.speed = Math.hypot(dx, dz) * k / Math.max(dt, 1e-3);
+  ship.bob = Math.sin(t * 1.35) * 1.05 + Math.sin(t * 0.72) * 0.5;
+  ship.heel = Math.sin(t * 0.9) * 0.07;
+  ship.y = 2.5 + ship.bob;
+}
+function drawOriginVertex() {
+  var rings = [16, 34, 56];
+  for (var r = 0; r < rings.length; r++) {
+    var ring = [];
+    for (var i = 0; i < 28; i++) {
+      var a = (i / 28) * Math.PI * 2;
+      var p = project(Math.cos(a) * rings[r], 0.06, Math.sin(a) * rings[r]);
+      if (p) ring.push(p);
+    }
+    if (ring.length < 4) continue;
+    ctx.beginPath();
+    ctx.moveTo(ring[0].x, ring[0].y);
+    for (var i = 1; i < ring.length; i++) ctx.lineTo(ring[i].x, ring[i].y);
+    ctx.closePath();
+    ctx.strokeStyle = "rgba(186,214,230," + (0.16 - r * 0.03) + ")";
+    ctx.lineWidth = 1.15;
+    ctx.stroke();
+  }
+}
+function drawShipWake() {
+  var fx = -Math.sin(ship.yaw), fz = -Math.cos(ship.yaw);
+  var rx = -fz, rz = fx;
+  var t = performance.now() * 0.001;
+  for (var i = 1; i <= 6; i++) {
+    var back = 7 + i * 9;
+    var spread = 3.2 + i * 2.4;
+    var wobble = Math.sin(t * 2.1 + i) * (1.1 + i * 0.15);
+    var a = project(ship.x - fx * (back - 4) + rx * wobble, 0.08, ship.z - fz * (back - 4) + rz * wobble);
+    var b = project(ship.x - fx * back + rx * spread, 0.04, ship.z - fz * back + rz * spread);
+    var c = project(ship.x - fx * back - rx * spread, 0.04, ship.z - fz * back - rz * spread);
+    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.16 - i * 0.02) + ")");
+  }
+  var bowL = project(ship.x + fx * 10 + rx * 7, 0.12, ship.z + fz * 10 + rz * 7);
+  var bowR = project(ship.x + fx * 10 - rx * 7, 0.12, ship.z + fz * 10 - rz * 7);
+  var bowN = project(ship.x + fx * 18, 0.18, ship.z + fz * 18);
+  if (bowL && bowR && bowN) fillPoly([bowN, bowL, bowR], "rgba(230,244,252,0.22)");
+}
+function drawShip() {
+  drawOriginVertex();
+  drawShipWake();
+  if (!shipReady) return;
+  var hangar = phase === "start";
+  var fx = -Math.sin(ship.yaw), fz = -Math.cos(ship.yaw);
+  var rx = -fz, rz = fx;
+  var half = hangar ? 28 : 36;
+  var height = hangar ? 16 : 22;
+  var pL = project(ship.x - rx * half, 0.15 + ship.bob * 0.15, ship.z - rz * half);
+  var pR = project(ship.x + rx * half, 0.15 + ship.bob * 0.15, ship.z + rz * half);
+  var pWater = project(ship.x, 0.08, ship.z);
+  var pMid = project(ship.x, ship.y + height * 0.35, ship.z);
+  if (!pWater && !pMid) return;
+  var cx = pMid ? pMid.x : (pWater ? pWater.x : W * 0.5);
+  var bottom = pWater ? pWater.y : (pMid ? pMid.y + 40 : H * 0.62);
+  var screenW = 40;
+  if (pL && pR) screenW = Math.abs(pR.x - pL.x);
+  var mobile = W < 640;
+  var minW = Math.min(W, H) * (hangar ? (mobile ? 0.32 : 0.20) : 0.24);
+  var maxW = Math.min(W, H) * (hangar ? (mobile ? 0.40 : 0.32) : 0.42);
+  screenW = clamp(Math.max(screenW, minW), minW, maxW);
+  var aspect = shipImg.naturalHeight / Math.max(1, shipImg.naturalWidth);
+  var screenH = screenW * aspect;
+  if (hangar) bottom = clamp(bottom, H * (mobile ? 0.40 : 0.44), H * (mobile ? 0.48 : 0.52));
+  else bottom = clamp(bottom, H * 0.52, H * 0.78);
+  var left = hangar
+    ? clamp(cx, screenW * 0.52, W - screenW * 0.52)
+    : clamp(cx, screenW * 0.42, W - screenW * 0.42);
+  ctx.save();
+  ctx.translate(left, bottom);
+  ctx.rotate(ship.heel * 0.55);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.save();
+  ctx.scale(1, -0.42);
+  ctx.globalAlpha = 0.28;
+  ctx.filter = "blur(1.2px) brightness(0.55)";
+  ctx.drawImage(shipImg, -screenW / 2, 0, screenW, screenH);
+  ctx.filter = "none";
+  ctx.restore();
+  ctx.globalAlpha = 0.97;
+  ctx.drawImage(shipImg, -screenW / 2, -screenH, screenW, screenH);
   ctx.restore();
 }
 function drawIsland(isl) {
@@ -639,8 +686,8 @@ function drawCockpitOnJet(sim, dt) {
   var targetS = (m.w * 3.35 / pitSrc.width) * recede;
   var sink = (g - 1) * 8;
   var tx = m.x, ty = m.y + sink;
-  var follow = 3.1 / (1 + (g - 1) * 0.4);
-  var k = 1 - Math.exp(-follow * dt);
+  var followK = 3.1 / (1 + (g - 1) * 0.4);
+  var k = 1 - Math.exp(-followK * dt);
   if (!pitReady) { pitFX = tx; pitFY = ty; pitFS = targetS; pitFA = 1; pitReady = true; }
   else {
     pitFX += (tx - pitFX) * k;
@@ -649,7 +696,9 @@ function drawCockpitOnJet(sim, dt) {
     pitFA += (0.96 - pitFA) * (1 - Math.exp(-5 * dt));
   }
   var dw = pitSrc.width * pitFS, dh = pitSrc.height * pitFS;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
   ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.translate(Math.round(pitFX), Math.round(pitFY));
   ctx.rotate(-sim.roll * 0.9);
   ctx.imageSmoothingEnabled = true;
@@ -675,16 +724,16 @@ function renderCard() {
   if (phase === "playing" || phase === "crash") { panel.hidden = true; return; }
   panel.hidden = false;
   if (phase === "start") {
-    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">Chase the jet with matching cockpit glass and high-G from takeoff.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
+    card.innerHTML = '<p class="kicker">AEROBATIC COURSE</p><h2 class="display">FOCUS<span>ROLLOVER</span></h2><p class="lead">A destroyer holds the origin on the water. Chase the jet — the ship coasts with you, visual only.</p><dl class="mono"><dt>W / S</dt><dd>Pitch up / down</dd><dt>A / D</dt><dd>Roll left / right</dd><dt>SHIFT / F</dt><dd>Throttle</dd><dt>SPACE</dt><dd>Afterburner</dd><dt>1 / 2 / 3</dt><dd>Left roll · Right roll · Loop</dd></dl><div class="row"><span class="mono" style="font-size:12px;color:var(--subtle)">BEST ' + best + '</span><button class="go" id="takeoff" type="button">Take off</button></div>';
     $("takeoff").onclick = takeOff;
   } else if (phase === "paused") {
     card.innerHTML = '<h2 class="display" style="font-size:32px;margin-bottom:8px">Paused</h2><p class="mono" style="color:var(--muted);font-size:12px;margin-bottom:20px">SCORE ' + sim.score + " · GATE " + Math.min(sim.nextGate + 1, GATE_COUNT) + "/" + GATE_COUNT + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="resume" type="button">Resume</button><button class="ghost" id="hangar" type="button">Hangar</button></div>';
     $("resume").onclick = function () { setPhase("playing"); };
-    $("hangar").onclick = function () { sim = createSim(); setPhase("start"); };
+    $("hangar").onclick = function () { sim = createSim(); resetShip(); pitReady = false; setPhase("start"); };
   } else if (phase === "finish") {
     card.innerHTML = '<p class="kicker">COURSE COMPLETE</p><h2 class="display" style="font-size:32px">On the deck</h2><p class="mono" style="color:var(--muted);margin:12px 0 20px">SCORE ' + lastScore + " · BEST " + best + '</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="go" id="again" type="button">Fly again</button><button class="ghost" id="hangar2" type="button">Hangar</button></div>';
     $("again").onclick = takeOff;
-    $("hangar2").onclick = function () { sim = createSim(); setPhase("start"); };
+    $("hangar2").onclick = function () { sim = createSim(); resetShip(); pitReady = false; setPhase("start"); };
   }
 }
 function setPhase(next) {
@@ -731,7 +780,6 @@ function resize() {
   canvas.style.height = H + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   FOC = baseFoc();
-  paintCockpit();
 }
 addEventListener("resize", resize); resize();
 canvas.addEventListener("click", function (e) {
@@ -801,7 +849,7 @@ function frame() {
     }
   } else acc = 0;
   if (phase === "crash") $("crashCount").textContent = String(Math.max(0, Math.ceil(5 - sim.crashTimer)));
-  if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); setPhase("playing"); }
+  if (phase === "crash" && sim.crashed && sim.crashTimer > 5) { respawn(sim); pitReady = false; setPhase("playing"); }
   computeJetBasis(sim);
   var follow = phase === "playing" || phase === "paused" || phase === "crash";
   FOC = baseFoc();
@@ -819,6 +867,7 @@ function frame() {
   } else {
     setCam(16, 57, 54, 0, 48, 8);
   }
+  stepShip(dt);
   if (sim.alive && phase === "playing") {
     for (var i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
     trail[0] = { x: sim.x - jetF.x * 1.4, y: sim.y - jetF.y * 1.4, z: sim.z - jetF.z * 1.4 };
