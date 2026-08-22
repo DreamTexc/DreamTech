@@ -146,6 +146,11 @@ function gateAt(index) {
 }
 var LAST_GATE = gateAt(GATE_COUNT - 1);
 var SHIP = { x: 0, y: -2, z: LAST_GATE.z - 240, yaw: 0, scale: 4.6 };
+var SHIP_FLEET = [
+  { x: 0, z: LAST_GATE.z - 240, scale: 1.08 },
+  { x: 104, z: LAST_GATE.z + 460, scale: 0.58 },
+  { x: -120, z: LAST_GATE.z + 90, scale: 0.5 }
+];
 function createSim() {
   return {
     x: 0, y: 52, z: 38, yaw: 0, pitch: 0, roll: 0, speed: 48, throttle: 0.68,
@@ -193,9 +198,12 @@ function stepManeuver(sim, dt) {
   return { type: "maneuver-end", kind: kind, completed: true };
 }
 function overDestroyer(x, y, z) {
-  var dx = Math.abs(x - SHIP.x);
-  var dz = Math.abs(z - SHIP.z);
-  return dx < 26 && dz < 210 && y < 24;
+  if (y >= 24) return false;
+  for (var i = 0; i < SHIP_FLEET.length; i++) {
+    var s = SHIP_FLEET[i];
+    if (Math.abs(x - s.x) < 20 * s.scale && Math.abs(z - s.z) < 70 * s.scale) return true;
+  }
+  return false;
 }
 function stepSim(sim, input, dt) {
   var events = [];
@@ -322,7 +330,7 @@ var audio = {
 };
 var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d", { alpha: false });
-var W = 1, H = 1, FOC = 1;
+var W = 1, H = 1, FOC = 1, DPR = 1;
 function baseFoc() { return (H * 0.5) / Math.tan((62 * Math.PI / 180) / 2); }
 var oceanImg = new Image();
 oceanImg.decoding = "async";
@@ -332,7 +340,43 @@ oceanImg.src = "air.png";
 var shipImg = new Image();
 shipImg.decoding = "async";
 var shipReady = false;
-shipImg.onload = function () { shipReady = true; };
+var shipSprite = null;
+var SHIP_WATERLINE = 0.62;
+function prepareShipSprite() {
+  var sw = shipImg.naturalWidth, sh = shipImg.naturalHeight;
+  if (!sw) return;
+  var sx = Math.round(sw * 0.20), sy = Math.round(sh * 0.48);
+  var cw = Math.round(sw * 0.66), ch = Math.round(sh * 0.40);
+  var oc = document.createElement("canvas");
+  oc.width = cw; oc.height = ch;
+  var octx = oc.getContext("2d");
+  octx.drawImage(shipImg, sx, sy, cw, ch, 0, 0, cw, ch);
+  try {
+    var imgData = octx.getImageData(0, 0, cw, ch);
+    var d = imgData.data;
+    for (var y = 0; y < ch; y++) {
+      var v = y / Math.max(1, ch - 1);
+      var top = v < 0.16 ? v / 0.16 : 1;
+      var bot = v > 0.58 ? Math.max(0, 1 - (v - 0.58) / 0.42) : 1;
+      bot = bot * bot;
+      for (var x = 0; x < cw; x++) {
+        var u = x / Math.max(1, cw - 1);
+        var side = u < 0.08 ? u / 0.08 : (u > 0.92 ? (1 - u) / 0.08 : 1);
+        var nx = (u - 0.50) / 0.50;
+        var ny = (v - 0.55) / 0.50;
+        var fall = Math.hypot(nx, ny);
+        fall = fall < 0.52 ? 1 : Math.max(0, 1 - (fall - 0.52) / 0.48);
+        fall = fall * fall * (3 - 2 * fall);
+        var i = (y * cw + x) * 4;
+        d[i + 3] = Math.round(d[i + 3] * top * bot * side * fall);
+      }
+    }
+    octx.putImageData(imgData, 0, 0);
+  } catch (e) {}
+  shipSprite = oc;
+  shipReady = true;
+}
+shipImg.onload = prepareShipSprite;
 shipImg.src = "ship.png";
 var mtnImg = new Image();
 mtnImg.decoding = "async";
@@ -526,74 +570,100 @@ function stepShip() {
   ship.x = SHIP.x;
   ship.z = SHIP.z;
   ship.yaw = SHIP.yaw;
-  ship.bob = Math.sin(t * 1.15) * 0.55 + Math.sin(t * 0.5) * 0.28;
-  ship.heel = Math.sin(t * 0.72) * 0.035;
-  ship.y = 2.2 + ship.bob;
+  ship.bob = Math.sin(t * 1.15) * 0.45 + Math.sin(t * 0.5) * 0.2;
+  ship.heel = Math.sin(t * 0.72) * 0.02;
+  ship.y = 0.8 + ship.bob;
   computeShipMatrix();
 }
-function drawAxisBox(cx, cy, cz, hx, hy, hz, fill, stroke) {
-  var sx = [-1, 1, 1, -1, -1, 1, 1, -1];
-  var sy = [-1, -1, -1, -1, 1, 1, 1, 1];
-  var sz = [-1, -1, 1, 1, -1, -1, 1, 1];
-  var proj = [];
-  for (var i = 0; i < 8; i++) {
-    proj.push(project(cx + sx[i] * hx, cy + sy[i] * hy, cz + sz[i] * hz));
-  }
-  var faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5]];
-  var drawn = [];
-  for (var f = 0; f < faces.length; f++) {
-    var pts = [];
-    var z = 0, ok = true;
-    for (var k = 0; k < 4; k++) {
-      var p = proj[faces[f][k]];
-      if (!p) { ok = false; break; }
-      pts.push(p);
-      z += p.z;
-    }
-    if (!ok) continue;
-    drawn.push({ z: z * 0.25, pts: pts, f: f });
-  }
-  drawn.sort(function (a, b) { return b.z - a.z; });
-  for (var i = 0; i < drawn.length; i++) {
-    var mul = drawn[i].f === 1 ? 1 : (drawn[i].f === 4 ? 0.55 : 0.78);
-    fillPoly(drawn[i].pts, fill, stroke, 0.7);
-    if (mul < 1) {
-      ctx.save();
-      ctx.globalAlpha = 1 - mul;
-      fillPoly(drawn[i].pts, "#000", null, 0);
-      ctx.restore();
-    }
+function drawTexturedQuad(tl, tr, bl, img, alpha) {
+  if (!tl || !tr || !bl || !img) return;
+  var cw = img.width, ch = img.height;
+  if (cw < 2 || ch < 2) return;
+  var br = { x: tr.x + (bl.x - tl.x), y: tr.y + (bl.y - tl.y) };
+  ctx.save();
+  ctx.globalAlpha = alpha == null ? 1 : alpha;
+  ctx.beginPath();
+  ctx.moveTo(tl.x, tl.y);
+  ctx.lineTo(tr.x, tr.y);
+  ctx.lineTo(br.x, br.y);
+  ctx.lineTo(bl.x, bl.y);
+  ctx.closePath();
+  ctx.clip();
+  ctx.setTransform(
+    DPR * (tr.x - tl.x) / cw,
+    DPR * (tr.y - tl.y) / cw,
+    DPR * (bl.x - tl.x) / ch,
+    DPR * (bl.y - tl.y) / ch,
+    DPR * tl.x,
+    DPR * tl.y
+  );
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, cw, ch);
+  ctx.restore();
+}
+function drawShipWakeAt(x, z, scale) {
+  var t = performance.now() * 0.001;
+  for (var i = 1; i <= 6; i++) {
+    var back = (28 + i * 16) * scale;
+    var spread = (6 + i * 3.2) * scale;
+    var wobble = Math.sin(t * 1.5 + i + z * 0.01) * (0.5 + i * 0.08) * scale;
+    var a = project(x + wobble, 0.06, z - back + 7);
+    var b = project(x + spread, 0.03, z - back);
+    var c = project(x - spread, 0.03, z - back);
+    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.14 - i * 0.016) + ")");
   }
 }
-function drawShipWake() {
-  var t = performance.now() * 0.001;
-  for (var i = 1; i <= 7; i++) {
-    var back = 40 + i * 22;
-    var spread = 8 + i * 4;
-    var wobble = Math.sin(t * 1.6 + i) * (0.6 + i * 0.1);
-    var z = SHIP.z - back;
-    var a = project(SHIP.x + wobble, 0.08, z + 8);
-    var b = project(SHIP.x + spread, 0.04, z);
-    var c = project(SHIP.x - spread, 0.04, z);
-    if (a && b && c) fillPoly([a, b, c], "rgba(210,230,240," + (0.16 - i * 0.018) + ")");
+function drawShipInstance(pose) {
+  if (!shipReady || !shipSprite) return;
+  var x = pose.x;
+  var z = pose.z;
+  var scale = pose.scale;
+  var bob = ship.bob * 0.35 * scale;
+  var dx = cam.x - x, dz = cam.z - z;
+  var len = Math.hypot(dx, dz) || 1;
+  var rx = dz / len, rz = -dx / len;
+  var worldW = 420 * scale;
+  var aspect = shipSprite.height / Math.max(1, shipSprite.width);
+  var worldH = worldW * aspect;
+  var above = worldH * SHIP_WATERLINE;
+  var below = worldH * (1 - SHIP_WATERLINE);
+  var hw = worldW * 0.5;
+  var yTop = above + bob;
+  var yBot = -below * 0.55 + bob * 0.15;
+  var yWater = 0.04 + bob * 0.2;
+  var tl = project(x - rx * hw, yTop, z - rz * hw);
+  var tr = project(x + rx * hw, yTop, z + rz * hw);
+  var bl = project(x - rx * hw, yWater, z - rz * hw);
+  var br = project(x + rx * hw, yWater, z + rz * hw);
+  if (!tl || !tr || !bl || !br) return;
+  var area = Math.abs((tr.x - tl.x) * (bl.y - tl.y) - (bl.x - tl.x) * (tr.y - tl.y));
+  if (area < 80) return;
+  var s1 = project(x - rx * hw * 0.72, 0.05, z - rz * hw * 0.18);
+  var s2 = project(x + rx * hw * 0.72, 0.05, z + rz * hw * 0.18);
+  var s3 = project(x + rx * hw * 0.22, 0.05, z + rz * hw * 0.55);
+  var s4 = project(x - rx * hw * 0.22, 0.05, z - rz * hw * 0.55);
+  if (s1 && s2 && s3 && s4) {
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    fillPoly([s1, s2, s3, s4], "rgba(6, 14, 22, 0.55)");
+    ctx.restore();
   }
+  drawShipWakeAt(x, z, scale);
+  var rtl = project(x - rx * hw, yWater, z - rz * hw);
+  var rtr = project(x + rx * hw, yWater, z + rz * hw);
+  var rbl = project(x - rx * hw, yBot * 0.7, z - rz * hw);
+  if (rtl && rtr && rbl) {
+    drawTexturedQuad(rbl, { x: rtr.x + (rbl.x - rtl.x), y: rtr.y + (rbl.y - rtl.y) }, rtl, shipSprite, 0.18);
+  }
+  var hullBl = project(x - rx * hw, yWater, z - rz * hw);
+  drawTexturedQuad(tl, tr, hullBl, shipSprite, 1);
 }
 function drawShip() {
   ship.x = SHIP.x;
   ship.z = SHIP.z;
   ship.yaw = 0;
-  var y = 2.2 + ship.bob;
-  var x = SHIP.x;
-  var z = SHIP.z;
-  drawShipWake();
-  drawAxisBox(x, y + 7.2, z, 20, 7.2, 190, "#1a2026", "rgba(0,0,0,0.35)");
-  drawAxisBox(x, y + 13.2, z + 10, 17, 2.0, 168, "#3e444b", "rgba(0,0,0,0.25)");
-  drawAxisBox(x, y + 6.2, z + 178, 14, 5.0, 22, "#1a2026", "rgba(0,0,0,0.3)");
-  drawAxisBox(x, y + 6.4, z - 172, 14, 5.2, 24, "#1a2026", "rgba(0,0,0,0.3)");
-  drawAxisBox(x, y + 22, z - 18, 12, 11, 32, "#d2d6db", "rgba(0,0,0,0.28)");
-  drawAxisBox(x, y + 36, z - 12, 8, 7, 14, "#b4b9c1", "rgba(0,0,0,0.25)");
-  drawAxisBox(x, y + 17, z + 70, 8, 3.6, 12, "#8f969f", "rgba(0,0,0,0.2)");
-  drawAxisBox(x, y + 17, z - 80, 8, 3.6, 12, "#8f969f", "rgba(0,0,0,0.2)");
+  for (var i = 0; i < SHIP_FLEET.length; i++) drawShipInstance(SHIP_FLEET[i]);
 }
 function drawGate(g, active) {
   var gy = -Math.sin(g.yaw), gz = -Math.cos(g.yaw);
@@ -716,12 +786,12 @@ function updateHud(input) {
   $("horizon").style.transform = "translateX(-50%) rotate(" + (clamp(sim.roll / 1.2, -1, 1) * -28) + "deg)";
 }
 function resize() {
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
   W = window.innerWidth; H = window.innerHeight;
-  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
   canvas.style.width = W + "px";
   canvas.style.height = H + "px";
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   FOC = baseFoc();
 }
 addEventListener("resize", resize); resize();
@@ -837,8 +907,11 @@ function frame() {
   drawMountains();
   drawWater();
   var drawables = [];
-  var shipDepth = (SHIP.x - cam.x) * cam.fx + (SHIP.y - cam.y) * cam.fy + (SHIP.z - cam.z) * cam.fz;
-  if (shipDepth > 2) drawables.push({ z: shipDepth, kind: "ship" });
+  for (var si = 0; si < SHIP_FLEET.length; si++) {
+    var sp = SHIP_FLEET[si];
+    var shipDepth = (sp.x - cam.x) * cam.fx + (0 - cam.y) * cam.fy + (sp.z - cam.z) * cam.fz;
+    if (shipDepth > 2) drawables.push({ z: shipDepth, kind: "ship", pose: sp });
+  }
   for (var i = 0; i < GATE_COUNT; i++) {
     var g = gateAt(i);
     var d = (g.x - cam.x) * cam.fx + (g.y - cam.y) * cam.fy + (g.z - cam.z) * cam.fz;
@@ -846,7 +919,7 @@ function frame() {
   }
   drawables.sort(function (a, b) { return b.z - a.z; });
   for (var i = 0; i < drawables.length; i++) {
-    if (drawables[i].kind === "ship") drawShip();
+    if (drawables[i].kind === "ship") drawShipInstance(drawables[i].pose);
     else drawGate(drawables[i].g, drawables[i].active);
   }
   drawTrail();
