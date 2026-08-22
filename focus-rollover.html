@@ -147,9 +147,9 @@ function gateAt(index) {
 var LAST_GATE = gateAt(GATE_COUNT - 1);
 var SHIP = { x: 0, y: -2, z: LAST_GATE.z - 240, yaw: 0, scale: 4.6 };
 var SHIP_FLEET = [
-  { x: 0, z: LAST_GATE.z - 240, scale: 1.08 },
-  { x: 104, z: LAST_GATE.z + 460, scale: 0.58 },
-  { x: -120, z: LAST_GATE.z + 90, scale: 0.5 }
+  { x: 0, z: LAST_GATE.z - 240, scale: 1.05, yaw: 0.04 },
+  { x: 74, z: -96, scale: 1.28, yaw: 0.1 },
+  { x: -80, z: -168, scale: 1.12, yaw: -0.08 }
 ];
 function createSim() {
   return {
@@ -619,45 +619,38 @@ function drawShipInstance(pose) {
   var x = pose.x;
   var z = pose.z;
   var scale = pose.scale;
-  var bob = ship.bob * 0.35 * scale;
-  var dx = cam.x - x, dz = cam.z - z;
-  var len = Math.hypot(dx, dz) || 1;
-  var rx = dz / len, rz = -dx / len;
-  var worldW = 420 * scale;
-  var aspect = shipSprite.height / Math.max(1, shipSprite.width);
-  var worldH = worldW * aspect;
-  var above = worldH * SHIP_WATERLINE;
-  var below = worldH * (1 - SHIP_WATERLINE);
+  var yaw = pose.yaw || 0;
+  var bob = ship.bob * 0.2 * scale;
+  var bx = Math.cos(yaw), bz = -Math.sin(yaw);
+  var fx = Math.sin(yaw), fz = Math.cos(yaw);
+  var worldW = 150 * scale;
   var hw = worldW * 0.5;
-  var yTop = above + bob;
-  var yBot = -below * 0.55 + bob * 0.15;
-  var yWater = 0.04 + bob * 0.2;
-  var tl = project(x - rx * hw, yTop, z - rz * hw);
-  var tr = project(x + rx * hw, yTop, z + rz * hw);
-  var bl = project(x - rx * hw, yWater, z - rz * hw);
-  var br = project(x + rx * hw, yWater, z + rz * hw);
+  var hl = 48 * scale;
+  var yWater = 0.02 + bob;
+  var yTop = 18 * scale + bob;
+  var tl = project(x - bx * hw, yTop, z - bz * hw);
+  var tr = project(x + bx * hw, yTop, z + bz * hw);
+  var bl = project(x - bx * hw, yWater, z - bz * hw);
+  var br = project(x + bx * hw, yWater, z + bz * hw);
   if (!tl || !tr || !bl || !br) return;
   var area = Math.abs((tr.x - tl.x) * (bl.y - tl.y) - (bl.x - tl.x) * (tr.y - tl.y));
-  if (area < 80) return;
-  var s1 = project(x - rx * hw * 0.72, 0.05, z - rz * hw * 0.18);
-  var s2 = project(x + rx * hw * 0.72, 0.05, z + rz * hw * 0.18);
-  var s3 = project(x + rx * hw * 0.22, 0.05, z + rz * hw * 0.55);
-  var s4 = project(x - rx * hw * 0.22, 0.05, z - rz * hw * 0.55);
-  if (s1 && s2 && s3 && s4) {
+  if (area < 24) return;
+  var d1 = project(x - bx * hw * 0.9 - fx * hl, yWater, z - bz * hw * 0.9 - fz * hl);
+  var d2 = project(x + bx * hw * 0.9 - fx * hl, yWater, z + bz * hw * 0.9 - fz * hl);
+  var d3 = project(x + bx * hw * 0.55 + fx * hl * 0.85, yWater, z + bz * hw * 0.55 + fz * hl * 0.85);
+  var d4 = project(x - bx * hw * 0.55 + fx * hl * 0.85, yWater, z - bz * hw * 0.55 + fz * hl * 0.85);
+  if (d1 && d2 && d3 && d4) {
     ctx.save();
-    ctx.globalAlpha = 0.22;
-    fillPoly([s1, s2, s3, s4], "rgba(6, 14, 22, 0.55)");
+    ctx.globalAlpha = 0.28;
+    fillPoly([d1, d2, d3, d4], "rgba(8, 16, 24, 0.5)");
     ctx.restore();
   }
   drawShipWakeAt(x, z, scale);
-  var rtl = project(x - rx * hw, yWater, z - rz * hw);
-  var rtr = project(x + rx * hw, yWater, z + rz * hw);
-  var rbl = project(x - rx * hw, yBot * 0.7, z - rz * hw);
-  if (rtl && rtr && rbl) {
-    drawTexturedQuad(rbl, { x: rtr.x + (rbl.x - rtl.x), y: rtr.y + (rbl.y - rtl.y) }, rtl, shipSprite, 0.18);
+  var rbl = project(x - bx * hw, yWater - 7 * scale, z - bz * hw);
+  if (bl && br && rbl) {
+    drawTexturedQuad(rbl, { x: br.x + (rbl.x - bl.x), y: br.y + (rbl.y - bl.y) }, bl, shipSprite, 0.16);
   }
-  var hullBl = project(x - rx * hw, yWater, z - rz * hw);
-  drawTexturedQuad(tl, tr, hullBl, shipSprite, 1);
+  drawTexturedQuad(tl, tr, bl, shipSprite, 1);
 }
 function drawShip() {
   ship.x = SHIP.x;
