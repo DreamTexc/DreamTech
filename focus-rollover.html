@@ -336,6 +336,12 @@ var oceanReady = false;
 oceanImg.onload = function () { oceanReady = true; };
 oceanImg.src = "air.png";
 
+var shipImg = new Image();
+shipImg.decoding = "async";
+var shipReady = false;
+shipImg.onload = function () { shipReady = true; };
+shipImg.src = "ship.png";
+
 function paintCockpit() {
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   pitCv.width = Math.round(W * dpr);
@@ -490,6 +496,44 @@ function drawWater() {
 
   ctx.restore();
 }
+function drawShip() {
+  if (!shipReady) return;
+
+  var sx = 15;
+  var sy = 0;
+  var sz = -1650;
+
+  var halfW = 42;
+  var height = 32;
+
+  var right = { x: cam.rx, y: 0, z: cam.rz };
+  var len = Math.hypot(right.x, right.z) || 1;
+  right.x /= len; right.z /= len;
+
+  var p1 = project(sx - right.x * halfW, sy, sz - right.z * halfW);
+  var p2 = project(sx + right.x * halfW, sy, sz + right.z * halfW);
+  var p3 = project(sx + right.x * halfW, sy + height, sz + right.z * halfW);
+  var p4 = project(sx - right.x * halfW, sy + height, sz - right.z * halfW);
+
+  if (!p1 || !p2 || !p3 || !p4) return;
+
+  ctx.save();
+  ctx.globalAlpha = 0.95;
+
+  var minX = Math.min(p1.x, p2.x, p3.x, p4.x);
+  var maxX = Math.max(p1.x, p2.x, p3.x, p4.x);
+  var minY = Math.min(p1.y, p2.y, p3.y, p4.y);
+  var maxY = Math.max(p1.y, p2.y, p3.y, p4.y);
+
+  var dw = maxX - minX;
+  var dh = maxY - minY;
+
+  if (dw > 4 && dh > 4) {
+    ctx.drawImage(shipImg, minX, minY, dw, dh);
+  }
+
+  ctx.restore();
+}
 function drawIsland(isl) {
   var apex = project(isl.x, isl.h * 1.15, isl.z);
   var ring = [];
@@ -592,7 +636,7 @@ function drawCockpitOnJet(sim, dt) {
   if (!m) { pitReady = false; return; }
   var g = clamp(Math.max(sim.gForce, 5.4), 1, 6);
   var recede = 1 / (1 + (g - 1) * 0.16);
-  var targetS = (m.w * 4.1 / pitSrc.width) * recede;
+  var targetS = (m.w * 3.35 / pitSrc.width) * recede;
   var sink = (g - 1) * 8;
   var tx = m.x, ty = m.y + sink;
   var follow = 3.1 / (1 + (g - 1) * 0.4);
@@ -781,6 +825,7 @@ function frame() {
   }
   drawSky();
   drawWater();
+  drawShip();
   var drawables = [];
   for (var i = 0; i < ISLANDS.length; i++) {
     var isl = ISLANDS[i];
