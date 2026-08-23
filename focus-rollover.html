@@ -145,11 +145,13 @@ function gateAt(index) {
   return { x: x, y: y, z: z, yaw: Math.atan2(-(nx - x), -(nz - z)), radius: GATE_RADIUS };
 }
 var LAST_GATE = gateAt(GATE_COUNT - 1);
-var SHIP = { x: 0, y: -2, z: LAST_GATE.z - 240, yaw: 0, scale: 4.6 };
+// FIXED WORLD POSITIONS for ships — never updated by player input (WASD / stick).
+// All ships are locked to these absolute world coordinates on the water.
+var SHIP = { x: 0, y: 0, z: LAST_GATE.z - 240, yaw: 0, scale: 4.6 };
 var SHIP_FLEET = [
-  { x: 0, z: LAST_GATE.z - 240, scale: 1.05, yaw: 0.04 },
-  { x: 74, z: -96, scale: 1.28, yaw: 0.1 },
-  { x: -80, z: -168, scale: 1.12, yaw: -0.08 }
+  { x: 0, z: LAST_GATE.z - 240, scale: 1.05, yaw: 0.04 },   // main destroyer past final gate
+  { x: 74, z: -96, scale: 1.28, yaw: 0.1 },                 // mid-channel
+  { x: -80, z: -168, scale: 1.12, yaw: -0.08 }              // near start of channel
 ];
 function createSim() {
   return {
@@ -387,9 +389,11 @@ var cam = { x: 22, y: 58, z: 96, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0, fx: 0
 var jetF = { x: 0, y: 0, z: 1 }, jetR = { x: 1, y: 0, z: 0 }, jetU = { x: 0, y: 1, z: 0 };
 var trail = [];
 for (var ti = 0; ti < 40; ti++) trail.push({ x: 0, y: 68, z: 38 });
-var ship = { x: SHIP.x, y: 2.4, z: SHIP.z, yaw: 0, bob: 0, heel: 0, fx: 0, fy: 0, fz: -1, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0 };
+// Ship state is purely for rendering matrix; positions come ONLY from the fixed SHIP / SHIP_FLEET constants.
+var ship = { x: SHIP.x, y: 0.8, z: SHIP.z, yaw: 0, bob: 0, heel: 0, fx: 0, fy: 0, fz: -1, rx: 1, ry: 0, rz: 0, ux: 0, uy: 1, uz: 0 };
 function resetShip() {
-  ship.x = SHIP.x; ship.y = 2.4; ship.z = SHIP.z; ship.yaw = 0; ship.bob = 0; ship.heel = 0;
+  // Lock back to the single fixed world point — never follows player.
+  ship.x = SHIP.x; ship.y = 0.8; ship.z = SHIP.z; ship.yaw = 0; ship.bob = 0; ship.heel = 0;
   ship.fx = 0; ship.fy = 0; ship.fz = -1; ship.rx = 1; ship.ry = 0; ship.rz = 0; ship.ux = 0; ship.uy = 1; ship.uz = 0;
 }
 function computeShipMatrix() {
@@ -566,13 +570,14 @@ function drawWater() {
   ctx.stroke();
 }
 function stepShip() {
-  var t = performance.now() * 0.001;
+  // CRITICAL: ships are locked to fixed world points. No dependence on player position,
+  // velocity, or WASD / stick input. They stay at the absolute coordinates defined in SHIP_FLEET.
   ship.x = SHIP.x;
   ship.z = SHIP.z;
-  ship.yaw = SHIP.yaw;
-  ship.bob = Math.sin(t * 1.15) * 0.45 + Math.sin(t * 0.5) * 0.2;
-  ship.heel = Math.sin(t * 0.72) * 0.02;
-  ship.y = 0.8 + ship.bob;
+  ship.yaw = 0;
+  ship.bob = 0;          // locked — no floating animation
+  ship.heel = 0;         // locked — no rocking
+  ship.y = 0.8;          // fixed waterline height
   computeShipMatrix();
 }
 function drawTexturedQuad(tl, tr, bl, img, alpha) {
@@ -616,11 +621,12 @@ function drawShipWakeAt(x, z, scale) {
 }
 function drawShipInstance(pose) {
   if (!shipReady || !shipSprite) return;
+  // pose is always taken from the fixed SHIP_FLEET array — never from player state
   var x = pose.x;
   var z = pose.z;
   var scale = pose.scale;
   var yaw = pose.yaw || 0;
-  var bob = ship.bob * 0.2 * scale;
+  var bob = 0; // locked fixed waterline
   var bx = Math.cos(yaw), bz = -Math.sin(yaw);
   var fx = Math.sin(yaw), fz = Math.cos(yaw);
   var worldW = 150 * scale;
@@ -653,9 +659,7 @@ function drawShipInstance(pose) {
   drawTexturedQuad(tl, tr, bl, shipSprite, 1);
 }
 function drawShip() {
-  ship.x = SHIP.x;
-  ship.z = SHIP.z;
-  ship.yaw = 0;
+  // Always draw from the fixed world fleet. Player WASD has zero effect on these positions.
   for (var i = 0; i < SHIP_FLEET.length; i++) drawShipInstance(SHIP_FLEET[i]);
 }
 function drawGate(g, active) {
@@ -891,7 +895,7 @@ function frame() {
   } else {
     setCam(20, 40, 70, SHIP.x, 10, SHIP.z + 80);
   }
-  stepShip();
+  stepShip(); // keeps ships locked to fixed world points
   if (sim.alive && phase === "playing") {
     for (var i = trail.length - 1; i > 0; i--) trail[i] = trail[i - 1];
     trail[0] = { x: sim.x - jetF.x * 1.4, y: sim.y - jetF.y * 1.4, z: sim.z - jetF.z * 1.4 };
