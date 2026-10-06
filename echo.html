@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pescomoter</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#050505;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden;touch-action:none}
+#page{width:100%;height:100%;position:relative}
+#zoomLine{
+  position:absolute;left:0;top:50%;width:100%;height:1px;
+  background:#fff;transform:translateY(-50%);
+}
+#zoomLine i{
+  position:absolute;top:-6px;width:1px;height:13px;background:#fff;opacity:.55
+}
+#focusDot{
+  position:absolute;left:50%;top:50%;width:8px;height:8px;
+  margin:-4px 0 0 -4px;border-radius:50%;background:#fff;
+  z-index:3;pointer-events:none
+}
+#meter{
+  position:absolute;left:50%;top:calc(50% + 28px);transform:translateX(-50%);
+  font-size:11px;letter-spacing:1px;color:#aaa
+}
+#arm{
+  position:absolute;left:0;top:16px;padding:6px 10px;
+  border:1px solid #666;background:#151515;color:#fff;font-size:11px;cursor:pointer
+}
+</style>
+</head>
+<body>
+<div id="page">
+  <button id="arm" type="button">ARM</button>
+  <div id="zoomLine"></div>
+  <div id="focusDot"></div>
+  <div id="meter">0 · 0</div>
+</div>
+<script>
+"use strict";
+const line = document.getElementById("zoomLine");
+const meter = document.getElementById("meter");
+const arm = document.getElementById("arm");
+
+const pescomoter = {
+  x: 0,
+  y: 0,
+  armed: false,
+  tick: function (gx, gy) {
+    this.x += (gx - this.x) * 0.18;
+    this.y += (gy - this.y) * 0.18;
+    line.style.transform = "translate(" + (-this.x) + "px," + (-this.y) + "px)";
+    meter.textContent = this.x.toFixed(0) + " · " + this.y.toFixed(0);
+  }
+};
+
+for (let n = 0; n <= 40; n++) {
+  const mark = document.createElement("i");
+  mark.style.left = (n * 2.5) + "%";
+  if (n % 5 === 0) mark.style.height = "18px";
+  line.appendChild(mark);
+}
+
+function onTilt(e) {
+  if (!pescomoter.armed) return;
+  const gx = (e.gamma || 0) * 4;
+  const gy = (e.beta || 0) * 1.4;
+  pescomoter.tick(gx, gy);
+}
+
+arm.onclick = function () {
+  const ask = typeof DeviceOrientationEvent !== "undefined"
+    && typeof DeviceOrientationEvent.requestPermission === "function";
+  const go = function () {
+    pescomoter.armed = true;
+    window.addEventListener("deviceorientation", onTilt);
+    arm.textContent = "LIVE";
+  };
+  if (ask) {
+    DeviceOrientationEvent.requestPermission().then(function (state) {
+      if (state === "granted") go();
+    }).catch(function () {});
+  } else {
+    go();
+  }
+};
+
+document.addEventListener("pointermove", function (e) {
+  if (pescomoter.armed && e.pointerType === "touch") return;
+  const gx = (e.clientX - window.innerWidth / 2) * 0.35;
+  const gy = (e.clientY - window.innerHeight / 2) * 0.15;
+  pescomoter.tick(gx, gy);
+});
+</script>
+</body>
+</html>
