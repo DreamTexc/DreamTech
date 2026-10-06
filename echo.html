@@ -20,8 +20,7 @@ html,body{width:100%;height:100%;background:#050505;color:#fff;font-family:Arial
 #stage{position:relative;width:140px;height:120px;margin-bottom:6px;overflow:hidden}
 #agent{width:140px;height:120px;object-fit:cover;display:block;filter:contrast(1.05)}
 #roll{position:absolute;left:0;right:0;height:2px;background:rgba(255,255,255,.7);top:0;pointer-events:none;mix-blend-mode:screen}
-#mouth{position:absolute;left:50%;bottom:28px;width:18px;height:4px;margin-left:-9px;background:#111;border-radius:0 0 8px 8px;transform:scaleY(.3);pointer-events:none}
-#focusAlert{position:absolute;right:6px;top:6px;font-size:11px;letter-spacing:1px;color:#fff}
+#mouth{position:absolute;left:50%;top:58%;width:10px;height:2px;margin-left:-5px;background:#111;border-radius:2px;transform:scaleY(.4);pointer-events:none}
 #stage.talk #agent{animation:fix 1.2s steps(2) infinite}
 @keyframes fix{50%{filter:contrast(1.2) brightness(1.05)}}
 #say{font-size:11px;padding:6px;text-align:center;min-height:36px}
@@ -48,7 +47,6 @@ html,body{width:100%;height:100%;background:#050505;color:#fff;font-family:Arial
       <img id="agent" src="iiii.png" alt="speaker">
       <div id="roll"></div>
       <div id="mouth"></div>
-      <div id="focusAlert">aA</div>
     </div>
     <div id="say">Awaiting log.</div>
   </div>
@@ -77,13 +75,15 @@ $.tick = function (gx, gy) {
 const stage = document.getElementById("stage");
 const roll = document.getElementById("roll");
 const mouth = document.getElementById("mouth");
-const focusAlert = document.getElementById("focusAlert");
+$.fx = { file: "main", path: "to:path", lead: 2 };
 let rollTimer = 0;
+function codeFor(ch) {
+  return /[aAeEiIoOuU]/.test(ch) ? "aA" : "Bb";
+}
 function cue(ch) {
-  const open = /[aAeEiIoOuU]/.test(ch);
-  focusAlert.textContent = open ? "aA" : "Bb";
-  mouth.style.transform = open ? "scaleY(1.6)" : "scaleY(.25)";
-  mouth.style.width = open ? "22px" : "14px";
+  const open = codeFor(ch) === "aA";
+  mouth.style.transform = open ? "scaleY(1.4)" : "scaleY(.35)";
+  mouth.style.width = open ? "12px" : "8px";
 }
 function startRoll() {
   stage.classList.add("talk");
@@ -98,19 +98,19 @@ function stopRoll() {
   stage.classList.remove("talk");
   clearInterval(rollTimer);
   mouth.style.transform = "scaleY(.3)";
-  focusAlert.textContent = "aA";
 }
 function speak(text) {
   say.textContent = text;
   startRoll();
+  cue(text.charAt($.fx.lead) || text.charAt(0) || "a");
   if (!window.speechSynthesis) { setTimeout(stopRoll, 1200); return; }
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.rate = 0.92;
   u.pitch = 0.8;
   u.onboundary = function (ev) {
-    const i = ev.charIndex || 0;
-    cue(text.charAt(i) || "a");
+    const i = (ev.charIndex || 0) + $.fx.lead;
+    cue(text.charAt(i) || text.charAt(text.length - 1) || "a");
   };
   u.onend = stopRoll;
   u.onerror = stopRoll;
