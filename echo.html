@@ -25,6 +25,124 @@ html,body{width:100%;height:100%;background:#050505;color:#fff;font-family:Arial
 @keyframes fix{50%{filter:contrast(1.2) brightness(1.05)}}
 #say{font-size:11px;padding:6px;text-align:center;min-height:36px}
 #hint{position:absolute;left:12px;top:48px;font-size:11px;color:#888;z-index:6}
+
+#jlkDock{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:7;
+  width:128px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+}
+#jlkSwitch{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 8px;
+  padding:6px 8px;
+  border:1px solid #666;
+  background:#151515;
+  color:#fff;
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  user-select:none;
+}
+#jlkToggle{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+#jlkKnob{
+  width:34px;
+  height:18px;
+  border-radius:999px;
+  background:#111;
+  box-shadow:inset 0 0 0 1px #666;
+  position:relative;
+}
+#jlkKnob::after{
+  content:"";
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .22s ease;
+}
+#jlkToggle:checked ~ #jlkSwitch #jlkKnob{background:#24343c}
+#jlkToggle:checked ~ #jlkSwitch #jlkKnob::after{transform:translateX(16px)}
+#jlkToggle:focus-visible ~ #jlkSwitch #jlkKnob{outline:1px solid #fff;outline-offset:2px}
+#jlkStage{position:relative;width:112px;pointer-events:none}
+#jlkImg{
+  display:block;
+  width:112px;
+  height:auto;
+  border:1px solid #666;
+  background:#111;
+  filter:contrast(1.05);
+}
+#jlkStage::after{
+  content:"";
+  position:absolute;
+  left:8%;
+  right:8%;
+  top:calc(100% - 5px);
+  height:9px;
+  border-radius:0 0 46% 46%;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(210,230,255,.55));
+  opacity:0;
+  transform:scaleY(.35);
+  transform-origin:top;
+  transition:opacity .28s ease,transform .28s ease;
+}
+#jlkRain{
+  position:absolute;
+  left:4%;
+  right:4%;
+  top:100%;
+  height:240px;
+  overflow:hidden;
+  opacity:0;
+  transition:opacity .3s ease;
+}
+#jlkRain i{
+  position:absolute;
+  top:-16px;
+  width:2px;
+  height:14px;
+  border-radius:40%;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(200,226,255,.9));
+  opacity:0;
+  animation:jlkUsher 1.12s linear infinite;
+  animation-play-state:paused;
+}
+#jlkRain i:nth-child(1){left:5%;animation-delay:.04s;height:12px}
+#jlkRain i:nth-child(2){left:13%;animation-delay:.4s;height:18px}
+#jlkRain i:nth-child(3){left:21%;animation-delay:.16s;height:11px}
+#jlkRain i:nth-child(4){left:30%;animation-delay:.64s;height:16px}
+#jlkRain i:nth-child(5){left:38%;animation-delay:.27s;height:13px}
+#jlkRain i:nth-child(6){left:47%;animation-delay:.78s;height:19px}
+#jlkRain i:nth-child(7){left:56%;animation-delay:.1s;height:12px}
+#jlkRain i:nth-child(8){left:65%;animation-delay:.52s;height:17px}
+#jlkRain i:nth-child(9){left:73%;animation-delay:.22s;height:14px}
+#jlkRain i:nth-child(10){left:82%;animation-delay:.7s;height:11px}
+#jlkRain i:nth-child(11){left:90%;animation-delay:.34s;height:16px}
+#jlkRain i:nth-child(12){left:17%;animation-delay:.92s;height:10px;width:3px}
+#jlkRain i:nth-child(13){left:51%;animation-delay:.98s;height:15px}
+#jlkRain i:nth-child(14){left:69%;animation-delay:.86s;height:12px}
+#jlkToggle:checked ~ #jlkStage::after{opacity:1;transform:scaleY(1)}
+#jlkToggle:checked ~ #jlkStage #jlkRain{opacity:1}
+#jlkToggle:checked ~ #jlkStage #jlkRain i{animation-play-state:running}
+@keyframes jlkUsher{
+  0%{transform:translateY(0) scaleY(.3);opacity:0}
+  12%{opacity:.9;transform:translateY(8px) scaleY(1.15)}
+  100%{transform:translateY(228px) scaleY(.65);opacity:0}
+}
+@media (prefers-reduced-motion:reduce){
+  #jlkRain i{animation:none}
+}
 </style>
 </head>
 <body>
@@ -50,6 +168,20 @@ html,body{width:100%;height:100%;background:#050505;color:#fff;font-family:Arial
     </div>
     <div id="say">Awaiting log.</div>
   </div>
+  <div id="jlkDock">
+    <input type="checkbox" id="jlkToggle" aria-label="Toggle artificial rain under jlk">
+    <label id="jlkSwitch" for="jlkToggle">
+      Rain
+      <span id="jlkKnob" aria-hidden="true"></span>
+    </label>
+    <div id="jlkStage">
+      <img id="jlkImg" src="jlk.png" alt="jlk">
+      <span id="jlkRain" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </span>
+    </div>
+  </div>
 </div>
 <script>
 "use strict";
@@ -57,13 +189,11 @@ const line = document.getElementById("zoomLine");
 const meter = document.getElementById("meter");
 const say = document.getElementById("say");
 const $ = { x: 0, y: 0, armed: false, log: false, pick: "" };
-
 for (let n = 0; n <= 40; n++) {
   const mark = document.createElement("i");
   mark.style.left = (n * 2.5) + "%";
   line.appendChild(mark);
 }
-
 $.tick = function (gx, gy) {
   this.x += (gx - this.x) * 0.18;
   this.y += (gy - this.y) * 0.18;
@@ -71,7 +201,6 @@ $.tick = function (gx, gy) {
   line.style.transform = "translate(" + (-this.x) + "px," + (-this.y) + "px) scaleX(" + zoom + ")";
   meter.textContent = this.x.toFixed(0) + " · " + this.y.toFixed(0);
 };
-
 const stage = document.getElementById("stage");
 const roll = document.getElementById("roll");
 const mouth = document.getElementById("mouth");
@@ -116,12 +245,10 @@ function speak(text) {
   u.onerror = stopRoll;
   window.speechSynthesis.speak(u);
 }
-
 document.getElementById("startLog").onclick = function () {
   $.log = true;
   speak("Video log start. Select a line.");
 };
-
 document.addEventListener("mouseup", function () {
   const sel = window.getSelection();
   const text = sel ? String(sel.toString()).trim() : "";
@@ -131,7 +258,6 @@ document.addEventListener("mouseup", function () {
   try { history.replaceState(null, "", "https://dreamtexc.github.io/DreamTech/echo.html"); } catch (err) {}
   speak(text);
 });
-
 document.getElementById("arm").onclick = function () {
   const ask = typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function";
   const go = function () {
@@ -145,7 +271,6 @@ document.getElementById("arm").onclick = function () {
   if (ask) DeviceOrientationEvent.requestPermission().then(function (s) { if (s === "granted") go(); });
   else go();
 };
-
 document.addEventListener("pointermove", function (e) {
   if ($.armed && e.pointerType === "touch") return;
   $.tick((e.clientX - innerWidth / 2) * 0.35, (e.clientY - innerHeight / 2) * 0.15);
