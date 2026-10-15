@@ -4,81 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DreamJump Portal</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com https://www.slashgear.com https://example.com https://i.pinimg.com; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123';">
-
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com https://www.slashgear.com https://example.com https://i.pinimg.com blob: data:; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123'; media-src blob:;">
   <style nonce="abc123">
     body { font-family: Arial, sans-serif; }
     .container { width: 90%; margin: auto; padding: 20px; border: 1px solid #ccc; }
     .option { margin: 10px 0; }
-
-    /* IMAGE GRID */
     .image-container { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
     .image-container img, .download-image {
       width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s;
     }
     .image-container img:hover, .download-image:hover { border-color: #333; }
-
-    /* MAGNIFIER */
     .magnifier {
       position: absolute; border: 3px solid red; border-radius: 50%; cursor: none;
       width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%;
       pointer-events: none; display: none;
     }
-
-    /* MESSAGE POPUP */
     .message {
       position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
       background-color: #fff; padding: 10px 20px; border: 1px solid #000;
-      border-radius: 5px; display: none;
+      border-radius: 5px; display: none; z-index: 1000;
     }
-
-    /* RANDOMART BOX */
     .parallelogram {
       transform: skew(-20deg); background-color: #fff; border: 2px solid #000;
       padding: 20px; display: inline-block; margin-top: 20px;
     }
     .parallelogram-content { transform: skew(20deg); }
-
-    /* ICMI TERMINAL OVERLAY */
     .icmi-overlay {
-      position: relative;
-      width: 420px;
-      height: auto;
-      display: inline-block;
-      vertical-align: top;
-      margin-left: 20px;
+      position: relative; width: 420px; height: auto; display: inline-block;
+      vertical-align: top; margin-left: 20px;
     }
-
-    .icmi-base {
-      width: 100%;
-      display: block;
-    }
-
+    .icmi-base { width: 100%; display: block; }
     .icmi-code {
-      position: absolute;
-      top: 18px;
-      left: 22px;
-      width: 360px;
-      background: rgba(0,0,0,0.65);
-      color: #00ffea;
-      padding: 10px;
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-      border-radius: 4px;
-      pointer-events: none;
-      white-space: pre-wrap;
+      position: absolute; top: 18px; left: 22px; width: 360px;
+      background: rgba(0,0,0,0.65); color: #00ffea; padding: 10px;
+      font-family: "Courier New", monospace; font-size: 14px;
+      border-radius: 4px; pointer-events: none; white-space: pre-wrap;
     }
+    #videoPreview { max-width: 100%; margin-top: 10px; display: none; }
+    #downloadLink { display: none; margin-top: 10px; }
   </style>
 </head>
-
 <body>
   <div class="container">
-
     <h1>DreamJump Portal</h1>
 
-    <!-- ICMI TERMINAL OVERLAY -->
     <div class="icmi-overlay">
-      <img src="too.png" class="icmi-base">
+      <img src="too.png" class="icmi-base" alt="ICMI">
       <div class="icmi-code" id="icmiTerminal">
 <pre>
 ICMI TERMINAL ONLINE
@@ -109,8 +80,8 @@ Awaiting RELOOP commands...
 
     <div class="option">
       <label for="sshKeyInput">Enter your SSH key:</label>
-      <input type="text" id="sshKeyInput" name="sshKeyInput">
-      <button onclick="generateRandomart()" nonce="abc123">Generate Randomart</button>
+      <input type="text" id="sshKeyInput" name="sshKeyInput" placeholder="ssh-ed25519 AAAA...">
+      <button id="generateRandomartBtn" nonce="abc123">Generate Randomart + Video</button>
     </div>
 
     <div id="scriptOutput"></div>
@@ -122,27 +93,29 @@ Awaiting RELOOP commands...
       <pre class="parallelogram-content" id="randomartOutput"></pre>
     </div>
 
+    <video id="videoPreview" controls></video>
+    <a id="downloadLink" download="dreamjump-video.webm">Download Video</a>
   </div>
 
   <script nonce="abc123">
-
-    /* ICMI TERMINAL UPDATE FUNCTION */
+    // ========== ICMI TERMINAL ==========
     function icmiLog(text) {
       const term = document.getElementById("icmiTerminal");
       term.innerHTML = "<pre>" + text + "</pre>";
     }
 
-    /* EXAMPLE: Update terminal when Run Script is pressed */
     document.getElementById("runScriptButton").addEventListener("click", function() {
       icmiLog("Executing ICMI...\nRELOOP ACTIVE\n-L 8080:192.168.1.10:22\n-D 1080\nDONE.");
     });
 
-    /* EXISTING IMAGE + MAGNIFIER CODE (unchanged) */
+    // ========== IMAGE LOADING + MAGNIFIER (existing logic) ==========
     var images = [
       "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?pid=ImgDet&rs=1",
       "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
-      "https://example.com/path-to-your-third-image.jpg"
+      "https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg"
     ];
+
+    document.getElementById("loadImagesButton").addEventListener("click", loadImages);
 
     function loadImages() {
       var imageContainer = document.getElementById("image-response");
@@ -151,6 +124,7 @@ Awaiting RELOOP commands...
         var imgElement = document.createElement("img");
         imgElement.src = image;
         imgElement.alt = "Image " + (index + 1);
+        imgElement.crossOrigin = "anonymous"; // helps with canvas
         imgElement.style.width = "30%";
         imgElement.style.margin = "10px";
         imgElement.setAttribute("id", "image-" + index);
@@ -169,36 +143,28 @@ Awaiting RELOOP commands...
         }
         imageContainer.appendChild(imgElement);
       });
+      icmiLog("IMAGES LOADED\n" + images.length + " frames ready\nfor ACT channel.");
     }
 
     function magnify(imgID, zoom, event) {
-      var img, glass, w, h;
-      img = document.getElementById(imgID);
+      var img = document.getElementById(imgID);
       var existingGlass = document.querySelector(".magnifier");
       if (existingGlass) existingGlass.remove();
-      if (!document.querySelector(".magnifier")) {
-        glass = document.createElement("DIV");
-        glass.setAttribute("class", "magnifier");
-        img.parentElement.insertBefore(glass, img);
-      } else {
-        glass = document.querySelector(".magnifier");
-      }
+      var glass = document.createElement("DIV");
+      glass.setAttribute("class", "magnifier");
+      img.parentElement.insertBefore(glass, img);
       glass.style.display = "block";
       glass.style.backgroundImage = "url('" + img.src + "')";
       glass.style.backgroundRepeat = "no-repeat";
       glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
-      w = glass.offsetWidth / 2;
-      h = glass.offsetHeight / 2;
-      moveMagnifier(event);
+      var w = glass.offsetWidth / 2;
+      var h = glass.offsetHeight / 2;
 
       function moveMagnifier(e) {
-        var pos, x, y;
         e.preventDefault();
-        pos = getCursorPos(e);
-        x = pos.x; y = pos.y;
-        if (pos.x >= 0 && pos.x <= img.width && pos.y >= 0 && pos.y <= img.height) {
-          glass.style.display = "block";
-        } else {
+        var pos = getCursorPos(e);
+        var x = pos.x, y = pos.y;
+        if (pos.x < 0 || pos.x > img.width || pos.y < 0 || pos.y > img.height) {
           glass.style.display = "none";
           return;
         }
@@ -210,17 +176,13 @@ Awaiting RELOOP commands...
         glass.style.top = (y - h) + "px";
         glass.style.backgroundPosition = "-" + ((x * zoom) - w) + "px -" + ((y * zoom) - h) + "px";
       }
-
       function getCursorPos(e) {
-        var a, x = 0, y = 0;
-        e = e || window.event;
-        a = img.getBoundingClientRect();
-        x = e.pageX - a.left;
-        y = e.pageY - a.top;
-        x = x - window.pageXOffset;
-        y = y - window.pageYOffset;
-        return {x : x, y : y};
+        var a = img.getBoundingClientRect();
+        var x = e.pageX - a.left - window.pageXOffset;
+        var y = e.pageY - a.top - window.pageYOffset;
+        return {x: x, y: y};
       }
+      moveMagnifier(event);
     }
 
     function removeMagnifier() {
@@ -232,11 +194,119 @@ Awaiting RELOOP commands...
       var messageBox = document.getElementById("message");
       messageBox.textContent = message;
       messageBox.style.display = "block";
-      setTimeout(function() {
-        messageBox.style.display = "none";
-      }, 5000);
+      setTimeout(function() { messageBox.style.display = "none"; }, 5000);
     }
 
+    // ========== GENERATE RANDOMART + VIDEO CHANNEL ==========
+    // Conceptual C++-style ACT activator mapped to JS
+    // struct FrameLogic { float alpha; int index; string overlay; };
+    // void channelVideo(vector<Image> photos) { ... }
+
+    document.getElementById("generateRandomartBtn").addEventListener("click", generateRandomart);
+
+    function generateRandomart() {
+      const key = document.getElementById("sshKeyInput").value.trim() || "default-key";
+      const userText = document.getElementById("userInput").value.trim() || "DreamJump";
+
+      // Simple randomart-style fingerprint visualization
+      let art = "+--[ Randomart for " + key.slice(0, 12) + "... ]--+\n";
+      const chars = " .:-=+*#%@";
+      for (let y = 0; y < 9; y++) {
+        art += "|";
+        for (let x = 0; x < 17; x++) {
+          const seed = (key.charCodeAt((x + y) % key.length) + x * 7 + y * 13) % chars.length;
+          art += chars[seed];
+        }
+        art += "|\n";
+      }
+      art += "+-----------------------------+\nOverlay: " + userText;
+      document.getElementById("randomartOutput").textContent = art;
+
+      icmiLog("RANDOMART GENERATED\nStarting ACT video channel...");
+
+      // Trigger video generation from loaded images
+      generateVideoFromImages(userText);
+    }
+
+    async function generateVideoFromImages(overlayText) {
+      const loadedImgs = document.querySelectorAll("#image-response img");
+      if (loadedImgs.length === 0) {
+        icmiLog("ERROR: Load images first.");
+        showMessage("Load images first");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 640;
+      canvas.height = 360;
+      const ctx = canvas.getContext("2d");
+
+      const stream = canvas.captureStream(10); // 10 fps
+      const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      const chunks = [];
+
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const video = document.getElementById("videoPreview");
+        video.src = url;
+        video.style.display = "block";
+        const link = document.getElementById("downloadLink");
+        link.href = url;
+        link.style.display = "inline-block";
+        icmiLog("VIDEO CHANNEL COMPLETE\nDownload ready.");
+        showMessage("Video ready");
+      };
+
+      recorder.start();
+
+      // Sequence frames (ACT-style channel)
+      let frame = 0;
+      const totalFrames = loadedImgs.length * 30; // ~3s per image at 10fps
+      const interval = setInterval(() => {
+        if (frame >= totalFrames) {
+          clearInterval(interval);
+          recorder.stop();
+          return;
+        }
+
+        const imgIndex = Math.floor(frame / 30) % loadedImgs.length;
+        const img = loadedImgs[imgIndex];
+        const progress = (frame % 30) / 30;
+
+        ctx.fillStyle = "#050505";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw image with slight zoom/fade
+        const scale = 1 + progress * 0.05;
+        const w = canvas.width * scale;
+        const h = canvas.height * scale;
+        const x = (canvas.width - w) / 2;
+        const y = (canvas.height - h) / 2;
+        ctx.globalAlpha = 0.3 + progress * 0.7;
+        try {
+          ctx.drawImage(img, x, y, w, h);
+        } catch (err) {
+          // CORS or load failure fallback
+          ctx.fillStyle = "#222";
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = "#fff";
+          ctx.fillText("Image " + (imgIndex + 1), canvas.width/2 - 30, canvas.height/2);
+        }
+        ctx.globalAlpha = 1;
+
+        // Overlay text
+        ctx.fillStyle = "#00ffea";
+        ctx.font = "20px Courier New";
+        ctx.fillText(overlayText, 20, 40);
+        ctx.fillText("Frame " + frame + " / ACT", 20, canvas.height - 20);
+
+        frame++;
+      }, 100);
+
+      icmiLog("ACT ACTIVATOR RUNNING\nChannelling " + loadedImgs.length + " photos\ninto video stream...");
+    }
   </script>
 </body>
 </html>
