@@ -4,44 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DreamJump Portal</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://th.bing.com https://www.slashgear.com https://example.com https://i.pinimg.com blob: data:; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123'; media-src blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: blob: data:; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123'; media-src blob:;">
   <style nonce="abc123">
-    body { font-family: Arial, sans-serif; }
-    .container { width: 90%; margin: auto; padding: 20px; border: 1px solid #ccc; }
-    .option { margin: 10px 0; }
-    .image-container { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
-    .image-container img, .download-image {
-      width: 30%; margin: 10px; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s;
+    body { font-family: Arial, sans-serif; background: #111; color: #eee; }
+    .container { width: 95%; margin: auto; padding: 20px; }
+    .option { margin: 12px 0; }
+    .image-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .image-container img, .download-image { width: 140px; height: 100px; object-fit: cover; border: 2px solid #444; border-radius: 6px; }
+    .message { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 5px; display: none; z-index: 999; }
+    .icmi-overlay { position: relative; width: 380px; display: inline-block; vertical-align: top; margin-left: 20px; }
+    .icmi-code { position: absolute; top: 16px; left: 20px; width: 340px; background: rgba(0,0,0,.7); color: #00ffea; padding: 8px; font: 13px "Courier New", monospace; border-radius: 4px; white-space: pre-wrap; }
+    .parallelogram { transform: skew(-15deg); background: #fff; color: #000; border: 2px solid #000; padding: 16px; display: inline-block; margin-top: 16px; }
+    .parallelogram-content { transform: skew(15deg); }
+    /* HEXAGON DROP ZONE */
+    .hexagon-zone {
+      width: 280px; height: 280px; background: #1a1a1a; border: 3px dashed #00ffea;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      margin: 20px auto; display: flex; flex-wrap: wrap; align-content: flex-start;
+      justify-content: center; padding: 20px; overflow: auto; position: relative;
     }
-    .image-container img:hover, .download-image:hover { border-color: #333; }
-    .magnifier {
-      position: absolute; border: 3px solid red; border-radius: 50%; cursor: none;
-      width: 100px; height: 100px; background-repeat: no-repeat; background-size: 200% 200%;
-      pointer-events: none; display: none;
-    }
-    .message {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-      background-color: #fff; padding: 10px 20px; border: 1px solid #000;
-      border-radius: 5px; display: none; z-index: 1000;
-    }
-    .parallelogram {
-      transform: skew(-20deg); background-color: #fff; border: 2px solid #000;
-      padding: 20px; display: inline-block; margin-top: 20px;
-    }
-    .parallelogram-content { transform: skew(20deg); }
-    .icmi-overlay {
-      position: relative; width: 420px; height: auto; display: inline-block;
-      vertical-align: top; margin-left: 20px;
-    }
-    .icmi-base { width: 100%; display: block; }
-    .icmi-code {
-      position: absolute; top: 18px; left: 22px; width: 360px;
-      background: rgba(0,0,0,0.65); color: #00ffea; padding: 10px;
-      font-family: "Courier New", monospace; font-size: 14px;
-      border-radius: 4px; pointer-events: none; white-space: pre-wrap;
-    }
-    #videoPreview { max-width: 100%; margin-top: 10px; display: none; }
-    #downloadLink { display: none; margin-top: 10px; }
+    .hexagon-zone img { width: 70px; height: 70px; object-fit: cover; margin: 4px; border-radius: 4px; border: 1px solid #555; }
+    .hexagon-zone.dragover { background: #003333; }
+    .search-panel { border: 1px solid #444; padding: 12px; margin: 12px 0; background: #1a1a1a; max-width: 420px; display: inline-block; vertical-align: top; }
+    #videoPreview { max-width: 640px; margin-top: 12px; display: none; }
+    #downloadLink { display: none; margin: 10px; color: #00ffea; }
+    button { background: #222; color: #00ffea; border: 1px solid #00ffea; padding: 6px 12px; cursor: pointer; }
+    input { background: #222; color: #fff; border: 1px solid #555; padding: 6px; }
   </style>
 </head>
 <body>
@@ -49,263 +37,254 @@
     <h1>DreamJump Portal</h1>
 
     <div class="icmi-overlay">
-      <img src="too.png" class="icmi-base" alt="ICMI">
-      <div class="icmi-code" id="icmiTerminal">
-<pre>
-ICMI TERMINAL ONLINE
+      <img src="too.png" class="icmi-base" alt="ICMI" style="width:100%">
+      <div class="icmi-code" id="icmiTerminal"><pre>ICMI TERMINAL ONLINE
 --------------------
-Awaiting RELOOP commands...
-</pre>
-      </div>
+Awaiting RELOOP commands...</pre></div>
     </div>
 
     <div class="option">
       <a href="https://raw.githubusercontent.com/DreamTexc/DreamTech/refs/heads/main/example.txt" download>
-        <img src="https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg" alt="Download Example Text File" class="download-image">
+        <img src="https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg" alt="SpongeBob-style" class="download-image">
       </a>
     </div>
 
-    <div class="option">
-      <button id="loadImagesButton" nonce="abc123">Load Images</button>
+    <!-- Google Images Search Panel (beside the image) -->
+    <div class="search-panel">
+      <strong>Google Image Search</strong><br>
+      <input type="text" id="googleQuery" placeholder="search jets, aircraft, etc." style="width:70%">
+      <button id="googleSearchBtn" nonce="abc123">Search Images</button>
+      <div style="font-size:12px; margin-top:6px; color:#aaa;">
+        Opens real Google Images in a new tab. Drag results into the hexagon below.
+      </div>
     </div>
 
     <div class="option">
-      <label for="userInput">Enter your input:</label>
-      <input type="text" id="userInput" name="userInput">
+      <button id="loadImagesButton" nonce="abc123">Load Preloaded Jets</button>
+    </div>
+
+    <!-- HEXAGON IMAGE STORE -->
+    <h3>Hexagon Image Store (drag & drop or paste URLs)</h3>
+    <div class="hexagon-zone" id="hexagonZone">
+      <div style="color:#666; font-size:13px; text-align:center; width:100%; margin-top:80px;">
+        Drop images here<br>or paste URLs
+      </div>
+    </div>
+    <div class="option">
+      <input type="text" id="urlPaste" placeholder="paste image URL then press Enter" style="width:280px">
     </div>
 
     <div class="option">
-      <button id="runScriptButton" nonce="abc123">Run Script</button>
+      <label>Seconds per photo: <input type="number" id="secondsPer" value="5" min="1" max="30" style="width:60px"></label>
+      <label style="margin-left:12px;">Pan/Zoom intensity: <input type="range" id="panZoom" min="0" max="100" value="30"></label>
+      <button id="immerseBtn" nonce="abc123">Immerse (Fullscreen)</button>
     </div>
 
     <div class="option">
-      <label for="sshKeyInput">Enter your SSH key:</label>
-      <input type="text" id="sshKeyInput" name="sshKeyInput" placeholder="ssh-ed25519 AAAA...">
-      <button id="generateRandomartBtn" nonce="abc123">Generate Randomart + Video</button>
+      <button id="sequenceBtn" nonce="abc123">Load & Sequence Hexagon → Video</button>
     </div>
 
-    <div id="scriptOutput"></div>
-    <div id="dotOutput"></div>
-    <div id="image-response" class="image-container"></div>
-    <div id="message" class="message"></div>
+    <!-- SEPARATE SSH / RANDOMART CHANNEL -->
+    <div class="option" style="border-top:1px solid #444; padding-top:12px; margin-top:20px;">
+      <label for="sshKeyInput">SSH Key (Randomart only):</label><br>
+      <input type="text" id="sshKeyInput" placeholder="ssh-ed25519 AAAA..." style="width:360px">
+      <button id="randomartOnlyBtn" nonce="abc123">Generate Randomart (separate)</button>
+    </div>
 
     <div class="parallelogram">
       <pre class="parallelogram-content" id="randomartOutput"></pre>
     </div>
 
     <video id="videoPreview" controls></video>
-    <a id="downloadLink" download="dreamjump-video.webm">Download Video</a>
+    <a id="downloadLink" download="dreamjump-sequence.webm">Download Sequence Video</a>
+
+    <div id="message" class="message"></div>
   </div>
 
   <script nonce="abc123">
-    // ========== ICMI TERMINAL ==========
+    // ========== ICMI ==========
     function icmiLog(text) {
-      const term = document.getElementById("icmiTerminal");
-      term.innerHTML = "<pre>" + text + "</pre>";
+      document.getElementById("icmiTerminal").innerHTML = "<pre>" + text + "</pre>";
     }
 
-    document.getElementById("runScriptButton").addEventListener("click", function() {
-      icmiLog("Executing ICMI...\nRELOOP ACTIVE\n-L 8080:192.168.1.10:22\n-D 1080\nDONE.");
-    });
-
-    // ========== IMAGE LOADING + MAGNIFIER (existing logic) ==========
-    var images = [
+    // ========== PRELOADED JETS ==========
+    const preloaded = [
       "https://th.bing.com/th/id/OIP.-fEBb2UCfD_LpHr594PP3AHaEo?pid=ImgDet&rs=1",
       "https://www.slashgear.com/img/gallery/12-of-the-fastest-fighter-jets-in-the-world-ranked/intro-1692580493.jpg",
-      "https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg"
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/F-22_Raptor_edit1.jpg/800px-F-22_Raptor_edit1.jpg" // image 3
     ];
 
-    document.getElementById("loadImagesButton").addEventListener("click", loadImages);
+    document.getElementById("loadImagesButton").addEventListener("click", () => {
+      preloaded.forEach(url => addImageToHexagon(url));
+      icmiLog("PRELOADED JETS ADDED\n3 frames in hexagon");
+    });
 
-    function loadImages() {
-      var imageContainer = document.getElementById("image-response");
-      imageContainer.innerHTML = "";
-      images.forEach(function(image, index) {
-        var imgElement = document.createElement("img");
-        imgElement.src = image;
-        imgElement.alt = "Image " + (index + 1);
-        imgElement.crossOrigin = "anonymous"; // helps with canvas
-        imgElement.style.width = "30%";
-        imgElement.style.margin = "10px";
-        imgElement.setAttribute("id", "image-" + index);
-        imgElement.addEventListener("mousemove", function(e) {
-          magnify(e.target.id, 2, e);
-        });
-        imgElement.addEventListener("mouseleave", removeMagnifier);
-        if (index === 0) {
-          imgElement.addEventListener("mouseover", function() {
-            showMessage("roger roger");
-          });
-        } else if (index === 1) {
-          imgElement.addEventListener("mouseover", function() {
-            showMessage("alpha alpha");
-          });
+    // ========== HEXAGON STORE (C++ concept → JS) ==========
+    // Conceptual C++:
+    // struct ImageFrame { string url; int index; };
+    // class HexagonStore {
+    //   vector<ImageFrame> frames;
+    //   void load(string url);
+    //   void sequence(float secondsPer, float panZoom);
+    // };
+
+    const hexagonStore = []; // array of {url, element}
+
+    const hexZone = document.getElementById("hexagonZone");
+
+    hexZone.addEventListener("dragover", e => { e.preventDefault(); hexZone.classList.add("dragover"); });
+    hexZone.addEventListener("dragleave", () => hexZone.classList.remove("dragover"));
+    hexZone.addEventListener("drop", e => {
+      e.preventDefault();
+      hexZone.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        for (const f of files) {
+          if (f.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = ev => addImageToHexagon(ev.target.result);
+            reader.readAsDataURL(f);
+          }
         }
-        imageContainer.appendChild(imgElement);
-      });
-      icmiLog("IMAGES LOADED\n" + images.length + " frames ready\nfor ACT channel.");
-    }
-
-    function magnify(imgID, zoom, event) {
-      var img = document.getElementById(imgID);
-      var existingGlass = document.querySelector(".magnifier");
-      if (existingGlass) existingGlass.remove();
-      var glass = document.createElement("DIV");
-      glass.setAttribute("class", "magnifier");
-      img.parentElement.insertBefore(glass, img);
-      glass.style.display = "block";
-      glass.style.backgroundImage = "url('" + img.src + "')";
-      glass.style.backgroundRepeat = "no-repeat";
-      glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
-      var w = glass.offsetWidth / 2;
-      var h = glass.offsetHeight / 2;
-
-      function moveMagnifier(e) {
-        e.preventDefault();
-        var pos = getCursorPos(e);
-        var x = pos.x, y = pos.y;
-        if (pos.x < 0 || pos.x > img.width || pos.y < 0 || pos.y > img.height) {
-          glass.style.display = "none";
-          return;
-        }
-        if (x > img.width - (w / zoom)) x = img.width - (w / zoom);
-        if (x < w / zoom) x = w / zoom;
-        if (y > img.height - (h / zoom)) y = img.height - (h / zoom);
-        if (y < h / zoom) y = h / zoom;
-        glass.style.left = (x - w) + "px";
-        glass.style.top = (y - h) + "px";
-        glass.style.backgroundPosition = "-" + ((x * zoom) - w) + "px -" + ((y * zoom) - h) + "px";
+      } else {
+        const url = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text");
+        if (url && url.startsWith("http")) addImageToHexagon(url);
       }
-      function getCursorPos(e) {
-        var a = img.getBoundingClientRect();
-        var x = e.pageX - a.left - window.pageXOffset;
-        var y = e.pageY - a.top - window.pageYOffset;
-        return {x: x, y: y};
+    });
+
+    document.getElementById("urlPaste").addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        const url = e.target.value.trim();
+        if (url) { addImageToHexagon(url); e.target.value = ""; }
       }
-      moveMagnifier(event);
+    });
+
+    function addImageToHexagon(src) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.crossOrigin = "anonymous";
+      img.draggable = false;
+      // clear placeholder text
+      if (hexagonStore.length === 0) hexZone.innerHTML = "";
+      hexZone.appendChild(img);
+      hexagonStore.push({ url: src, element: img });
+      icmiLog("HEXAGON +1\nTotal frames: " + hexagonStore.length);
     }
 
-    function removeMagnifier() {
-      var glass = document.querySelector(".magnifier");
-      if (glass) glass.style.display = "none";
-    }
+    // ========== GOOGLE IMAGES SEARCH ==========
+    document.getElementById("googleSearchBtn").addEventListener("click", () => {
+      const q = document.getElementById("googleQuery").value.trim() || "fighter jets";
+      const url = "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(q);
+      window.open(url, "_blank");
+      icmiLog("GOOGLE IMAGES OPENED\nQuery: " + q + "\nDrag results into hexagon");
+    });
 
-    function showMessage(message) {
-      var messageBox = document.getElementById("message");
-      messageBox.textContent = message;
-      messageBox.style.display = "block";
-      setTimeout(function() { messageBox.style.display = "none"; }, 5000);
-    }
+    // ========== VIDEO SEQUENCE (separate from Randomart) ==========
+    document.getElementById("sequenceBtn").addEventListener("click", generateSequence);
 
-    // ========== GENERATE RANDOMART + VIDEO CHANNEL ==========
-    // Conceptual C++-style ACT activator mapped to JS
-    // struct FrameLogic { float alpha; int index; string overlay; };
-    // void channelVideo(vector<Image> photos) { ... }
-
-    document.getElementById("generateRandomartBtn").addEventListener("click", generateRandomart);
-
-    function generateRandomart() {
-      const key = document.getElementById("sshKeyInput").value.trim() || "default-key";
-      const userText = document.getElementById("userInput").value.trim() || "DreamJump";
-
-      // Simple randomart-style fingerprint visualization
-      let art = "+--[ Randomart for " + key.slice(0, 12) + "... ]--+\n";
-      const chars = " .:-=+*#%@";
-      for (let y = 0; y < 9; y++) {
-        art += "|";
-        for (let x = 0; x < 17; x++) {
-          const seed = (key.charCodeAt((x + y) % key.length) + x * 7 + y * 13) % chars.length;
-          art += chars[seed];
-        }
-        art += "|\n";
-      }
-      art += "+-----------------------------+\nOverlay: " + userText;
-      document.getElementById("randomartOutput").textContent = art;
-
-      icmiLog("RANDOMART GENERATED\nStarting ACT video channel...");
-
-      // Trigger video generation from loaded images
-      generateVideoFromImages(userText);
-    }
-
-    async function generateVideoFromImages(overlayText) {
-      const loadedImgs = document.querySelectorAll("#image-response img");
-      if (loadedImgs.length === 0) {
-        icmiLog("ERROR: Load images first.");
-        showMessage("Load images first");
+    function generateSequence() {
+      if (hexagonStore.length === 0) {
+        showMessage("Hexagon is empty");
+        icmiLog("ERROR: No images in hexagon");
         return;
       }
+      const seconds = parseFloat(document.getElementById("secondsPer").value) || 5;
+      const panZoom = parseInt(document.getElementById("panZoom").value) / 100;
+      startVideoChannel(hexagonStore.map(f => f.element), seconds, panZoom);
+    }
 
+    function startVideoChannel(imgElements, secondsPer, panZoomIntensity) {
       const canvas = document.createElement("canvas");
       canvas.width = 640;
       canvas.height = 360;
       const ctx = canvas.getContext("2d");
+      const fps = 15;
+      const framesPerImage = Math.round(secondsPer * fps);
+      const totalFrames = imgElements.length * framesPerImage;
 
-      const stream = canvas.captureStream(10); // 10 fps
+      const stream = canvas.captureStream(fps);
       const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
       const chunks = [];
-
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: "video/webm" });
         const url = URL.createObjectURL(blob);
-        const video = document.getElementById("videoPreview");
-        video.src = url;
-        video.style.display = "block";
+        const vid = document.getElementById("videoPreview");
+        vid.src = url;
+        vid.style.display = "block";
         const link = document.getElementById("downloadLink");
         link.href = url;
-        link.style.display = "inline-block";
-        icmiLog("VIDEO CHANNEL COMPLETE\nDownload ready.");
-        showMessage("Video ready");
+        link.style.display = "inline";
+        icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s");
+        showMessage("Sequence ready");
       };
 
       recorder.start();
-
-      // Sequence frames (ACT-style channel)
       let frame = 0;
-      const totalFrames = loadedImgs.length * 30; // ~3s per image at 10fps
-      const interval = setInterval(() => {
+      const timer = setInterval(() => {
         if (frame >= totalFrames) {
-          clearInterval(interval);
+          clearInterval(timer);
           recorder.stop();
           return;
         }
+        const imgIndex = Math.floor(frame / framesPerImage);
+        const local = (frame % framesPerImage) / framesPerImage;
+        const img = imgElements[imgIndex];
 
-        const imgIndex = Math.floor(frame / 30) % loadedImgs.length;
-        const img = loadedImgs[imgIndex];
-        const progress = (frame % 30) / 30;
-
-        ctx.fillStyle = "#050505";
+        ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw image with slight zoom/fade
-        const scale = 1 + progress * 0.05;
+        const scale = 1 + local * panZoomIntensity * 0.15;
         const w = canvas.width * scale;
         const h = canvas.height * scale;
-        const x = (canvas.width - w) / 2;
-        const y = (canvas.height - h) / 2;
-        ctx.globalAlpha = 0.3 + progress * 0.7;
-        try {
-          ctx.drawImage(img, x, y, w, h);
-        } catch (err) {
-          // CORS or load failure fallback
-          ctx.fillStyle = "#222";
-          ctx.fillRect(x, y, w, h);
-          ctx.fillStyle = "#fff";
-          ctx.fillText("Image " + (imgIndex + 1), canvas.width/2 - 30, canvas.height/2);
-        }
+        const x = (canvas.width - w) / 2 + Math.sin(local * Math.PI) * panZoomIntensity * 30;
+        const y = (canvas.height - h) / 2 + Math.cos(local * Math.PI) * panZoomIntensity * 20;
+
+        ctx.globalAlpha = 0.4 + local * 0.6;
+        try { ctx.drawImage(img, x, y, w, h); } catch(e) { /* CORS fallback */ }
         ctx.globalAlpha = 1;
 
-        // Overlay text
         ctx.fillStyle = "#00ffea";
-        ctx.font = "20px Courier New";
-        ctx.fillText(overlayText, 20, 40);
-        ctx.fillText("Frame " + frame + " / ACT", 20, canvas.height - 20);
+        ctx.font = "16px Courier New";
+        ctx.fillText("Photo " + (imgIndex + 1) + " / " + imgElements.length, 16, 28);
+        ctx.fillText((local * secondsPer).toFixed(1) + "s", 16, canvas.height - 16);
 
         frame++;
-      }, 100);
+      }, 1000 / fps);
 
-      icmiLog("ACT ACTIVATOR RUNNING\nChannelling " + loadedImgs.length + " photos\ninto video stream...");
+      icmiLog("ACT VIDEO CHANNEL ACTIVE\n" + imgElements.length + " frames\n" + secondsPer + "s each");
+    }
+
+    // ========== IMMERSE ==========
+    document.getElementById("immerseBtn").addEventListener("click", () => {
+      const vid = document.getElementById("videoPreview");
+      if (vid.requestFullscreen) vid.requestFullscreen();
+      else if (vid.webkitRequestFullscreen) vid.webkitRequestFullscreen();
+    });
+
+    // ========== SEPARATE RANDOMART CHANNEL ==========
+    document.getElementById("randomartOnlyBtn").addEventListener("click", () => {
+      const key = document.getElementById("sshKeyInput").value.trim() || "default";
+      let art = "+--[ Randomart ]--+\n";
+      const chars = " .:-=+*#%@";
+      for (let y = 0; y < 9; y++) {
+        art += "|";
+        for (let x = 0; x < 17; x++) {
+          const idx = (key.charCodeAt((x + y * 3) % key.length) + x * 5 + y * 11) % chars.length;
+          art += chars[idx];
+        }
+        art += "|\n";
+      }
+      art += "+------------------+\n";
+      document.getElementById("randomartOutput").textContent = art;
+      icmiLog("RANDOMART GENERATED\n(separate from video channel)");
+    });
+
+    function showMessage(msg) {
+      const box = document.getElementById("message");
+      box.textContent = msg;
+      box.style.display = "block";
+      setTimeout(() => box.style.display = "none", 3000);
     }
   </script>
 </body>
