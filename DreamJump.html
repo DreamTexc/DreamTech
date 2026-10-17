@@ -43,10 +43,38 @@
       cursor: pointer;
       pointer-events: auto;
     }
+    .video-wrapper:fullscreen .gif-overlay,
+    .video-wrapper:-webkit-full-screen .gif-overlay {
+      width: 200px !important;
+      height: 150px !important;
+    }
+    #dollarBtn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 30;
+      background: transparent;
+      border: 1px solid rgba(0,255,234,0.4);
+      color: #00ffea;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: none;
+    }
+    #dollarBtn:hover { background: rgba(0,255,234,0.15); }
+    .special-overlay {
+      position: absolute;
+      z-index: 25;
+      cursor: move;
+      pointer-events: auto;
+      user-select: none;
+    }
     #downloadLink { display: none; margin: 10px; color: #00ffea; }
     button { background: #222; color: #00ffea; border: 1px solid #00ffea; padding: 6px 12px; cursor: pointer; }
     input, select { background: #222; color: #fff; border: 1px solid #555; padding: 6px; }
-    .gif-controls { margin: 10px 0; padding: 10px; background: #1a1a1a; border: 1px solid #444; max-width: 520px; }
+    .gif-controls, .special-controls { margin: 10px 0; padding: 10px; background: #1a1a1a; border: 1px solid #444; max-width: 520px; }
     .pos-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; font-size: 13px; }
   </style>
 </head>
@@ -83,7 +111,18 @@ Awaiting RELOOP commands...</pre></div>
         Top % <input type="number" id="gifTop2" value="30" min="0" max="90" style="width:55px">
       </div>
       <div style="font-size:12px; color:#aaa; margin-top:6px;">
-        Set Left % and Top % now. When the video starts the GIFs appear at those exact spots on top of the sequence. Double-click a GIF to dismiss it — the video underneath keeps playing normally.
+        Set Left % and Top % now. GIFs appear at those spots on the sequence. Double-click a GIF to dismiss it.
+      </div>
+    </div>
+    <div class="special-controls">
+      <strong>Special $ Image (GIF or still) — starting position</strong><br>
+      <input type="text" id="specialUrl" placeholder="Special image / GIF URL" style="width:200px">
+      <div class="pos-row">
+        Left % <input type="number" id="specialLeft" value="30" min="0" max="90" style="width:55px">
+        Top % <input type="number" id="specialTop" value="40" min="0" max="90" style="width:55px">
+      </div>
+      <div style="font-size:12px; color:#aaa; margin-top:6px;">
+        This image appears when you click the $ button on the playing video. After that you can drag and scroll-zoom it freely.
       </div>
     </div>
     <div class="option">
@@ -110,6 +149,7 @@ Awaiting RELOOP commands...</pre></div>
     </div>
     <div class="video-wrapper" id="videoWrapper">
       <video id="videoPreview" controls></video>
+      <button id="dollarBtn">$</button>
     </div>
     <a id="downloadLink" download="dreamjump-sequence.webm">Download Sequence Video</a>
     <div id="message" class="message"></div>
@@ -193,6 +233,7 @@ Awaiting RELOOP commands...</pre></div>
         vid.style.display = "block";
         document.getElementById("downloadLink").href = url;
         document.getElementById("downloadLink").style.display = "inline";
+        document.getElementById("dollarBtn").style.display = "block";
         vid.addEventListener("loadeddata", () => {
           attachGifOverlays(gifs);
         }, { once: true });
@@ -250,6 +291,70 @@ Awaiting RELOOP commands...</pre></div>
         wrapper.appendChild(img);
       });
       wrapper.offsetHeight;
+    }
+
+    // Special $ image
+    let specialEl = null;
+    document.getElementById("dollarBtn").addEventListener("click", () => {
+      const url = document.getElementById("specialUrl").value.trim();
+      if (!url) {
+        showMessage("No special image URL set");
+        return;
+      }
+      if (specialEl) specialEl.remove();
+      const img = document.createElement("img");
+      img.src = url;
+      img.className = "special-overlay";
+      img.style.width = "160px";
+      img.style.height = "120px";
+      img.style.left = document.getElementById("specialLeft").value + "%";
+      img.style.top = document.getElementById("specialTop").value + "%";
+      img.title = "Drag to move · Scroll to zoom · Double-click to remove";
+      makeDraggableAndZoomable(img);
+      document.getElementById("videoWrapper").appendChild(img);
+      specialEl = img;
+      icmiLog("SPECIAL $ IMAGE LOADED");
+    });
+
+    function makeDraggableAndZoomable(el) {
+      let isDragging = false;
+      let startX, startY, startLeft, startTop;
+      el.addEventListener("mousedown", e => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseFloat(el.style.left) || 0;
+        startTop = parseFloat(el.style.top) || 0;
+        el.style.cursor = "grabbing";
+      });
+      document.addEventListener("mousemove", e => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const wrapper = document.getElementById("videoWrapper");
+        const rect = wrapper.getBoundingClientRect();
+        const newLeft = startLeft + (dx / rect.width) * 100;
+        const newTop = startTop + (dy / rect.height) * 100;
+        el.style.left = Math.max(0, Math.min(90, newLeft)) + "%";
+        el.style.top = Math.max(0, Math.min(90, newTop)) + "%";
+      });
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+        el.style.cursor = "move";
+      });
+      el.addEventListener("wheel", e => {
+        e.preventDefault();
+        const currentW = parseFloat(el.style.width) || 160;
+        const currentH = parseFloat(el.style.height) || 120;
+        const factor = e.deltaY > 0 ? 0.9 : 1.1;
+        el.style.width = Math.max(40, Math.min(400, currentW * factor)) + "px";
+        el.style.height = Math.max(30, Math.min(300, currentH * factor)) + "px";
+      });
+      el.addEventListener("dblclick", () => {
+        el.remove();
+        if (specialEl === el) specialEl = null;
+        icmiLog("SPECIAL IMAGE REMOVED");
+      });
     }
 
     // Intercept native video fullscreen so GIFs stay visible
