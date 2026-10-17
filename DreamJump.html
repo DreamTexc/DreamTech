@@ -9,40 +9,31 @@
     body { font-family: Arial, sans-serif; background: #111; color: #eee; }
     .container { width: 95%; margin: auto; padding: 20px; }
     .option { margin: 12px 0; }
-    .image-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-    .image-container img, .download-image { width: 140px; height: 100px; object-fit: cover; border: 2px solid #444; border-radius: 6px; }
+    .download-image { width: 140px; height: 100px; object-fit: cover; border: 2px solid #444; border-radius: 6px; }
     .message { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 5px; display: none; z-index: 999; }
     .icmi-overlay { position: relative; width: 380px; display: inline-block; vertical-align: top; margin-left: 20px; }
     .icmi-code { position: absolute; top: 16px; left: 20px; width: 340px; background: rgba(0,0,0,.7); color: #00ffea; padding: 8px; font: 13px "Courier New", monospace; border-radius: 4px; white-space: pre-wrap; }
     .parallelogram { transform: skew(-15deg); background: #fff; color: #000; border: 2px solid #000; padding: 16px; display: inline-block; margin-top: 16px; }
     .parallelogram-content { transform: skew(15deg); }
-    .bottom-chart {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    .demo-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: flex-start;
-      max-width: 480px;
-    }
-    .demo-strip img {
-      width: 80px;
-      height: 60px;
-      object-fit: cover;
-      border: 1px solid #555;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+    .bottom-chart { display: flex; align-items: flex-start; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+    .demo-strip { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; max-width: 480px; }
+    .demo-strip img { width: 80px; height: 60px; object-fit: cover; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
     .search-panel { border: 1px solid #444; padding: 12px; margin: 12px 0; background: #1a1a1a; max-width: 420px; display: inline-block; vertical-align: top; }
-    #videoPreview { max-width: 640px; margin-top: 12px; display: none; }
+    #videoPreview { max-width: 640px; margin-top: 12px; display: none; position: relative; z-index: 1; }
+    .video-wrapper { position: relative; display: inline-block; }
+    .gif-overlay {
+      position: absolute;
+      z-index: 10;
+      cursor: pointer;
+      border: 2px solid #00ffea;
+      box-shadow: 0 0 8px rgba(0,255,234,0.6);
+      pointer-events: auto;
+    }
     #downloadLink { display: none; margin: 10px; color: #00ffea; }
     button { background: #222; color: #00ffea; border: 1px solid #00ffea; padding: 6px 12px; cursor: pointer; }
-    input { background: #222; color: #fff; border: 1px solid #555; padding: 6px; }
+    input, select { background: #222; color: #fff; border: 1px solid #555; padding: 6px; }
+    .gif-controls { margin: 10px 0; padding: 10px; background: #1a1a1a; border: 1px solid #444; max-width: 520px; }
+    .pos-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -66,13 +57,28 @@ Awaiting RELOOP commands...</pre></div>
       <strong>Google Image Search</strong><br>
       <input type="text" id="googleQuery" placeholder="search jets, aircraft, etc." style="width:70%">
       <button id="googleSearchBtn" nonce="abc123">Search Images</button>
-      <div style="font-size:12px; margin-top:6px; color:#aaa;">
-        Opens real Google Images in a new tab. Paste URLs below to add demos.
+      <div style="font-size:12px; margin-top:6px; color:#aaa;">Opens real Google Images in a new tab. Paste URLs below to add demos.</div>
+    </div>
+
+    <div class="gif-controls">
+      <strong>GIF Overlay (1–2) — pre-set position before video starts</strong><br>
+      <input type="text" id="gifUrl1" placeholder="GIF URL 1" style="width:200px">
+      <div class="pos-row">
+        Left % <input type="number" id="gifLeft1" value="20" min="0" max="90" style="width:55px">
+        Top % <input type="number" id="gifTop1" value="25" min="0" max="90" style="width:55px">
+      </div>
+      <input type="text" id="gifUrl2" placeholder="GIF URL 2 (optional)" style="width:200px; margin-top:8px">
+      <div class="pos-row">
+        Left % <input type="number" id="gifLeft2" value="55" min="0" max="90" style="width:55px">
+        Top % <input type="number" id="gifTop2" value="30" min="0" max="90" style="width:55px">
+      </div>
+      <div style="font-size:12px; color:#aaa; margin-top:6px;">
+        Set Left % and Top % now. When the video starts the GIFs appear at those exact spots on top of the sequence. Double-click a GIF to dismiss it — the video underneath keeps playing normally.
       </div>
     </div>
 
     <div class="option">
-      <input type="text" id="urlPaste" placeholder="paste image URL then press Enter" style="width:280px">
+      <input type="text" id="urlPaste" placeholder="paste regular image URL then press Enter" style="width:280px">
     </div>
 
     <div class="option">
@@ -91,7 +97,6 @@ Awaiting RELOOP commands...</pre></div>
       <button id="randomartOnlyBtn" nonce="abc123">Generate Randomart (separate)</button>
     </div>
 
-    <!-- Bottom chart line: demos next to white polygram -->
     <div class="bottom-chart">
       <div class="demo-strip" id="demoStrip"></div>
       <div class="parallelogram">
@@ -99,9 +104,10 @@ Awaiting RELOOP commands...</pre></div>
       </div>
     </div>
 
-    <video id="videoPreview" controls></video>
+    <div class="video-wrapper" id="videoWrapper">
+      <video id="videoPreview" controls></video>
+    </div>
     <a id="downloadLink" download="dreamjump-sequence.webm">Download Sequence Video</a>
-
     <div id="message" class="message"></div>
   </div>
 
@@ -137,9 +143,8 @@ Awaiting RELOOP commands...</pre></div>
 
     document.getElementById("googleSearchBtn").addEventListener("click", () => {
       const q = document.getElementById("googleQuery").value.trim() || "fighter jets";
-      const url = "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(q);
-      window.open(url, "_blank");
-      icmiLog("GOOGLE IMAGES OPENED\nQuery: " + q + "\nPaste URLs to add demos");
+      window.open("https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(q), "_blank");
+      icmiLog("GOOGLE IMAGES OPENED\nQuery: " + q);
     });
 
     document.getElementById("sequenceBtn").addEventListener("click", generateSequence);
@@ -152,10 +157,29 @@ Awaiting RELOOP commands...</pre></div>
       }
       const seconds = parseFloat(document.getElementById("secondsPer").value) || 5;
       const panZoom = parseInt(document.getElementById("panZoom").value) / 100;
-      startVideoChannel(demoStore.map(f => f.element), seconds, panZoom);
+
+      const gifs = [];
+      const g1 = document.getElementById("gifUrl1").value.trim();
+      if (g1) {
+        gifs.push({
+          url: g1,
+          left: document.getElementById("gifLeft1").value + "%",
+          top: document.getElementById("gifTop1").value + "%"
+        });
+      }
+      const g2 = document.getElementById("gifUrl2").value.trim();
+      if (g2) {
+        gifs.push({
+          url: g2,
+          left: document.getElementById("gifLeft2").value + "%",
+          top: document.getElementById("gifTop2").value + "%"
+        });
+      }
+
+      startVideoChannel(demoStore.map(f => f.element), seconds, panZoom, gifs);
     }
 
-    function startVideoChannel(imgElements, secondsPer, panZoomIntensity) {
+    function startVideoChannel(imgElements, secondsPer, panZoomIntensity, gifs) {
       const canvas = document.createElement("canvas");
       canvas.width = 640;
       canvas.height = 360;
@@ -174,11 +198,13 @@ Awaiting RELOOP commands...</pre></div>
         const vid = document.getElementById("videoPreview");
         vid.src = url;
         vid.style.display = "block";
-        const link = document.getElementById("downloadLink");
-        link.href = url;
-        link.style.display = "inline";
-        icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s");
-        showMessage("Sequence ready");
+        document.getElementById("downloadLink").href = url;
+        document.getElementById("downloadLink").style.display = "inline";
+
+        attachGifOverlays(gifs);
+
+        icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s\nGIF positions applied");
+        showMessage("Sequence ready — double-click GIFs to remove");
       };
 
       recorder.start();
@@ -189,9 +215,10 @@ Awaiting RELOOP commands...</pre></div>
           recorder.stop();
           return;
         }
+
         const imgIndex = Math.floor(frame / framesPerImage);
         const local = (frame % framesPerImage) / framesPerImage;
-        const img = imgElements[imgIndex];
+        const baseImg = imgElements[imgIndex];
 
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -203,7 +230,7 @@ Awaiting RELOOP commands...</pre></div>
         const y = (canvas.height - h) / 2 + Math.cos(local * Math.PI) * panZoomIntensity * 20;
 
         ctx.globalAlpha = 0.4 + local * 0.6;
-        try { ctx.drawImage(img, x, y, w, h); } catch(e) {}
+        try { ctx.drawImage(baseImg, x, y, w, h); } catch(e) {}
         ctx.globalAlpha = 1;
 
         ctx.fillStyle = "#00ffea";
@@ -214,7 +241,28 @@ Awaiting RELOOP commands...</pre></div>
         frame++;
       }, 1000 / fps);
 
-      icmiLog("ACT VIDEO CHANNEL ACTIVE\n" + imgElements.length + " frames\n" + secondsPer + "s each");
+      icmiLog("ACT VIDEO CHANNEL ACTIVE\n" + imgElements.length + " frames");
+    }
+
+    function attachGifOverlays(gifs) {
+      const wrapper = document.getElementById("videoWrapper");
+      wrapper.querySelectorAll(".gif-overlay").forEach(el => el.remove());
+
+      gifs.forEach(g => {
+        const img = document.createElement("img");
+        img.src = g.url;
+        img.className = "gif-overlay";
+        img.style.width = "120px";
+        img.style.height = "90px";
+        img.style.left = g.left;
+        img.style.top = g.top;
+        img.title = "Double-click to dismiss GIF";
+        img.addEventListener("dblclick", () => {
+          img.remove();
+          icmiLog("GIF DISMISSED\nOverlay removed — sequence continues normally");
+        });
+        wrapper.appendChild(img);
+      });
     }
 
     document.getElementById("immerseBtn").addEventListener("click", () => {
@@ -237,7 +285,7 @@ Awaiting RELOOP commands...</pre></div>
       }
       art += "+------------------+\n";
       document.getElementById("randomartOutput").textContent = art;
-      icmiLog("RANDOMART GENERATED\n(separate from video channel)");
+      icmiLog("RANDOMART GENERATED");
     });
 
     function showMessage(msg) {
