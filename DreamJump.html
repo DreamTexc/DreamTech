@@ -25,8 +25,6 @@
       position: absolute;
       z-index: 10;
       cursor: pointer;
-      border: 2px solid #00ffea;
-      box-shadow: 0 0 8px rgba(0,255,234,0.6);
       pointer-events: auto;
     }
     #downloadLink { display: none; margin: 10px; color: #00ffea; }
@@ -201,7 +199,7 @@ Awaiting RELOOP commands...</pre></div>
         document.getElementById("downloadLink").href = url;
         document.getElementById("downloadLink").style.display = "inline";
 
-        attachGifOverlays(gifs);
+        setTimeout(() => attachGifOverlays(gifs), 100);
 
         icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s\nGIF positions applied");
         showMessage("Sequence ready — double-click GIFs to remove");
@@ -257,9 +255,11 @@ Awaiting RELOOP commands...</pre></div>
         img.style.left = g.left;
         img.style.top = g.top;
         img.title = "Double-click to dismiss GIF";
+        img.onload = () => icmiLog("GIF LOADED: " + g.url);
+        img.onerror = () => icmiLog("GIF FAILED TO LOAD: " + g.url);
         img.addEventListener("dblclick", () => {
           img.remove();
-          icmiLog("GIF DISMISSED\nOverlay removed — sequence continues normally");
+          icmiLog("GIF DISMISSED");
         });
         wrapper.appendChild(img);
       });
