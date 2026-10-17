@@ -1,754 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DreamTech • Wikipedia Mode</title>
-
-    <style>
-        :root {
-            --bg: #000000;
-            --surface: #111111;
-            --border: #333333;
-            --text: #ffffff;
-            --muted: #aaaaaa;
-            --accent: #ffffff;
-            --accent-hover: #dddddd;
-            --success: #ffffff;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* ========== COMPACT SPECIFIER SIDEBAR ========== */
-        #specifierArea {
-            width: 210px;
-            min-width: 190px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-        }
-
-        #specifierArea label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        #specifierInput {
-            width: 100%;
-            padding: 9px 12px;
-            font-size: 0.9rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-        }
-
-        #specifierInput:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        #constructorSelect {
-            width: 100%;
-            padding: 9px 12px;
-            font-size: 0.9rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            display: none;
-        }
-
-        /* Main content */
-        main {
-            flex: 1;
-            padding: 32px 40px;
-            max-width: 1100px;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.02em;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            margin-bottom: 28px;
-            font-size: 0.95rem;
-        }
-
-        /* Buttons */
-        .btn-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 10px 18px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        #loadTable {
-            background: var(--accent);
-            color: #000000;
-        }
-        #loadTable:hover { 
-            background: var(--accent-hover); 
-        }
-
-        .btn-secondary {
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .btn-secondary:hover {
-            background: #1a1a1a;
-        }
-
-        /* Selection feedback */
-        #selectionOutput {
-            min-height: 24px;
-            font-size: 0.9rem;
-            color: var(--muted);
-            margin-bottom: 20px;
-        }
-
-        /* Google Search Box */
-        .search-container {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 28px 0 36px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        #google-search {
-            flex: 1;
-            min-width: 260px;
-            padding: 12px 16px;
-            font-size: 1rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-        }
-
-        #google-search:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .search-btn {
-            background: var(--success);
-            color: #000000;
-            padding: 12px 22px;
-        }
-        .search-btn:hover {
-            background: var(--accent-hover);
-        }
-
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--surface);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        th, td {
-            padding: 14px 18px;
-            text-align: left;
-            vertical-align: top;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: #000000;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--muted);
-        }
-
-        /* Nice 13-word list */
-        .mode-list {
-            margin: 0;
-            padding-left: 20px;
-            columns: 2;
-            column-gap: 40px;
-        }
-
-        .mode-list li {
-            margin-bottom: 6px;
-            break-inside: avoid;
-            cursor: pointer;
-            padding: 2px 0;
-            border-radius: 4px;
-            transition: background 0.15s;
-        }
-
-        .mode-list li:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Dream animations (grayscale) */
-        .dream-reveal {
-            opacity: 0;
-            transform: translateY(20px);
-            filter: blur(6px);
-            transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
-        }
-        .dream-reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-        }
-
-        .dream-particles { position: relative; }
-        .dream-particles::before,
-        .dream-particles::after {
-            content: "";
-            position: absolute;
-            width: 6px; height: 6px;
-            background: rgba(200,200,200,0.7);
-            border-radius: 50%;
-            animation: drift 4s infinite ease-in-out;
-        }
-        .dream-particles::after {
-            width: 4px; height: 4px;
-            animation-duration: 5.5s;
-            background: rgba(230,230,230,0.8);
-        }
-        @keyframes drift {
-            0%   { transform: translate(0,0); opacity: 0.8; }
-            50%  { transform: translate(25px,-20px); opacity: 0.4; }
-            100% { transform: translate(-10px,10px); opacity: 0.9; }
-        }
-
-        .dream-circle {
-            width: 220px; height: 220px;
-            border-radius: 50%;
-            margin: 32px auto;
-            box-shadow: 0 0 25px rgba(180,180,180,0.6);
-            transform: scale(0.8);
-            opacity: 0;
-            filter: blur(8px);
-            transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        .dream-circle.active {
-            opacity: 1;
-            transform: scale(1);
-            filter: blur(0);
-        }
-        .dream-circle img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            transform: translateX(12px);
-            filter: grayscale(100%);
-        }
-
-        .dream-limbs {
-            position: absolute;
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 90px; height: 220px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            pointer-events: none;
-        }
-        .limb {
-            position: relative;
-            width: 90px; height: 18px;
-            transform-origin: left center;
-        }
-        .limb::before {
-            content: "";
-            position: absolute;
-            left: 0; top: 8px;
-            width: 90px; height: 3px;
-            background: linear-gradient(90deg, #bbb, #888);
-            box-shadow: 0 0 4px rgba(180,180,180,0.6);
-        }
-        .limb .diag1, .limb .diag2 {
-            position: absolute;
-            left: 0; width: 90px; height: 2px;
-            background: #999;
-            transform-origin: left center;
-        }
-        .limb .diag1 { top: 3px; transform: rotate(12deg); }
-        .limb .diag2 { top: 13px; transform: rotate(-12deg); }
-        .limb .node {
-            position: absolute;
-            width: 10px; height: 10px;
-            background: #ddd;
-            border: 1px solid #aaa;
-            border-radius: 50%;
-            box-shadow: 0 0 6px rgba(200,200,200,0.8);
-            top: 4px;
-        }
-        .limb .node:nth-child(1) { left: -2px; }
-        .limb .node:nth-child(2) { left: 38px; }
-        .limb .node:nth-child(3) { left: 78px; }
-        .limb:nth-child(1) { transform: rotate(18deg); }
-        .limb:nth-child(2) { transform: rotate(6deg); }
-        .limb:nth-child(3) { transform: rotate(-6deg); }
-
-        /* Mobile */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            #specifierArea {
-                width: 100%;
-                height: auto;
-                position: relative;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 12px;
-                padding: 16px;
-            }
-            #specifierArea label { width: 100%; }
-            #specifierInput, #constructorSelect { flex: 1; min-width: 140px; }
-            main { padding: 24px 16px; }
-            .mode-list { columns: 1; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DreamTech • Wikipedia Mode</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #111111;
+      --border: #333333;
+      --text: #ffffff;
+      --muted: #aaaaaa;
+      --accent: #ffffff;
+      --accent-hover: #dddddd;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      user-select: none; /* prevent page-wide selection */
+    }
+    #specifierArea {
+      width: 210px;
+      min-width: 190px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    #specifierArea label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    #specifierInput, #constructorSelect {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 0.9rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+    }
+    #specifierInput:focus, #constructorSelect:focus { outline: none; border-color: var(--accent); }
+    #constructorSelect { display: none; }
+    main {
+      flex: 1;
+      padding: 32px 40px;
+      max-width: 1100px;
+    }
+    h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); margin-bottom: 28px; font-size: 0.95rem; }
+    .btn-row { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+    button {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #loadTable { background: var(--accent); color: #000; }
+    #loadTable:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    #selectionOutput {
+      min-height: 24px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .search-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 28px 0 36px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    #google-search {
+      flex: 1;
+      min-width: 260px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+    }
+    .search-btn { background: #fff; color: #000; padding: 12px 22px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    th, td { padding: 14px 18px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+    th { background: #000; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--muted); }
+    .mode-list {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 40px;
+    }
+    .mode-list li {
+      margin-bottom: 6px;
+      break-inside: avoid;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 4px;
+      user-select: text; /* only these are selectable */
+    }
+    .mode-list li:hover { background: rgba(255,255,255,0.1); }
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      #specifierArea { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
+      #specifierArea label { width: 100%; }
+      #specifierInput, #constructorSelect { flex: 1; min-width: 140px; }
+      main { padding: 24px 16px; }
+      .mode-list { columns: 1; }
+    }
+  </style>
 </head>
 <body>
-
-    <!-- Compact Specifier Sidebar -->
-    <aside id="specifierArea">
-        <label>Specifier</label>
-        <input type="text" id="specifierInput" placeholder='Type "007" then Enter'>
-        
-        <select id="constructorSelect">
-            <option value="">— select constructor —</option>
-        </select>
-    </aside>
-
-    <main>
-        <h1>DreamTech</h1>
-        <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Double-click any word</p>
-
-        <div class="btn-row">
-            <button id="loadTable">Load Table</button>
-            <button class="btn-secondary" onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
-        </div>
-
-        <div id="selectionOutput"></div>
-
-        <!-- Google Search Box -->
-        <div class="search-container">
-            <input type="text" id="google-search" 
-                   placeholder="Superhero will appear first + selected Wikipedia title">
-            <button class="search-btn" onclick="doGoogleSearch()">Search Google</button>
-        </div>
-
-        <div id="tableContainer"></div>
-        <div id="imageCircleContainer"></div>
-    </main>
-
-    <script>
-        // ========== Single Image On-Page Window (Wikipedia Image) ==========
-        window.singleGif = {
-            panel: null,
-
-            async show(selected, hero) {
-                if (!selected || selected.length < 2) return;
-
-                if (this.panel) this.panel.remove();
-
-                this.panel = document.createElement("div");
-                this.panel.id = "singleGifPanel";
-                this.panel.style.cssText = `
-                    position: fixed;
-                    top: 90px;
-                    right: 24px;
-                    z-index: 9999;
-                    width: 300px;
-                    background: #111;
-                    border: 1px solid #333;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-                    color: #fff;
-                    font-family: system-ui, sans-serif;
-                    overflow: hidden;
-                `;
-
-                // Title bar
-                const title = document.createElement("div");
-                title.style.cssText = `
-                    background: #000;
-                    padding: 10px 14px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    border-bottom: 1px solid #333;
-                    font-size: 0.85rem;
-                `;
-                title.innerHTML = `
-                    <span style="color:#aaa">${hero} • ${selected}</span>
-                    <span id="closeSingleGif" style="cursor:pointer;color:#fff;font-size:1.1rem;line-height:1">✕</span>
-                `;
-                this.panel.appendChild(title);
-
-                // Loading state
-                const loading = document.createElement("div");
-                loading.style.cssText = `
-                    height: 220px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #888;
-                    font-size: 0.9rem;
-                    background: #1a1a1a;
-                `;
-                loading.textContent = "Loading Wikipedia image…";
-                this.panel.appendChild(loading);
-
-                document.body.appendChild(this.panel);
-
-                // Close button
-                document.getElementById("closeSingleGif").onclick = () => {
-                    this.panel.remove();
-                    this.panel = null;
-                };
-
-                // Fetch real Wikipedia image
-                const imageUrl = await getWikipediaImage(selected);
-
-                // Remove loading text
-                loading.remove();
-
-                if (imageUrl) {
-                    const img = document.createElement("img");
-                    img.style.cssText = `
-                        width: 100%;
-                        height: 220px;
-                        object-fit: cover;
-                        display: block;
-                        background: #222;
-                    `;
-                    img.alt = selected;
-                    img.src = imageUrl;
-                    this.panel.appendChild(img);
-                } else {
-                    const noImg = document.createElement("div");
-                    noImg.style.cssText = `
-                        height: 220px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: #666;
-                        font-size: 0.9rem;
-                        background: #1a1a1a;
-                        text-align: center;
-                        padding: 20px;
-                    `;
-                    noImg.textContent = "No image found for this Wikipedia page";
-                    this.panel.appendChild(noImg);
-                }
-            }
-        };
-
-        // Helper: Get main image from Wikipedia page
-        async function getWikipediaImage(title) {
-            try {
-                const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-
-                // Prefer original image, fallback to thumbnail
-                if (data.originalimage && data.originalimage.source) {
-                    return data.originalimage.source;
-                }
-                if (data.thumbnail && data.thumbnail.source) {
-                    return data.thumbnail.source;
-                }
-                return null;
-            } catch (err) {
-                console.error("Wikipedia image fetch failed:", err);
-                return null;
-            }
+  <aside id="specifierArea">
+    <label>Specifier</label>
+    <input type="text" id="specifierInput" placeholder='Type "007" then Enter'>
+    <select id="constructorSelect">
+      <option value="">— select constructor —</option>
+    </select>
+  </aside>
+  <main>
+    <h1>DreamTech</h1>
+    <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Select any word</p>
+    <div class="btn-row">
+      <button id="loadTable">Load Table</button>
+      <button class="btn-secondary" onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
+    </div>
+    <div id="selectionOutput"></div>
+    <div class="search-container">
+      <input type="text" id="google-search" placeholder="Superhero will appear first + selected Wikipedia title">
+      <button class="search-btn" onclick="doGoogleSearch()">Search Google</button>
+    </div>
+    <div id="tableContainer"></div>
+    <div id="imageCircleContainer"></div>
+  </main>
+  <script>
+    window.singleGif = {
+      panel: null,
+      async show(selected, hero) {
+        if (!selected || selected.length < 2) return;
+        if (this.panel) this.panel.remove();
+        this.panel = document.createElement("div");
+        this.panel.id = "singleGifPanel";
+        this.panel.style.cssText = `
+          position: fixed; top: 90px; right: 24px; z-index: 9999; width: 300px;
+          background: #111; border: 1px solid #333; border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.6); color: #fff; overflow: hidden;
+        `;
+        const title = document.createElement("div");
+        title.style.cssText = `
+          background: #000; padding: 10px 14px; display: flex;
+          justify-content: space-between; align-items: center; border-bottom: 1px solid #333; font-size: 0.85rem;
+        `;
+        title.innerHTML = `<span style="color:#aaa">${hero} • ${selected}</span><span id="closeSingleGif" style="cursor:pointer;color:#fff;font-size:1.1rem">✕</span>`;
+        this.panel.appendChild(title);
+        const loading = document.createElement("div");
+        loading.style.cssText = "height:220px;display:flex;align-items:center;justify-content:center;color:#888;background:#1a1a1a;";
+        loading.textContent = "Loading Wikipedia image…";
+        this.panel.appendChild(loading);
+        document.body.appendChild(this.panel);
+        document.getElementById("closeSingleGif").onclick = () => { this.panel.remove(); this.panel = null; };
+        const imageUrl = await getWikipediaImage(selected);
+        loading.remove();
+        if (imageUrl) {
+          const img = document.createElement("img");
+          img.style.cssText = "width:100%;height:220px;object-fit:cover;display:block;background:#222;";
+          img.alt = selected;
+          img.src = imageUrl;
+          this.panel.appendChild(img);
+        } else {
+          const noImg = document.createElement("div");
+          noImg.style.cssText = "height:220px;display:flex;align-items:center;justify-content:center;color:#666;background:#1a1a1a;text-align:center;padding:20px;";
+          noImg.textContent = "No image found for this Wikipedia page";
+          this.panel.appendChild(noImg);
         }
-
-        // ========== Selection Wrapper ==========
-        class SelectionWrapper {
-            constructor() {
-                this.lastSelection = "";
-            }
-            update() {
-                const sel = document.getSelection().toString().trim();
-                if (sel && sel !== this.lastSelection) {
-                    this.lastSelection = sel;
-                    this.onSelection(sel);
-                }
-            }
-            onSelection(text) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount) return;
-
-                const node = selection.getRangeAt(0).commonAncestorContainer;
-                const li = node.nodeType === 3 ? node.parentElement : node;
-                
-                if (!li || li.tagName !== "LI" || !li.closest(".mode-list")) return;
-
-                const hero = document.getElementById("constructorSelect").value;
-
-                if (!hero) {
-                    document.getElementById("selectionOutput").textContent = 
-                        "⚠️ Please select a Superhero first (type 007)";
-                    return;
-                }
-
-                document.getElementById("google-search").value = `${hero} ${text}`;
-                document.getElementById("selectionOutput").textContent = 
-                    `Selected: "${text}" → ready for Google + Wikipedia image`;
-
-                window.singleGif.show(text, hero);
-            }
+      }
+    };
+    async function getWikipediaImage(title) {
+      try {
+        const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return (data.originalimage && data.originalimage.source) || (data.thumbnail && data.thumbnail.source) || null;
+      } catch (err) { return null; }
+    }
+    class SelectionWrapper {
+      constructor() { this.lastSelection = ""; }
+      update() {
+        const sel = document.getSelection().toString().trim();
+        if (sel && sel !== this.lastSelection) {
+          this.lastSelection = sel;
+          this.onSelection(sel);
         }
-
-        const wrapper = new SelectionWrapper();
-
-        document.addEventListener("selectionchange", () => {
-            const sel = document.getSelection().toString().trim();
-            const out = document.getElementById("selectionOutput");
-            if (sel) {
-                out.textContent = `Selected: "${sel}"`;
-            }
-            wrapper.update();
+      }
+      onSelection(text) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+        const node = selection.getRangeAt(0).commonAncestorContainer;
+        const li = node.nodeType === 3 ? node.parentElement : node;
+        if (!li || li.tagName !== "LI" || !li.closest(".mode-list")) return;
+        const hero = document.getElementById("constructorSelect").value;
+        if (!hero) {
+          document.getElementById("selectionOutput").textContent = "⚠️ Please select a Superhero first (type 007)";
+          return;
+        }
+        document.getElementById("google-search").value = `${hero} ${text}`;
+        document.getElementById("selectionOutput").textContent = `Selected: "${text}" → ready for Google + Wikipedia image`;
+        window.singleGif.show(text, hero);
+      }
+    }
+    const wrapper = new SelectionWrapper();
+    document.addEventListener("selectionchange", () => wrapper.update());
+    document.addEventListener("mouseup", () => wrapper.update());
+    document.addEventListener("touchend", () => wrapper.update());
+    document.getElementById("specifierInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const cmd = this.value.trim();
+        if (cmd === "007") {
+          const select = document.getElementById("constructorSelect");
+          while (select.options.length > 1) select.remove(1);
+          ["007","Batman","Iron Man","He-Man","Superwoman","Superman","Spider-Man","Wonder Woman","Captain America","Hulk","Thor","Wolverine","The Flash","Green Lantern","Black Panther","Aquaman","Doctor Strange","Black Widow"]
+            .forEach(name => {
+              const opt = document.createElement("option");
+              opt.value = name; opt.textContent = name;
+              select.appendChild(opt);
+            });
+          select.style.display = "block";
+          this.value = "";
+          return;
+        }
+        if (cmd) { runSpecifier(cmd); this.value = ""; }
+      }
+    });
+    function runSpecifier(cmd) {
+      if (cmd === "@spawn.polarizer") generatePolarizer();
+    }
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space" && document.activeElement.id !== "specifierInput") {
+        event.preventDefault();
+        runSpecifier("@spawn.polarizer");
+      }
+    });
+    function generatePolarizer() {
+      const container = document.getElementById("tableContainer");
+      const wrap = document.createElement("div");
+      wrap.style.margin = "16px 0";
+      const label = document.createElement("div");
+      label.textContent = "Heliopan Linear Polarizer";
+      label.style.marginBottom = "8px";
+      label.style.color = "var(--muted)";
+      const img = document.createElement("img");
+      img.src = "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7";
+      img.alt = "Heliopan Linear Polarizer";
+      img.style.width = "200px";
+      img.style.borderRadius = "8px";
+      img.style.filter = "grayscale(100%)";
+      wrap.appendChild(label);
+      wrap.appendChild(img);
+      container.appendChild(wrap);
+    }
+    async function getThirteenRandomWikipediaWords() {
+      try {
+        const url = "https://en.wikipedia.org/w/api.php?" + new URLSearchParams({
+          action: "query", list: "random", rnnamespace: "0", rnlimit: "13", format: "json", origin: "*"
         });
-
-        document.addEventListener("mouseup", () => wrapper.update());
-        document.addEventListener("touchend", () => wrapper.update());
-
-        // ========== Specifier logic ==========
-        document.getElementById("specifierInput").addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-                const cmd = this.value.trim();
-
-                if (cmd === "007") {
-                    (function createConstructorList() {
-                        const select = document.getElementById("constructorSelect");
-                        while (select.options.length > 1) select.remove(1);
-
-                        const constructors = [
-                            "007", "Batman", "Iron Man", "He-Man", "Superwoman",
-                            "Superman", "Spider-Man", "Wonder Woman", "Captain America",
-                            "Hulk", "Thor", "Wolverine", "The Flash", "Green Lantern",
-                            "Black Panther", "Aquaman", "Doctor Strange", "Black Widow"
-                        ];
-
-                        constructors.forEach(name => {
-                            const opt = document.createElement("option");
-                            opt.value = name;
-                            opt.textContent = name;
-                            select.appendChild(opt);
-                        });
-
-                        select.style.display = "block";
-                        select.onchange = function () {
-                            if (this.value) {
-                                console.log("Constructor selected:", this.value);
-                            }
-                        };
-                    })();
-                    this.value = "";
-                    return;
-                }
-
-                if (cmd) {
-                    runSpecifier(cmd);
-                    this.value = "";
-                }
-            }
-        });
-
-        function runSpecifier(cmd) {
-            switch (cmd) {
-                case "@spawn.polarizer":
-                    generatePolarizer();
-                    break;
-                default:
-                    console.log("Specifier / constructor received:", cmd);
-            }
-        }
-
-        document.addEventListener("keydown", (event) => {
-            if (event.code === "Space" && document.activeElement.id !== "specifierInput") {
-                event.preventDefault();
-                runSpecifier("@spawn.polarizer");
-            }
-        });
-
-        function generatePolarizer() {
-            const container = document.getElementById("tableContainer");
-            const wrap = document.createElement("div");
-            wrap.style.margin = "16px 0";
-
-            const label = document.createElement("div");
-            label.textContent = "Heliopan Linear Polarizer";
-            label.style.marginBottom = "8px";
-            label.style.color = "var(--muted)";
-
-            const img = document.createElement("img");
-            img.src = "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7";
-            img.alt = "Heliopan Linear Polarizer";
-            img.style.width = "200px";
-            img.style.borderRadius = "8px";
-            img.style.filter = "grayscale(100%)";
-
-            wrap.appendChild(label);
-            wrap.appendChild(img);
-            container.appendChild(wrap);
-        }
-
-        function loadDreamCircleImage(url) {
-            const container = document.getElementById("imageCircleContainer");
-            const circle = document.createElement("div");
-            circle.className = "dream-circle";
-
-            const limbs = document.createElement("div");
-            limbs.className = "dream-limbs";
-
-            for (let i = 0; i < 3; i++) {
-                const limb = document.createElement("div");
-                limb.className = "limb";
-                for (let n = 0; n < 3; n++) {
-                    const node = document.createElement("div");
-                    node.className = "node";
-                    limb.appendChild(node);
-                }
-                const diag1 = document.createElement("div");
-                diag1.className = "diag1";
-                const diag2 = document.createElement("div");
-                diag2.className = "diag2";
-                limb.appendChild(diag1);
-                limb.appendChild(diag2);
-                limbs.appendChild(limb);
-            }
-
-            const img = document.createElement("img");
-            img.src = url;
-            img.alt = "DreamTech Image";
-
-            circle.appendChild(img);
-            circle.appendChild(limbs);
-            container.innerHTML = "";
-            container.appendChild(circle);
-
-            setTimeout(() => circle.classList.add("active"), 50);
-        }
-
-        // ========== Wikipedia 13 random titles ==========
-        async function getThirteenRandomWikipediaWords() {
-            try {
-                const url = "https://en.wikipedia.org/w/api.php?" + new URLSearchParams({
-                    action: "query",
-                    list: "random",
-                    rnnamespace: "0",
-                    rnlimit: "13",
-                    format: "json",
-                    origin: "*"
-                });
-
-                const res = await fetch(url);
-                const data = await res.json();
-                return data.query.random.map(item => item.title);
-            } catch (err) {
-                console.error("Wikipedia fetch failed:", err);
-                return Array.from({length: 13}, (_, i) => `Word ${i + 1}`);
-            }
-        }
-
-        document.getElementById("loadTable").addEventListener("click", async () => {
-            const container = document.getElementById("tableContainer");
-
-            container.classList.add("dream-reveal", "dream-particles");
-            setTimeout(() => container.classList.add("active"), 50);
-
-            container.innerHTML = `
-                <table>
-                    <tr><th>DreamTech</th><th>Value</th></tr>
-                    <tr><td>Specifier</td><td>Polarizer</td></tr>
-                    <tr><td>Mode</td><td>Loading 13 random Wikipedia titles…</td></tr>
-                </table>
-            `;
-
-            const words = await getThirteenRandomWikipediaWords();
-
-            const listHtml = words.map(w => `<li>${w}</li>`).join("");
-
-            container.innerHTML = `
-                <table>
-                    <tr><th>DreamTech</th><th>Value</th></tr>
-                    <tr><td>Specifier</td><td>Polarizer</td></tr>
-                    <tr>
-                        <td>Mode</td>
-                        <td>
-                            <ol class="mode-list">
-                                ${listHtml}
-                            </ol>
-                        </td>
-                    </tr>
-                </table>
-            `;
-
-            loadDreamCircleImage(
-                "https://th.bing.com/th/id/OIP.mTCbpFG-xUdGvY777UJUiQHaEK?w=292&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7"
-            );
-        });
-
-        // Google search action
-        function doGoogleSearch() {
-            const query = document.getElementById("google-search").value.trim();
-            if (!query) return;
-            window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
-        }
-    </script>
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.query.random.map(item => item.title);
+      } catch (err) {
+        return Array.from({length: 13}, (_, i) => `Word ${i + 1}`);
+      }
+    }
+    document.getElementById("loadTable").addEventListener("click", async () => {
+      const container = document.getElementById("tableContainer");
+      container.innerHTML = `<table><tr><th>DreamTech</th><th>Value</th></tr><tr><td>Specifier</td><td>Polarizer</td></tr><tr><td>Mode</td><td>Loading 13 random Wikipedia titles…</td></tr></table>`;
+      const words = await getThirteenRandomWikipediaWords();
+      const listHtml = words.map(w => `<li>${w}</li>`).join("");
+      container.innerHTML = `
+        <table>
+          <tr><th>DreamTech</th><th>Value</th></tr>
+          <tr><td>Specifier</td><td>Polarizer</td></tr>
+          <tr><td>Mode</td><td><ul class="mode-list">${listHtml}</ul></td></tr>
+        </table>
+      `;
+    });
+    function doGoogleSearch() {
+      const q = document.getElementById("google-search").value.trim();
+      if (q) window.open("https://www.google.com/search?q=" + encodeURIComponent(q), "_blank");
+    }
+  </script>
 </body>
 </html>
