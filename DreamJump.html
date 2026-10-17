@@ -20,7 +20,7 @@
     .demo-strip img { width: 80px; height: 60px; object-fit: cover; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
     .search-panel { border: 1px solid #444; padding: 12px; margin: 12px 0; background: #1a1a1a; max-width: 420px; display: inline-block; vertical-align: top; }
     #videoPreview { max-width: 640px; margin-top: 12px; display: none; position: relative; z-index: 1; width: 100%; height: auto; }
-    .video-wrapper { position: relative; display: inline-block; }
+    .video-wrapper { position: relative; display: inline-block; min-width: 640px; min-height: 360px; }
     .video-wrapper:fullscreen,
     .video-wrapper:-webkit-full-screen {
       width: 100vw;
@@ -193,7 +193,11 @@ Awaiting RELOOP commands...</pre></div>
         vid.style.display = "block";
         document.getElementById("downloadLink").href = url;
         document.getElementById("downloadLink").style.display = "inline";
-        setTimeout(() => attachGifOverlays(gifs), 100);
+
+        vid.addEventListener("loadeddata", () => {
+          attachGifOverlays(gifs);
+        }, { once: true });
+
         icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s\nGIF positions applied");
         showMessage("Sequence ready — double-click GIFs to remove");
       };
