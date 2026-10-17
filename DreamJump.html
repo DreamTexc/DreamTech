@@ -249,8 +249,30 @@ Awaiting RELOOP commands...</pre></div>
         });
         wrapper.appendChild(img);
       });
-      wrapper.offsetHeight; // force reflow
+      wrapper.offsetHeight;
     }
+
+    // Intercept native video fullscreen so GIFs stay visible
+    const video = document.getElementById("videoPreview");
+    const wrapper = document.getElementById("videoWrapper");
+    video.addEventListener("fullscreenchange", handleNativeFullscreen);
+    video.addEventListener("webkitfullscreenchange", handleNativeFullscreen);
+    function handleNativeFullscreen() {
+      const fsElement = document.fullscreenElement || document.webkitFullscreenElement;
+      if (fsElement === video) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) {
+          exit.call(document).then(() => {
+            const request = wrapper.requestFullscreen || wrapper.webkitRequestFullscreen;
+            if (request) request.call(wrapper);
+          }).catch(() => {
+            const request = wrapper.requestFullscreen || wrapper.webkitRequestFullscreen;
+            if (request) request.call(wrapper);
+          });
+        }
+      }
+    }
+
     document.getElementById("immerseBtn").addEventListener("click", () => {
       const wrapper = document.getElementById("videoWrapper");
       if (wrapper.requestFullscreen) wrapper.requestFullscreen();
