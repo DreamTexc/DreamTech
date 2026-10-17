@@ -19,8 +19,24 @@
     .demo-strip { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; max-width: 480px; }
     .demo-strip img { width: 80px; height: 60px; object-fit: cover; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
     .search-panel { border: 1px solid #444; padding: 12px; margin: 12px 0; background: #1a1a1a; max-width: 420px; display: inline-block; vertical-align: top; }
-    #videoPreview { max-width: 640px; margin-top: 12px; display: none; position: relative; z-index: 1; }
+    #videoPreview { max-width: 640px; margin-top: 12px; display: none; position: relative; z-index: 1; width: 100%; height: auto; }
     .video-wrapper { position: relative; display: inline-block; }
+    .video-wrapper:fullscreen,
+    .video-wrapper:-webkit-full-screen {
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-wrapper:fullscreen #videoPreview,
+    .video-wrapper:-webkit-full-screen #videoPreview {
+      max-width: none;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
     .gif-overlay {
       position: absolute;
       z-index: 10;
@@ -37,27 +53,23 @@
 <body>
   <div class="container">
     <h1>DreamJump Portal</h1>
-
     <div class="icmi-overlay">
       <img src="too.png" class="icmi-base" alt="ICMI" style="width:100%">
       <div class="icmi-code" id="icmiTerminal"><pre>ICMI TERMINAL ONLINE
 --------------------
 Awaiting RELOOP commands...</pre></div>
     </div>
-
     <div class="option">
       <a href="https://raw.githubusercontent.com/DreamTexc/DreamTech/refs/heads/main/example.txt" download>
         <img src="https://i.pinimg.com/originals/68/29/54/6829547452ad4bb70f4770fc404a17ac.jpg" alt="SpongeBob-style" class="download-image">
       </a>
     </div>
-
     <div class="search-panel">
       <strong>Google Image Search</strong><br>
       <input type="text" id="googleQuery" placeholder="search jets, aircraft, etc." style="width:70%">
       <button id="googleSearchBtn" nonce="abc123">Search Images</button>
       <div style="font-size:12px; margin-top:6px; color:#aaa;">Opens real Google Images in a new tab. Paste URLs below to add demos.</div>
     </div>
-
     <div class="gif-controls">
       <strong>GIF Overlay (1–2) — pre-set position before video starts</strong><br>
       <input type="text" id="gifUrl1" placeholder="GIF URL 1" style="width:200px">
@@ -74,55 +86,45 @@ Awaiting RELOOP commands...</pre></div>
         Set Left % and Top % now. When the video starts the GIFs appear at those exact spots on top of the sequence. Double-click a GIF to dismiss it — the video underneath keeps playing normally.
       </div>
     </div>
-
     <div class="option">
       <input type="text" id="urlPaste" placeholder="paste regular image URL then press Enter" style="width:280px">
     </div>
-
     <div class="option">
       <label>Seconds per photo: <input type="number" id="secondsPer" value="5" min="1" max="30" style="width:60px"></label>
       <label style="margin-left:12px;">Pan/Zoom intensity: <input type="range" id="panZoom" min="0" max="100" value="30"></label>
       <button id="immerseBtn" nonce="abc123">Immerse (Fullscreen)</button>
     </div>
-
     <div class="option">
       <button id="sequenceBtn" nonce="abc123">Load & Sequence Demos → Video</button>
     </div>
-
     <div class="option" style="border-top:1px solid #444; padding-top:12px; margin-top:20px;">
       <label for="sshKeyInput">SSH Key (Randomart only):</label><br>
       <input type="text" id="sshKeyInput" placeholder="ssh-ed25519 AAAA..." style="width:360px">
       <button id="randomartOnlyBtn" nonce="abc123">Generate Randomart (separate)</button>
     </div>
-
     <div class="bottom-chart">
       <div class="demo-strip" id="demoStrip"></div>
       <div class="parallelogram">
         <pre class="parallelogram-content" id="randomartOutput"></pre>
       </div>
     </div>
-
     <div class="video-wrapper" id="videoWrapper">
       <video id="videoPreview" controls></video>
     </div>
     <a id="downloadLink" download="dreamjump-sequence.webm">Download Sequence Video</a>
     <div id="message" class="message"></div>
   </div>
-
   <script nonce="abc123">
     function icmiLog(text) {
       document.getElementById("icmiTerminal").innerHTML = "<pre>" + text + "</pre>";
     }
-
     const demoStore = [];
-
     document.getElementById("urlPaste").addEventListener("keydown", e => {
       if (e.key === "Enter") {
         const url = e.target.value.trim();
         if (url) { addDemoImage(url); e.target.value = ""; }
       }
     });
-
     function addDemoImage(src) {
       const img = document.createElement("img");
       img.src = src;
@@ -138,15 +140,12 @@ Awaiting RELOOP commands...</pre></div>
       demoStore.push({ url: src, element: img });
       icmiLog("DEMO +1\nTotal frames: " + demoStore.length);
     }
-
     document.getElementById("googleSearchBtn").addEventListener("click", () => {
       const q = document.getElementById("googleQuery").value.trim() || "fighter jets";
       window.open("https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(q), "_blank");
       icmiLog("GOOGLE IMAGES OPENED\nQuery: " + q);
     });
-
     document.getElementById("sequenceBtn").addEventListener("click", generateSequence);
-
     function generateSequence() {
       if (demoStore.length === 0) {
         showMessage("No demo images selected");
@@ -155,7 +154,6 @@ Awaiting RELOOP commands...</pre></div>
       }
       const seconds = parseFloat(document.getElementById("secondsPer").value) || 5;
       const panZoom = parseInt(document.getElementById("panZoom").value) / 100;
-
       const gifs = [];
       const g1 = document.getElementById("gifUrl1").value.trim();
       if (g1) {
@@ -173,10 +171,8 @@ Awaiting RELOOP commands...</pre></div>
           top: document.getElementById("gifTop2").value + "%"
         });
       }
-
       startVideoChannel(demoStore.map(f => f.element), seconds, panZoom, gifs);
     }
-
     function startVideoChannel(imgElements, secondsPer, panZoomIntensity, gifs) {
       const canvas = document.createElement("canvas");
       canvas.width = 640;
@@ -185,7 +181,6 @@ Awaiting RELOOP commands...</pre></div>
       const fps = 15;
       const framesPerImage = Math.round(secondsPer * fps);
       const totalFrames = imgElements.length * framesPerImage;
-
       const stream = canvas.captureStream(fps);
       const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
       const chunks = [];
@@ -198,13 +193,10 @@ Awaiting RELOOP commands...</pre></div>
         vid.style.display = "block";
         document.getElementById("downloadLink").href = url;
         document.getElementById("downloadLink").style.display = "inline";
-
         setTimeout(() => attachGifOverlays(gifs), 100);
-
         icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s\nGIF positions applied");
         showMessage("Sequence ready — double-click GIFs to remove");
       };
-
       recorder.start();
       let frame = 0;
       const timer = setInterval(() => {
@@ -213,39 +205,30 @@ Awaiting RELOOP commands...</pre></div>
           recorder.stop();
           return;
         }
-
         const imgIndex = Math.floor(frame / framesPerImage);
         const local = (frame % framesPerImage) / framesPerImage;
         const baseImg = imgElements[imgIndex];
-
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         const scale = 1 + local * panZoomIntensity * 0.15;
         const w = canvas.width * scale;
         const h = canvas.height * scale;
         const x = (canvas.width - w) / 2 + Math.sin(local * Math.PI) * panZoomIntensity * 30;
         const y = (canvas.height - h) / 2 + Math.cos(local * Math.PI) * panZoomIntensity * 20;
-
         ctx.globalAlpha = 0.4 + local * 0.6;
         try { ctx.drawImage(baseImg, x, y, w, h); } catch(e) {}
         ctx.globalAlpha = 1;
-
         ctx.fillStyle = "#00ffea";
         ctx.font = "16px Courier New";
         ctx.fillText("Photo " + (imgIndex + 1) + " / " + imgElements.length, 16, 28);
         ctx.fillText((local * secondsPer).toFixed(1) + "s", 16, canvas.height - 16);
-
         frame++;
       }, 1000 / fps);
-
       icmiLog("ACT VIDEO CHANNEL ACTIVE\n" + imgElements.length + " frames");
     }
-
     function attachGifOverlays(gifs) {
       const wrapper = document.getElementById("videoWrapper");
       wrapper.querySelectorAll(".gif-overlay").forEach(el => el.remove());
-
       gifs.forEach(g => {
         const img = document.createElement("img");
         img.src = g.url;
@@ -264,13 +247,11 @@ Awaiting RELOOP commands...</pre></div>
         wrapper.appendChild(img);
       });
     }
-
     document.getElementById("immerseBtn").addEventListener("click", () => {
       const wrapper = document.getElementById("videoWrapper");
       if (wrapper.requestFullscreen) wrapper.requestFullscreen();
       else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
     });
-
     document.getElementById("randomartOnlyBtn").addEventListener("click", () => {
       const key = document.getElementById("sshKeyInput").value.trim() || "default";
       let art = "+--[ Randomart ]--+\n";
@@ -287,7 +268,6 @@ Awaiting RELOOP commands...</pre></div>
       document.getElementById("randomartOutput").textContent = art;
       icmiLog("RANDOMART GENERATED");
     });
-
     function showMessage(msg) {
       const box = document.getElementById("message");
       box.textContent = msg;
