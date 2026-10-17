@@ -250,8 +250,8 @@ Awaiting RELOOP commands...</pre></div>
         const img = document.createElement("img");
         img.src = g.url;
         img.className = "gif-overlay";
-        img.style.width = "120px";
-        img.style.height = "90px";
+        img.style.width = "138px";
+        img.style.height = "104px";
         img.style.left = g.left;
         img.style.top = g.top;
         img.title = "Double-click to dismiss GIF";
@@ -266,9 +266,9 @@ Awaiting RELOOP commands...</pre></div>
     }
 
     document.getElementById("immerseBtn").addEventListener("click", () => {
-      const vid = document.getElementById("videoPreview");
-      if (vid.requestFullscreen) vid.requestFullscreen();
-      else if (vid.webkitRequestFullscreen) vid.webkitRequestFullscreen();
+      const wrapper = document.getElementById("videoWrapper");
+      if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+      else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
     });
 
     document.getElementById("randomartOnlyBtn").addEventListener("click", () => {
