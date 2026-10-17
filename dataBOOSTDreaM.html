@@ -22,7 +22,7 @@
       line-height: 1.5;
       min-height: 100vh;
       display: flex;
-      user-select: none; /* prevent page-wide selection */
+      user-select: none;
     }
     #specifierArea {
       width: 210px;
@@ -128,7 +128,7 @@
       cursor: pointer;
       padding: 4px 6px;
       border-radius: 4px;
-      user-select: text; /* only these are selectable */
+      user-select: text;
     }
     .mode-list li:hover { background: rgba(255,255,255,0.1); }
     @media (max-width: 768px) {
@@ -151,7 +151,7 @@
   </aside>
   <main>
     <h1>DreamTech</h1>
-    <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Select any word</p>
+    <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Select full notation</p>
     <div class="btn-row">
       <button id="loadTable">Load Table</button>
       <button class="btn-secondary" onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
@@ -229,13 +229,18 @@
         const node = selection.getRangeAt(0).commonAncestorContainer;
         const li = node.nodeType === 3 ? node.parentElement : node;
         if (!li || li.tagName !== "LI" || !li.closest(".mode-list")) return;
+
+        // Only proceed if the entire notation (full li text) is selected
+        const fullText = li.textContent.trim();
+        if (text !== fullText) return;
+
         const hero = document.getElementById("constructorSelect").value;
         if (!hero) {
           document.getElementById("selectionOutput").textContent = "⚠️ Please select a Superhero first (type 007)";
           return;
         }
         document.getElementById("google-search").value = `${hero} ${text}`;
-        document.getElementById("selectionOutput").textContent = `Selected: "${text}" → ready for Google + Wikipedia image`;
+        document.getElementById("selectionOutput").textContent = `Selected full notation: "${text}" → ready for Google + Wikipedia image`;
         window.singleGif.show(text, hero);
       }
     }
