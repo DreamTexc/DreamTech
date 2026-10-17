@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>DreamJump Portal</title>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: blob: data:; script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123'; media-src blob:;">
   <style nonce="abc123">
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; }
+    body { font-family: Arial, sans-serif; background: #111; color: #eee; margin: 0; }
     .container { width: 95%; margin: auto; padding: 20px; }
     .option { margin: 12px 0; }
     .download-image { width: 140px; height: 100px; object-fit: cover; border: 2px solid #444; border-radius: 6px; }
@@ -23,18 +23,21 @@
     .video-wrapper { position: relative; display: inline-block; min-width: 640px; min-height: 360px; z-index: 1; }
     .video-wrapper:fullscreen,
     .video-wrapper:-webkit-full-screen {
-      width: 100vw;
-      height: 100vh;
+      width: 100vw !important;
+      height: 100vh !important;
       background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: fixed;
+      top: 0;
+      left: 0;
     }
     .video-wrapper:fullscreen #videoPreview,
     .video-wrapper:-webkit-full-screen #videoPreview {
-      max-width: none;
-      width: 100%;
-      height: 100%;
+      max-width: none !important;
+      width: 100% !important;
+      height: 100% !important;
       object-fit: contain;
     }
     .gif-overlay {
@@ -70,12 +73,27 @@
       cursor: move;
       pointer-events: auto;
       user-select: none;
+      touch-action: none;
     }
     #downloadLink { display: none; margin: 10px; color: #00ffea; }
     button { background: #222; color: #00ffea; border: 1px solid #00ffea; padding: 6px 12px; cursor: pointer; }
     input, select { background: #222; color: #fff; border: 1px solid #555; padding: 6px; }
     .gif-controls, .special-controls { margin: 10px 0; padding: 10px; background: #1a1a1a; border: 1px solid #444; max-width: 520px; }
     .pos-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; font-size: 13px; }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .container { width: 100%; padding: 10px; }
+      .video-wrapper { min-width: 100%; min-height: 240px; }
+      #videoPreview { max-width: 100%; }
+      .gif-overlay { width: 100px; height: 75px; }
+      .video-wrapper:fullscreen .gif-overlay,
+      .video-wrapper:-webkit-full-screen .gif-overlay {
+        width: 145px !important;
+        height: 110px !important;
+      }
+      #dollarBtn { font-size: 18px; padding: 2px 8px; }
+    }
   </style>
 </head>
 <body>
@@ -148,7 +166,7 @@ Awaiting RELOOP commands...</pre></div>
       </div>
     </div>
     <div class="video-wrapper" id="videoWrapper">
-      <video id="videoPreview" controls></video>
+      <video id="videoPreview" controls playsinline></video>
       <button id="dollarBtn">$</button>
     </div>
     <a id="downloadLink" download="dreamjump-sequence.webm">Download Sequence Video</a>
@@ -272,12 +290,13 @@ Awaiting RELOOP commands...</pre></div>
     function attachGifOverlays(gifs) {
       const wrapper = document.getElementById("videoWrapper");
       wrapper.querySelectorAll(".gif-overlay").forEach(el => el.remove());
+      const isMobile = window.innerWidth <= 768;
       gifs.forEach(g => {
         const img = document.createElement("img");
         img.src = g.url;
         img.className = "gif-overlay";
-        img.style.width = "138px";
-        img.style.height = "104px";
+        img.style.width = isMobile ? "100px" : "138px";
+        img.style.height = isMobile ? "75px" : "104px";
         img.style.left = g.left;
         img.style.top = g.top;
         img.style.zIndex = "20";
@@ -327,6 +346,14 @@ Awaiting RELOOP commands...</pre></div>
         startTop = parseFloat(el.style.top) || 0;
         el.style.cursor = "grabbing";
       });
+      el.addEventListener("touchstart", e => {
+        isDragging = true;
+        const t = e.touches[0];
+        startX = t.clientX;
+        startY = t.clientY;
+        startLeft = parseFloat(el.style.left) || 0;
+        startTop = parseFloat(el.style.top) || 0;
+      }, { passive: false });
       document.addEventListener("mousemove", e => {
         if (!isDragging) return;
         const dx = e.clientX - startX;
@@ -338,10 +365,21 @@ Awaiting RELOOP commands...</pre></div>
         el.style.left = Math.max(0, Math.min(90, newLeft)) + "%";
         el.style.top = Math.max(0, Math.min(90, newTop)) + "%";
       });
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-        el.style.cursor = "move";
-      });
+      document.addEventListener("touchmove", e => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const t = e.touches[0];
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        const wrapper = document.getElementById("videoWrapper");
+        const rect = wrapper.getBoundingClientRect();
+        const newLeft = startLeft + (dx / rect.width) * 100;
+        const newTop = startTop + (dy / rect.height) * 100;
+        el.style.left = Math.max(0, Math.min(90, newLeft)) + "%";
+        el.style.top = Math.max(0, Math.min(90, newTop)) + "%";
+      }, { passive: false });
+      document.addEventListener("mouseup", () => { isDragging = false; el.style.cursor = "move"; });
+      document.addEventListener("touchend", () => { isDragging = false; });
       el.addEventListener("wheel", e => {
         e.preventDefault();
         const currentW = parseFloat(el.style.width) || 160;
