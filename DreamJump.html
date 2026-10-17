@@ -20,7 +20,7 @@
     .demo-strip img { width: 80px; height: 60px; object-fit: cover; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
     .search-panel { border: 1px solid #444; padding: 12px; margin: 12px 0; background: #1a1a1a; max-width: 420px; display: inline-block; vertical-align: top; }
     #videoPreview { max-width: 640px; margin-top: 12px; display: none; position: relative; z-index: 1; width: 100%; height: auto; }
-    .video-wrapper { position: relative; display: inline-block; min-width: 640px; min-height: 360px; }
+    .video-wrapper { position: relative; display: inline-block; min-width: 640px; min-height: 360px; z-index: 1; }
     .video-wrapper:fullscreen,
     .video-wrapper:-webkit-full-screen {
       width: 100vw;
@@ -39,7 +39,7 @@
     }
     .gif-overlay {
       position: absolute;
-      z-index: 10;
+      z-index: 20;
       cursor: pointer;
       pointer-events: auto;
     }
@@ -193,11 +193,9 @@ Awaiting RELOOP commands...</pre></div>
         vid.style.display = "block";
         document.getElementById("downloadLink").href = url;
         document.getElementById("downloadLink").style.display = "inline";
-
         vid.addEventListener("loadeddata", () => {
           attachGifOverlays(gifs);
         }, { once: true });
-
         icmiLog("SEQUENCE COMPLETE\n" + imgElements.length + " photos × " + secondsPer + "s\nGIF positions applied");
         showMessage("Sequence ready — double-click GIFs to remove");
       };
@@ -241,6 +239,7 @@ Awaiting RELOOP commands...</pre></div>
         img.style.height = "104px";
         img.style.left = g.left;
         img.style.top = g.top;
+        img.style.zIndex = "20";
         img.title = "Double-click to dismiss GIF";
         img.onload = () => icmiLog("GIF LOADED: " + g.url);
         img.onerror = () => icmiLog("GIF FAILED TO LOAD: " + g.url);
@@ -250,6 +249,7 @@ Awaiting RELOOP commands...</pre></div>
         });
         wrapper.appendChild(img);
       });
+      wrapper.offsetHeight; // force reflow
     }
     document.getElementById("immerseBtn").addEventListener("click", () => {
       const wrapper = document.getElementById("videoWrapper");
