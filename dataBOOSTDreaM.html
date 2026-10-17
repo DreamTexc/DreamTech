@@ -126,11 +126,11 @@
       margin-bottom: 6px;
       break-inside: avoid;
       cursor: pointer;
-      padding: 4px 6px;
+      padding: 6px 8px;
       border-radius: 4px;
-      user-select: text;
     }
     .mode-list li:hover { background: rgba(255,255,255,0.1); }
+    .mode-list li.selected { background: rgba(255,255,255,0.2); }
     @media (max-width: 768px) {
       body { flex-direction: column; }
       #specifierArea { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
@@ -151,7 +151,7 @@
   </aside>
   <main>
     <h1>DreamTech</h1>
-    <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Select full notation</p>
+    <p class="subtitle">Wikipedia Mode • Select Superhero → Load Table → Click any word</p>
     <div class="btn-row">
       <button id="loadTable">Load Table</button>
       <button class="btn-secondary" onclick="window.location.href='jetMathOverlay.html'">Generate Content</button>
@@ -214,40 +214,18 @@
         return (data.originalimage && data.originalimage.source) || (data.thumbnail && data.thumbnail.source) || null;
       } catch (err) { return null; }
     }
-    class SelectionWrapper {
-      constructor() { this.lastSelection = ""; }
-      update() {
-        const sel = document.getSelection().toString().trim();
-        if (sel && sel !== this.lastSelection) {
-          this.lastSelection = sel;
-          this.onSelection(sel);
-        }
+    function selectNotation(text, li) {
+      const hero = document.getElementById("constructorSelect").value;
+      if (!hero) {
+        document.getElementById("selectionOutput").textContent = "⚠️ Please select a Superhero first (type 007)";
+        return;
       }
-      onSelection(text) {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const node = selection.getRangeAt(0).commonAncestorContainer;
-        const li = node.nodeType === 3 ? node.parentElement : node;
-        if (!li || li.tagName !== "LI" || !li.closest(".mode-list")) return;
-
-        // Only proceed if the entire notation (full li text) is selected
-        const fullText = li.textContent.trim();
-        if (text !== fullText) return;
-
-        const hero = document.getElementById("constructorSelect").value;
-        if (!hero) {
-          document.getElementById("selectionOutput").textContent = "⚠️ Please select a Superhero first (type 007)";
-          return;
-        }
-        document.getElementById("google-search").value = `${hero} ${text}`;
-        document.getElementById("selectionOutput").textContent = `Selected full notation: "${text}" → ready for Google + Wikipedia image`;
-        window.singleGif.show(text, hero);
-      }
+      document.querySelectorAll(".mode-list li").forEach(item => item.classList.remove("selected"));
+      if (li) li.classList.add("selected");
+      document.getElementById("google-search").value = `${hero} ${text}`;
+      document.getElementById("selectionOutput").textContent = `Selected: "${text}" → ready for Google + Wikipedia image`;
+      window.singleGif.show(text, hero);
     }
-    const wrapper = new SelectionWrapper();
-    document.addEventListener("selectionchange", () => wrapper.update());
-    document.addEventListener("mouseup", () => wrapper.update());
-    document.addEventListener("touchend", () => wrapper.update());
     document.getElementById("specifierInput").addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         const cmd = this.value.trim();
@@ -318,6 +296,12 @@
           <tr><td>Mode</td><td><ul class="mode-list">${listHtml}</ul></td></tr>
         </table>
       `;
+      // Attach click handlers to each list item
+      container.querySelectorAll(".mode-list li").forEach(li => {
+        li.addEventListener("click", () => {
+          selectNotation(li.textContent.trim(), li);
+        });
+      });
     });
     function doGoogleSearch() {
       const q = document.getElementById("google-search").value.trim();
