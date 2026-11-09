@@ -6,7 +6,7 @@
   <style>
     body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
     h1 { font-size: 1.4em; }
-    canvas { border: 1px solid #ccc; background: white; display: block; margin-top: 10px; cursor: crosshair; }
+    canvas { border: 1px solid #ccc; background: white; display: block; margin-top: 10px; cursor: crosshair; touch-action: manipulation; }
     .eq { font-size: 1.2em; margin: 10px 0; font-family: serif; }
     #menu {
       position: absolute; display: none; background: #fff; border: 1px solid #aaa;
@@ -20,11 +20,26 @@
       border: 1px solid #d4ac0d; border-radius: 12px; cursor: pointer; font-size: 13px;
     }
     .cookie:hover { background: #f7dc6f; }
+    #controls { margin: 10px 0; }
+    #controls input[type=file] { margin-right: 8px; }
+    #floatBack {
+      position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white;
+      padding: 10px 14px; border-radius: 20px; cursor: pointer; font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 20;
+    }
   </style>
 </head>
 <body>
   <h1>Calculus Manuscript</h1>
   <div class="eq">(x − 1)² / 4 + (y − 2)² / 9 = 1</div>
+
+  <div id="controls">
+    <label>Photo at center (local only): 
+      <input type="file" id="photoInput" accept="image/*">
+    </label>
+    <span style="color:#666;font-size:13px;"> or paste image (Ctrl+V / long-press paste)</span>
+  </div>
+
   <canvas id="graph" width="500" height="400"></canvas>
   <div id="menu">
     <div data-speed="0.4">PHP Speed: Slow</div>
@@ -34,11 +49,14 @@
   </div>
   <div id="cookies"></div>
 
+  <div id="floatBack" title="Jump back to graph">↑ Graph</div>
+
   <script>
     const canvas = document.getElementById("graph");
     const ctx = canvas.getContext("2d");
     const menu = document.getElementById("menu");
     const cookiesDiv = document.getElementById("cookies");
+    const photoInput = document.getElementById("photoInput");
     const w = canvas.width, h = canvas.height;
     const scale = 40;
     const originX = w / 2 - 1 * scale;
@@ -47,6 +65,8 @@
     let shakeSpeed = 0;
     let animId = null;
     let phase = 0;
+    let centerImage = null;
+    let lastTap = 0;
 
     function toCanvas(x, y) {
       return { x: originX + x * scale, y: originY - y * scale };
@@ -55,7 +75,7 @@
     function draw(shake = 0) {
       ctx.clearRect(0, 0, w, h);
 
-      // light grid
+      // grid
       ctx.strokeStyle = "#eee";
       ctx.lineWidth = 1;
       for (let i = -8; i <= 8; i++) {
@@ -87,12 +107,27 @@
       ctx.closePath();
       ctx.stroke();
 
-      // center
+      // center marker or image
       const c = toCanvas(1, 2);
-      ctx.fillStyle = "#2980b9";
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, 4, 0, 2 * Math.PI);
-      ctx.fill();
+      if (centerImage) {
+        const size = 70;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, size / 2, 0, 2 * Math.PI);
+        ctx.clip();
+        ctx.drawImage(centerImage, c.x - size/2, c.y - size/2, size, size);
+        ctx.restore();
+        ctx.strokeStyle = "#2980b9";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, size/2, 0, 2 * Math.PI);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = "#2980b9";
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     }
 
     function animate() {
@@ -124,12 +159,29 @@
       }
     }
 
-    // right-click menu
+    function showMenu(x, y) {
+      menu.style.left = x + "px";
+      menu.style.top = y + "px";
+      menu.style.display = "block";
+    }
+
+    // desktop right-click
     canvas.addEventListener("contextmenu", e => {
       e.preventDefault();
-      menu.style.left = e.pageX + "px";
-      menu.style.top = e.pageY + "px";
-      menu.style.display = "block";
+      showMenu(e.pageX, e.pageY);
+    });
+
+    // mobile double-tap
+    canvas.addEventListener("touchend", e => {
+      const now = Date.now();
+      if (now - lastTap < 350) {
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        showMenu(touch.pageX, touch.pageY);
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
     });
 
     menu.addEventListener("click", e => {
@@ -141,8 +193,46 @@
     });
 
     document.addEventListener("click", () => menu.style.display = "none");
+    document.addEventListener("touchstart", () => menu.style.display = "none");
 
-    // initial static draw
+    // photo: file input (local only)
+    photoInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file || !file.type.startsWith("image/")) return;
+      const img = new Image();
+      img.onload = () => {
+        centerImage = img;
+        if (animId) draw(shakeSpeed);
+        else draw(0);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    // photo: paste (local only)
+    document.addEventListener("paste", e => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (!file) continue;
+          const img = new Image();
+          img.onload = () => {
+            centerImage = img;
+            if (animId) draw(shakeSpeed);
+            else draw(0);
+          };
+          img.src = URL.createObjectURL(file);
+          break;
+        }
+      }
+    });
+
+    // floating return button
+    document.getElementById("floatBack").onclick = () => {
+      canvas.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
     draw(0);
   </script>
 </body>
