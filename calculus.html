@@ -1,1 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Object Inheritance Module</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    iframe {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      display: block;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Core PHP Viewer</h1>
+  <div id="output"></div>
 
+  <script>
+    // Base object
+    function CoreModule() {
+      this.type = "core";
+    }
+    CoreModule.prototype.getInfo = function() {
+      return this.type + " module";
+    };
+
+    // Inherited object
+    function PHPWindow(domain) {
+      CoreModule.call(this);
+      this.domain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      this.url = "https://" + this.domain + "/index.php";
+    }
+    PHPWindow.prototype = Object.create(CoreModule.prototype);
+    PHPWindow.prototype.constructor = PHPWindow;
+
+    PHPWindow.prototype.show = function(width, height) {
+      width = width || 400;
+      height = height || 300;
+
+      var container = document.getElementById("output");
+      var info = document.createElement("div");
+      info.textContent = this.getInfo() + " → " + this.domain;
+
+      var frame = document.createElement("iframe");
+      frame.src = this.url;
+      frame.width = width;
+      frame.height = height;
+      frame.title = "Core PHP: " + this.domain;
+
+      container.appendChild(info);
+      container.appendChild(frame);
+    };
+
+    // Usage — change the domain as needed
+    var site = new PHPWindow("example.com");
+    site.show(420, 280);
+  </script>
+</body>
+</html>
