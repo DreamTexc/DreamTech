@@ -28,7 +28,7 @@
     #searchBox input[type=text] { padding: 8px; width: 240px; font-size: 15px; }
     #searchBox button { padding: 8px 14px; font-size: 15px; margin-left: 6px; }
     #imageResults { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    #imageResults img { width: 180px; height: 140px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+    #imageResults img { width: 180px; height: 140px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
     #floatBack {
       position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white;
       padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;
@@ -44,10 +44,10 @@
     <label>Photo (large, local only): 
       <input type="file" id="photoInput" accept="image/*">
     </label>
-    <span style="color:#666;font-size:13px;"> or paste image</span>
+    <span style="color:#666;font-size:13px;"> — or paste image directly on the graph (Ctrl+V)</span>
   </div>
 
-  <canvas id="graph" width="640" height="480"></canvas>
+  <canvas id="graph" width="640" height="480" tabindex="0"></canvas>
 
   <div id="menu">
     <div data-speed="0.4">PHP Speed: Slow</div>
@@ -91,13 +91,12 @@
     function draw(shake = 0) {
       ctx.clearRect(0, 0, w, h);
 
-      // large photo behind (bigger than ellipse)
       if (centerImage) {
         const c = toCanvas(1, 2);
-        const imgW = Math.max(w, centerImage.width) * 1.15;
-        const imgH = Math.max(h, centerImage.height) * 1.15;
-        const shakeX = Math.sin(phase * 1.3) * shake * 6;
-        const shakeY = Math.cos(phase * 1.7) * shake * 5;
+        const imgW = Math.max(w * 1.3, centerImage.width * 0.8);
+        const imgH = Math.max(h * 1.3, centerImage.height * 0.8);
+        const shakeX = Math.sin(phase * 1.3) * shake * 7;
+        const shakeY = Math.cos(phase * 1.7) * shake * 6;
         ctx.drawImage(
           centerImage,
           c.x - imgW / 2 + shakeX,
@@ -110,8 +109,7 @@
         ctx.fillRect(0, 0, w, h);
       }
 
-      // light grid (optional, faint)
-      ctx.strokeStyle = "rgba(0,0,0,0.06)";
+      ctx.strokeStyle = "rgba(0,0,0,0.05)";
       ctx.lineWidth = 1;
       for (let i = -10; i <= 10; i++) {
         const px = toCanvas(i, 0).x;
@@ -120,19 +118,18 @@
         ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
       }
 
-      // axes (very faint)
-      ctx.strokeStyle = "rgba(0,0,0,0.15)";
+      ctx.strokeStyle = "rgba(0,0,0,0.12)";
       ctx.lineWidth = 1;
       const ox = toCanvas(0, 0).x, oy = toCanvas(0, 0).y;
       ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
 
-      // nearly invisible ellipse (so photo looks like it's shaking alone)
-      ctx.strokeStyle = "rgba(192,57,43,0.08)";
-      ctx.lineWidth = 1.5;
+      // nearly invisible ellipse
+      ctx.strokeStyle = "rgba(192,57,43,0.06)";
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       for (let t = 0; t <= 2 * Math.PI; t += 0.02) {
-        const s = 1 + shake * Math.sin(t * 6 + phase) * 0.04;
+        const s = 1 + shake * Math.sin(t * 6 + phase) * 0.03;
         const x = 1 + 2 * Math.cos(t) * s;
         const y = 2 + 3 * Math.sin(t) * s;
         const p = toCanvas(x, y);
@@ -208,26 +205,30 @@
       const img = new Image();
       img.onload = () => {
         centerImage = img;
-        draw(shakeSpeed);
-        if (!animId) draw(0);
+        if (animId) draw(shakeSpeed);
+        else draw(0);
       };
       img.src = URL.createObjectURL(file);
     }
 
     photoInput.addEventListener("change", e => setImage(e.target.files[0]));
 
-    document.addEventListener("paste", e => {
+    // Paste directly onto the coordinate plane (canvas) or page
+    function handlePaste(e) {
       const items = e.clipboardData?.items;
       if (!items) return;
       for (const item of items) {
         if (item.type.startsWith("image/")) {
+          e.preventDefault();
           setImage(item.getAsFile());
           break;
         }
       }
-    });
+    }
+    canvas.addEventListener("paste", handlePaste);
+    document.addEventListener("paste", handlePaste);
 
-    // Image search (client-side, Unsplash Source – pictures only)
+    // Working image search (loremflickr)
     document.getElementById("searchBtn").onclick = doSearch;
     document.getElementById("query").addEventListener("keydown", e => {
       if (e.key === "Enter") doSearch();
@@ -238,11 +239,25 @@
       if (!q) return;
       const results = document.getElementById("imageResults");
       results.innerHTML = "";
+      const term = encodeURIComponent(q.replace(/\s+/g, ","));
       for (let i = 0; i < 8; i++) {
         const img = document.createElement("img");
-        img.src = `https://source.unsplash.com/300x200/?${encodeURIComponent(q)}&sig=${Date.now() + i}`;
+        img.src = `https://loremflickr.com/300/200/${term}?random=${Date.now() + i}`;
         img.alt = q;
         img.loading = "lazy";
+        img.title = "Click to use this image on the graph";
+        img.onclick = () => {
+          // click a search result to place it on the coordinate plane
+          const useImg = new Image();
+          useImg.crossOrigin = "anonymous";
+          useImg.onload = () => {
+            centerImage = useImg;
+            if (animId) draw(shakeSpeed);
+            else draw(0);
+            canvas.scrollIntoView({ behavior: "smooth", block: "center" });
+          };
+          useImg.src = img.src;
+        };
         results.appendChild(img);
       }
     }
