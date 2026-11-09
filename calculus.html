@@ -4,28 +4,35 @@
   <meta charset="UTF-8">
   <title>Calculus Manuscript – Ellipse</title>
   <style>
-    body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
-    h1 { font-size: 1.4em; }
-    canvas { border: 1px solid #ccc; background: white; display: block; margin-top: 10px; cursor: crosshair; touch-action: manipulation; }
-    .eq { font-size: 1.2em; margin: 10px 0; font-family: serif; }
+    body { font-family: sans-serif; margin: 0; padding: 20px; background: #f9f9f9; }
+    h1 { font-size: 1.4em; margin: 0 0 8px; }
+    .eq { font-size: 1.1em; margin: 0 0 12px; font-family: serif; }
+    #controls { margin: 8px 0 12px; }
+    canvas {
+      border: 1px solid #ccc; background: #fff; display: block;
+      margin: 8px 0; cursor: crosshair; touch-action: manipulation;
+      max-width: 100%;
+    }
     #menu {
       position: absolute; display: none; background: #fff; border: 1px solid #aaa;
-      border-radius: 4px; box-shadow: 2px 2px 6px rgba(0,0,0,.2); z-index: 10; padding: 4px 0;
+      border-radius: 4px; box-shadow: 2px 2px 6px rgba(0,0,0,.2); z-index: 100; padding: 4px 0;
     }
-    #menu div { padding: 6px 16px; cursor: pointer; }
+    #menu div { padding: 8px 18px; cursor: pointer; }
     #menu div:hover { background: #eef; }
-    #cookies { margin-top: 12px; }
+    #cookies { margin: 12px 0; }
     .cookie {
       display: inline-block; margin: 4px; padding: 6px 10px; background: #f4d03f;
       border: 1px solid #d4ac0d; border-radius: 12px; cursor: pointer; font-size: 13px;
     }
-    .cookie:hover { background: #f7dc6f; }
-    #controls { margin: 10px 0; }
-    #controls input[type=file] { margin-right: 8px; }
+    #searchBox { margin: 20px 0; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+    #searchBox input[type=text] { padding: 8px; width: 240px; font-size: 15px; }
+    #searchBox button { padding: 8px 14px; font-size: 15px; margin-left: 6px; }
+    #imageResults { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    #imageResults img { width: 180px; height: 140px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
     #floatBack {
       position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white;
-      padding: 10px 14px; border-radius: 20px; cursor: pointer; font-size: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 20;
+      padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 200;
     }
   </style>
 </head>
@@ -34,22 +41,31 @@
   <div class="eq">(x − 1)² / 4 + (y − 2)² / 9 = 1</div>
 
   <div id="controls">
-    <label>Photo at center (local only): 
+    <label>Photo (large, local only): 
       <input type="file" id="photoInput" accept="image/*">
     </label>
-    <span style="color:#666;font-size:13px;"> or paste image (Ctrl+V / long-press paste)</span>
+    <span style="color:#666;font-size:13px;"> or paste image</span>
   </div>
 
-  <canvas id="graph" width="500" height="400"></canvas>
+  <canvas id="graph" width="640" height="480"></canvas>
+
   <div id="menu">
     <div data-speed="0.4">PHP Speed: Slow</div>
     <div data-speed="1.0">PHP Speed: Medium</div>
     <div data-speed="2.2">PHP Speed: Fast</div>
     <div data-speed="3.5">PHP Speed: Extreme</div>
   </div>
+
   <div id="cookies"></div>
 
-  <div id="floatBack" title="Jump back to graph">↑ Graph</div>
+  <div id="searchBox">
+    <strong>Image Search</strong> (pictures only)<br>
+    <input type="text" id="query" placeholder="search images...">
+    <button id="searchBtn">Search</button>
+    <div id="imageResults"></div>
+  </div>
+
+  <div id="floatBack" title="Back to graph">↑ Graph</div>
 
   <script>
     const canvas = document.getElementById("graph");
@@ -58,7 +74,7 @@
     const cookiesDiv = document.getElementById("cookies");
     const photoInput = document.getElementById("photoInput");
     const w = canvas.width, h = canvas.height;
-    const scale = 40;
+    const scale = 36;
     const originX = w / 2 - 1 * scale;
     const originY = h / 2 + 2 * scale;
 
@@ -75,29 +91,48 @@
     function draw(shake = 0) {
       ctx.clearRect(0, 0, w, h);
 
-      // grid
-      ctx.strokeStyle = "#eee";
+      // large photo behind (bigger than ellipse)
+      if (centerImage) {
+        const c = toCanvas(1, 2);
+        const imgW = Math.max(w, centerImage.width) * 1.15;
+        const imgH = Math.max(h, centerImage.height) * 1.15;
+        const shakeX = Math.sin(phase * 1.3) * shake * 6;
+        const shakeY = Math.cos(phase * 1.7) * shake * 5;
+        ctx.drawImage(
+          centerImage,
+          c.x - imgW / 2 + shakeX,
+          c.y - imgH / 2 + shakeY,
+          imgW,
+          imgH
+        );
+      } else {
+        ctx.fillStyle = "#fafafa";
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // light grid (optional, faint)
+      ctx.strokeStyle = "rgba(0,0,0,0.06)";
       ctx.lineWidth = 1;
-      for (let i = -8; i <= 8; i++) {
+      for (let i = -10; i <= 10; i++) {
         const px = toCanvas(i, 0).x;
         ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
         const py = toCanvas(0, i).y;
         ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
       }
 
-      // axes
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 1.5;
+      // axes (very faint)
+      ctx.strokeStyle = "rgba(0,0,0,0.15)";
+      ctx.lineWidth = 1;
       const ox = toCanvas(0, 0).x, oy = toCanvas(0, 0).y;
       ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
 
-      // shaking ellipse
-      ctx.strokeStyle = "#c0392b";
-      ctx.lineWidth = 2.5;
+      // nearly invisible ellipse (so photo looks like it's shaking alone)
+      ctx.strokeStyle = "rgba(192,57,43,0.08)";
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      for (let t = 0; t <= 2 * Math.PI; t += 0.015) {
-        const s = 1 + shake * Math.sin(t * 8 + phase) * 0.08;
+      for (let t = 0; t <= 2 * Math.PI; t += 0.02) {
+        const s = 1 + shake * Math.sin(t * 6 + phase) * 0.04;
         const x = 1 + 2 * Math.cos(t) * s;
         const y = 2 + 3 * Math.sin(t) * s;
         const p = toCanvas(x, y);
@@ -106,32 +141,10 @@
       }
       ctx.closePath();
       ctx.stroke();
-
-      // center marker or image
-      const c = toCanvas(1, 2);
-      if (centerImage) {
-        const size = 70;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, size / 2, 0, 2 * Math.PI);
-        ctx.clip();
-        ctx.drawImage(centerImage, c.x - size/2, c.y - size/2, size, size);
-        ctx.restore();
-        ctx.strokeStyle = "#2980b9";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, size/2, 0, 2 * Math.PI);
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = "#2980b9";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, 4, 0, 2 * Math.PI);
-        ctx.fill();
-      }
     }
 
     function animate() {
-      phase += shakeSpeed * 0.15;
+      phase += shakeSpeed * 0.18;
       draw(shakeSpeed);
       animId = requestAnimationFrame(animate);
     }
@@ -144,17 +157,16 @@
     }
 
     function spawnCookies() {
-      cookiesDiv.innerHTML = "<strong>Cookies (clickable):</strong><br>";
+      cookiesDiv.innerHTML = "<strong>Cookies:</strong><br>";
       for (let i = 0; i < 5; i++) {
         const t = Math.random() * 2 * Math.PI;
-        const noise = (Math.random() - 0.5) * 0.6;
+        const noise = (Math.random() - 0.5) * 0.5;
         const x = +(1 + 2 * Math.cos(t) + noise).toFixed(1);
         const y = +(2 + 3 * Math.sin(t) + noise).toFixed(1);
         const el = document.createElement("span");
         el.className = "cookie";
         el.textContent = `${x},${y}`;
-        el.title = "PHP cookie event";
-        el.onclick = () => alert(`Cookie clicked: (${x}, ${y})\n(will do more later)`);
+        el.onclick = () => alert(`Cookie: (${x}, ${y})`);
         cookiesDiv.appendChild(el);
       }
     }
@@ -165,13 +177,11 @@
       menu.style.display = "block";
     }
 
-    // desktop right-click
     canvas.addEventListener("contextmenu", e => {
       e.preventDefault();
       showMenu(e.pageX, e.pageY);
     });
 
-    // mobile double-tap
     canvas.addEventListener("touchend", e => {
       const now = Date.now();
       if (now - lastTap < 350) {
@@ -179,9 +189,7 @@
         const touch = e.changedTouches[0];
         showMenu(touch.pageX, touch.pageY);
         lastTap = 0;
-      } else {
-        lastTap = now;
-      }
+      } else lastTap = now;
     });
 
     menu.addEventListener("click", e => {
@@ -195,40 +203,50 @@
     document.addEventListener("click", () => menu.style.display = "none");
     document.addEventListener("touchstart", () => menu.style.display = "none");
 
-    // photo: file input (local only)
-    photoInput.addEventListener("change", e => {
-      const file = e.target.files[0];
+    function setImage(file) {
       if (!file || !file.type.startsWith("image/")) return;
       const img = new Image();
       img.onload = () => {
         centerImage = img;
-        if (animId) draw(shakeSpeed);
-        else draw(0);
+        draw(shakeSpeed);
+        if (!animId) draw(0);
       };
       img.src = URL.createObjectURL(file);
-    });
+    }
 
-    // photo: paste (local only)
+    photoInput.addEventListener("change", e => setImage(e.target.files[0]));
+
     document.addEventListener("paste", e => {
       const items = e.clipboardData?.items;
       if (!items) return;
       for (const item of items) {
         if (item.type.startsWith("image/")) {
-          const file = item.getAsFile();
-          if (!file) continue;
-          const img = new Image();
-          img.onload = () => {
-            centerImage = img;
-            if (animId) draw(shakeSpeed);
-            else draw(0);
-          };
-          img.src = URL.createObjectURL(file);
+          setImage(item.getAsFile());
           break;
         }
       }
     });
 
-    // floating return button
+    // Image search (client-side, Unsplash Source – pictures only)
+    document.getElementById("searchBtn").onclick = doSearch;
+    document.getElementById("query").addEventListener("keydown", e => {
+      if (e.key === "Enter") doSearch();
+    });
+
+    function doSearch() {
+      const q = document.getElementById("query").value.trim();
+      if (!q) return;
+      const results = document.getElementById("imageResults");
+      results.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const img = document.createElement("img");
+        img.src = `https://source.unsplash.com/300x200/?${encodeURIComponent(q)}&sig=${Date.now() + i}`;
+        img.alt = q;
+        img.loading = "lazy";
+        results.appendChild(img);
+      }
+    }
+
     document.getElementById("floatBack").onclick = () => {
       canvas.scrollIntoView({ behavior: "smooth", block: "center" });
     };
