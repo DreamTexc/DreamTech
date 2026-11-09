@@ -4,97 +4,146 @@
   <meta charset="UTF-8">
   <title>Calculus Manuscript – Ellipse</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 20px;
-      background: #f9f9f9;
-    }
+    body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
     h1 { font-size: 1.4em; }
-    canvas {
-      border: 1px solid #ccc;
-      background: white;
-      display: block;
-      margin-top: 10px;
-    }
+    canvas { border: 1px solid #ccc; background: white; display: block; margin-top: 10px; cursor: crosshair; }
     .eq { font-size: 1.2em; margin: 10px 0; font-family: serif; }
+    #menu {
+      position: absolute; display: none; background: #fff; border: 1px solid #aaa;
+      border-radius: 4px; box-shadow: 2px 2px 6px rgba(0,0,0,.2); z-index: 10; padding: 4px 0;
+    }
+    #menu div { padding: 6px 16px; cursor: pointer; }
+    #menu div:hover { background: #eef; }
+    #cookies { margin-top: 12px; }
+    .cookie {
+      display: inline-block; margin: 4px; padding: 6px 10px; background: #f4d03f;
+      border: 1px solid #d4ac0d; border-radius: 12px; cursor: pointer; font-size: 13px;
+    }
+    .cookie:hover { background: #f7dc6f; }
   </style>
 </head>
 <body>
   <h1>Calculus Manuscript</h1>
   <div class="eq">(x − 1)² / 4 + (y − 2)² / 9 = 1</div>
   <canvas id="graph" width="500" height="400"></canvas>
+  <div id="menu">
+    <div data-speed="0.4">PHP Speed: Slow</div>
+    <div data-speed="1.0">PHP Speed: Medium</div>
+    <div data-speed="2.2">PHP Speed: Fast</div>
+    <div data-speed="3.5">PHP Speed: Extreme</div>
+  </div>
+  <div id="cookies"></div>
 
   <script>
     const canvas = document.getElementById("graph");
     const ctx = canvas.getContext("2d");
-    const w = canvas.width;
-    const h = canvas.height;
-
-    const scale = 40; // pixels per unit
+    const menu = document.getElementById("menu");
+    const cookiesDiv = document.getElementById("cookies");
+    const w = canvas.width, h = canvas.height;
+    const scale = 40;
     const originX = w / 2 - 1 * scale;
     const originY = h / 2 + 2 * scale;
 
+    let shakeSpeed = 0;
+    let animId = null;
+    let phase = 0;
+
     function toCanvas(x, y) {
-      return {
-        x: originX + x * scale,
-        y: originY - y * scale
-      };
+      return { x: originX + x * scale, y: originY - y * scale };
     }
 
-    // Grid
-    ctx.strokeStyle = "#eee";
-    ctx.lineWidth = 1;
-    for (let i = -8; i <= 8; i++) {
-      const px = toCanvas(i, 0).x;
+    function draw(shake = 0) {
+      ctx.clearRect(0, 0, w, h);
+
+      // light grid
+      ctx.strokeStyle = "#eee";
+      ctx.lineWidth = 1;
+      for (let i = -8; i <= 8; i++) {
+        const px = toCanvas(i, 0).x;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+        const py = toCanvas(0, i).y;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+      }
+
+      // axes
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 1.5;
+      const ox = toCanvas(0, 0).x, oy = toCanvas(0, 0).y;
+      ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+
+      // shaking ellipse
+      ctx.strokeStyle = "#c0392b";
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(px, 0);
-      ctx.lineTo(px, h);
+      for (let t = 0; t <= 2 * Math.PI; t += 0.015) {
+        const s = 1 + shake * Math.sin(t * 8 + phase) * 0.08;
+        const x = 1 + 2 * Math.cos(t) * s;
+        const y = 2 + 3 * Math.sin(t) * s;
+        const p = toCanvas(x, y);
+        if (t === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
       ctx.stroke();
 
-      const py = toCanvas(0, i).y;
+      // center
+      const c = toCanvas(1, 2);
+      ctx.fillStyle = "#2980b9";
       ctx.beginPath();
-      ctx.moveTo(0, py);
-      ctx.lineTo(w, py);
-      ctx.stroke();
+      ctx.arc(c.x, c.y, 4, 0, 2 * Math.PI);
+      ctx.fill();
     }
 
-    // Axes
-    ctx.strokeStyle = "#333";
-    ctx.lineWidth = 1.5;
-    const ox = toCanvas(0, 0).x;
-    const oy = toCanvas(0, 0).y;
-    ctx.beginPath();
-    ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
-
-    // Ellipse: x = 1 + 2 cos(t), y = 2 + 3 sin(t)
-    ctx.strokeStyle = "#c0392b";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    for (let t = 0; t <= 2 * Math.PI; t += 0.01) {
-      const x = 1 + 2 * Math.cos(t);
-      const y = 2 + 3 * Math.sin(t);
-      const p = toCanvas(x, y);
-      if (t === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
+    function animate() {
+      phase += shakeSpeed * 0.15;
+      draw(shakeSpeed);
+      animId = requestAnimationFrame(animate);
     }
-    ctx.closePath();
-    ctx.stroke();
 
-    // Center
-    const c = toCanvas(1, 2);
-    ctx.fillStyle = "#2980b9";
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, 4, 0, 2 * Math.PI);
-    ctx.fill();
+    function startShake(speed) {
+      shakeSpeed = speed;
+      if (animId) cancelAnimationFrame(animId);
+      animate();
+      spawnCookies();
+    }
 
-    // Labels
-    ctx.fillStyle = "#222";
-    ctx.font = "13px sans-serif";
-    ctx.fillText("Center (1, 2)", c.x + 8, c.y - 8);
-    ctx.fillText("a = 2", toCanvas(3.1, 2).x, toCanvas(3.1, 2).y);
-    ctx.fillText("b = 3", toCanvas(1, 5.1).x, toCanvas(1, 5.1).y - 4);
+    function spawnCookies() {
+      cookiesDiv.innerHTML = "<strong>Cookies (clickable):</strong><br>";
+      for (let i = 0; i < 5; i++) {
+        const t = Math.random() * 2 * Math.PI;
+        const noise = (Math.random() - 0.5) * 0.6;
+        const x = +(1 + 2 * Math.cos(t) + noise).toFixed(1);
+        const y = +(2 + 3 * Math.sin(t) + noise).toFixed(1);
+        const el = document.createElement("span");
+        el.className = "cookie";
+        el.textContent = `${x},${y}`;
+        el.title = "PHP cookie event";
+        el.onclick = () => alert(`Cookie clicked: (${x}, ${y})\n(will do more later)`);
+        cookiesDiv.appendChild(el);
+      }
+    }
+
+    // right-click menu
+    canvas.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      menu.style.left = e.pageX + "px";
+      menu.style.top = e.pageY + "px";
+      menu.style.display = "block";
+    });
+
+    menu.addEventListener("click", e => {
+      const speed = e.target.dataset.speed;
+      if (speed) {
+        startShake(parseFloat(speed));
+        menu.style.display = "none";
+      }
+    });
+
+    document.addEventListener("click", () => menu.style.display = "none");
+
+    // initial static draw
+    draw(0);
   </script>
 </body>
 </html>
