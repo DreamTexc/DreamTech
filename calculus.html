@@ -2,63 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Object Inheritance Module</title>
+  <title>Calculus Manuscript – Ellipse</title>
   <style>
     body {
       font-family: sans-serif;
       margin: 20px;
+      background: #f9f9f9;
     }
-    iframe {
+    h1 { font-size: 1.4em; }
+    canvas {
       border: 1px solid #ccc;
-      border-radius: 4px;
+      background: white;
       display: block;
-      margin-top: 8px;
+      margin-top: 10px;
     }
+    .eq { font-size: 1.2em; margin: 10px 0; font-family: serif; }
   </style>
 </head>
 <body>
-  <h1>Core PHP Viewer</h1>
-  <div id="output"></div>
+  <h1>Calculus Manuscript</h1>
+  <div class="eq">(x − 1)² / 4 + (y − 2)² / 9 = 1</div>
+  <canvas id="graph" width="500" height="400"></canvas>
 
   <script>
-    // Base object
-    function CoreModule() {
-      this.type = "core";
+    const canvas = document.getElementById("graph");
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+
+    const scale = 40; // pixels per unit
+    const originX = w / 2 - 1 * scale;
+    const originY = h / 2 + 2 * scale;
+
+    function toCanvas(x, y) {
+      return {
+        x: originX + x * scale,
+        y: originY - y * scale
+      };
     }
-    CoreModule.prototype.getInfo = function() {
-      return this.type + " module";
-    };
 
-    // Inherited object
-    function PHPWindow(domain) {
-      CoreModule.call(this);
-      this.domain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
-      this.url = "https://" + this.domain + "/index.php";
+    // Grid
+    ctx.strokeStyle = "#eee";
+    ctx.lineWidth = 1;
+    for (let i = -8; i <= 8; i++) {
+      const px = toCanvas(i, 0).x;
+      ctx.beginPath();
+      ctx.moveTo(px, 0);
+      ctx.lineTo(px, h);
+      ctx.stroke();
+
+      const py = toCanvas(0, i).y;
+      ctx.beginPath();
+      ctx.moveTo(0, py);
+      ctx.lineTo(w, py);
+      ctx.stroke();
     }
-    PHPWindow.prototype = Object.create(CoreModule.prototype);
-    PHPWindow.prototype.constructor = PHPWindow;
 
-    PHPWindow.prototype.show = function(width, height) {
-      width = width || 400;
-      height = height || 300;
+    // Axes
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 1.5;
+    const ox = toCanvas(0, 0).x;
+    const oy = toCanvas(0, 0).y;
+    ctx.beginPath();
+    ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
 
-      var container = document.getElementById("output");
-      var info = document.createElement("div");
-      info.textContent = this.getInfo() + " → " + this.domain;
+    // Ellipse: x = 1 + 2 cos(t), y = 2 + 3 sin(t)
+    ctx.strokeStyle = "#c0392b";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let t = 0; t <= 2 * Math.PI; t += 0.01) {
+      const x = 1 + 2 * Math.cos(t);
+      const y = 2 + 3 * Math.sin(t);
+      const p = toCanvas(x, y);
+      if (t === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.stroke();
 
-      var frame = document.createElement("iframe");
-      frame.src = this.url;
-      frame.width = width;
-      frame.height = height;
-      frame.title = "Core PHP: " + this.domain;
+    // Center
+    const c = toCanvas(1, 2);
+    ctx.fillStyle = "#2980b9";
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 4, 0, 2 * Math.PI);
+    ctx.fill();
 
-      container.appendChild(info);
-      container.appendChild(frame);
-    };
-
-    // Usage — change the domain as needed
-    var site = new PHPWindow("example.com");
-    site.show(420, 280);
+    // Labels
+    ctx.fillStyle = "#222";
+    ctx.font = "13px sans-serif";
+    ctx.fillText("Center (1, 2)", c.x + 8, c.y - 8);
+    ctx.fillText("a = 2", toCanvas(3.1, 2).x, toCanvas(3.1, 2).y);
+    ctx.fillText("b = 3", toCanvas(1, 5.1).x, toCanvas(1, 5.1).y - 4);
   </script>
 </body>
 </html>
