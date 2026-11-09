@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>DreamTech</title>
+  <title>Calculus Manuscript – Ellipse</title>
   <style>
     body { font-family: sans-serif; margin: 0; padding: 20px; background: #f9f9f9; }
     h1 { font-size: 1.4em; margin: 0 0 8px; }
@@ -15,10 +15,11 @@
     }
     #menu {
       position: absolute; display: none; background: #fff; border: 1px solid #aaa;
-      border-radius: 4px; box-shadow: 2px 2px 6px rgba(0,0,0,.2); z-index: 100; padding: 4px 0;
+      border-radius: 6px; box-shadow: 2px 2px 10px rgba(0,0,0,.25); z-index: 100;
+      padding: 6px 0; min-width: 180px;
     }
-    #menu div { padding: 8px 18px; cursor: pointer; }
-    #menu div:hover { background: #eef; }
+    #menu div { padding: 14px 20px; cursor: pointer; font-size: 16px; }
+    #menu div:hover, #menu div:active { background: #eef; }
     #cookies { margin: 12px 0; }
     .cookie {
       display: inline-block; margin: 4px; padding: 6px 10px; background: #f4d03f;
@@ -31,7 +32,7 @@
     #imageResults img { width: 180px; height: 140px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
     #floatBack {
       position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white;
-      padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;
+      padding: 12px 18px; border-radius: 20px; cursor: pointer; font-size: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 200;
     }
     .status { color: #666; font-size: 14px; margin-top: 8px; }
@@ -45,7 +46,7 @@
     <label>Photo (large, local only): 
       <input type="file" id="photoInput" accept="image/*">
     </label>
-    <span style="color:#666;font-size:13px;"> — or paste image on the graph (Ctrl+V)</span>
+    <span style="color:#666;font-size:13px;"> — or paste image on the graph</span>
   </div>
 
   <canvas id="graph" width="640" height="480" tabindex="0"></canvas>
@@ -60,7 +61,7 @@
   <div id="cookies"></div>
 
   <div id="searchBox">
-    <strong>Image Search</strong> (Wikimedia – pictures only)<br>
+    <strong>Image Search</strong> (Wikimedia)<br>
     <input type="text" id="query" placeholder="search images...">
     <button id="searchBtn">Search</button>
     <div id="status" class="status"></div>
@@ -86,6 +87,7 @@
     let phase = 0;
     let centerImage = null;
     let lastTap = 0;
+    let menuJustOpened = false;
 
     function toCanvas(x, y) {
       return { x: originX + x * scale, y: originY - y * scale };
@@ -100,13 +102,7 @@
         const imgH = Math.max(h * 1.35, 600);
         const shakeX = Math.sin(phase * 1.3) * shake * 8;
         const shakeY = Math.cos(phase * 1.7) * shake * 7;
-        ctx.drawImage(
-          centerImage,
-          c.x - imgW / 2 + shakeX,
-          c.y - imgH / 2 + shakeY,
-          imgW,
-          imgH
-        );
+        ctx.drawImage(centerImage, c.x - imgW/2 + shakeX, c.y - imgH/2 + shakeY, imgW, imgH);
       } else {
         ctx.fillStyle = "#fafafa";
         ctx.fillRect(0, 0, w, h);
@@ -122,12 +118,10 @@
       }
 
       ctx.strokeStyle = "rgba(0,0,0,0.1)";
-      ctx.lineWidth = 1;
       const ox = toCanvas(0, 0).x, oy = toCanvas(0, 0).y;
       ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
 
-      // nearly invisible ellipse
       ctx.strokeStyle = "rgba(192,57,43,0.05)";
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -172,25 +166,31 @@
     }
 
     function showMenu(x, y) {
-      menu.style.left = x + "px";
-      menu.style.top = y + "px";
+      menu.style.left = Math.min(x, window.innerWidth - 200) + "px";
+      menu.style.top = Math.min(y, window.innerHeight - 220) + "px";
       menu.style.display = "block";
+      menuJustOpened = true;
+      setTimeout(() => { menuJustOpened = false; }, 400);
     }
 
+    // Desktop right-click
     canvas.addEventListener("contextmenu", e => {
       e.preventDefault();
       showMenu(e.pageX, e.pageY);
     });
 
+    // Mobile double-tap (more reliable)
     canvas.addEventListener("touchend", e => {
       const now = Date.now();
-      if (now - lastTap < 350) {
+      if (now - lastTap < 400 && e.changedTouches.length === 1) {
         e.preventDefault();
         const touch = e.changedTouches[0];
         showMenu(touch.pageX, touch.pageY);
         lastTap = 0;
-      } else lastTap = now;
-    });
+      } else {
+        lastTap = now;
+      }
+    }, { passive: false });
 
     menu.addEventListener("click", e => {
       const speed = e.target.dataset.speed;
@@ -199,22 +199,33 @@
         menu.style.display = "none";
       }
     });
+    menu.addEventListener("touchend", e => {
+      const speed = e.target.dataset.speed;
+      if (speed) {
+        e.preventDefault();
+        startShake(parseFloat(speed));
+        menu.style.display = "none";
+      }
+    });
 
-    document.addEventListener("click", () => menu.style.display = "none");
-    document.addEventListener("touchstart", () => menu.style.display = "none");
+    // Hide menu only when tapping outside (and not right after opening)
+    function hideMenuIfOutside(e) {
+      if (menuJustOpened) return;
+      if (!menu.contains(e.target)) menu.style.display = "none";
+    }
+    document.addEventListener("click", hideMenuIfOutside);
+    document.addEventListener("touchstart", hideMenuIfOutside);
 
     function setImage(fileOrUrl) {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
         centerImage = img;
-        if (animId) draw(shakeSpeed);
-        else draw(0);
+        draw(shakeSpeed || 0);
       };
-      if (typeof fileOrUrl === "string") {
-        img.src = fileOrUrl;
-      } else {
-        if (!fileOrUrl || !fileOrUrl.type.startsWith("image/")) return;
+      if (typeof fileOrUrl === "string") img.src = fileOrUrl;
+      else {
+        if (!fileOrUrl || !fileOrUrl.type?.startsWith("image/")) return;
         img.src = URL.createObjectURL(fileOrUrl);
       }
     }
@@ -235,7 +246,6 @@
     canvas.addEventListener("paste", handlePaste);
     document.addEventListener("paste", handlePaste);
 
-    // Working image search via Wikimedia Commons API
     document.getElementById("searchBtn").onclick = doSearch;
     document.getElementById("query").addEventListener("keydown", e => {
       if (e.key === "Enter") doSearch();
@@ -247,21 +257,19 @@
       const results = document.getElementById("imageResults");
       results.innerHTML = "";
       statusEl.textContent = "Searching…";
-
       try {
         const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=10&gsrnamespace=6&iiprop=url&iiurlwidth=300&origin=*`;
         const res = await fetch(url);
         const data = await res.json();
         const pages = data.query?.pages || {};
         let count = 0;
-
         for (const page of Object.values(pages)) {
           const info = page.imageinfo?.[0];
           if (!info?.thumburl && !info?.url) continue;
           const img = document.createElement("img");
           img.src = info.thumburl || info.url;
           img.alt = page.title || q;
-          img.title = "Click to place on graph";
+          img.title = "Tap to place on graph";
           img.onclick = () => {
             setImage(info.url || info.thumburl);
             canvas.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -269,10 +277,9 @@
           results.appendChild(img);
           count++;
         }
-        statusEl.textContent = count ? `${count} images found` : "No images found";
+        statusEl.textContent = count ? `${count} images` : "No images found";
       } catch (err) {
-        statusEl.textContent = "Search failed (network or API limit)";
-        console.error(err);
+        statusEl.textContent = "Search failed";
       }
     }
 
