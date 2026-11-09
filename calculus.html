@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Calculus Manuscript – Ellipse</title>
+  <title>DreamTech</title>
   <style>
     body { font-family: sans-serif; margin: 0; padding: 20px; background: #f9f9f9; }
     h1 { font-size: 1.4em; margin: 0 0 8px; }
@@ -25,15 +25,16 @@
       border: 1px solid #d4ac0d; border-radius: 12px; cursor: pointer; font-size: 13px;
     }
     #searchBox { margin: 20px 0; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
-    #searchBox input[type=text] { padding: 8px; width: 240px; font-size: 15px; }
+    #searchBox input[type=text] { padding: 8px; width: 260px; font-size: 15px; }
     #searchBox button { padding: 8px 14px; font-size: 15px; margin-left: 6px; }
-    #imageResults { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    #imageResults { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; min-height: 40px; }
     #imageResults img { width: 180px; height: 140px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
     #floatBack {
       position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white;
       padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;
       box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 200;
     }
+    .status { color: #666; font-size: 14px; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -44,7 +45,7 @@
     <label>Photo (large, local only): 
       <input type="file" id="photoInput" accept="image/*">
     </label>
-    <span style="color:#666;font-size:13px;"> — or paste image directly on the graph (Ctrl+V)</span>
+    <span style="color:#666;font-size:13px;"> — or paste image on the graph (Ctrl+V)</span>
   </div>
 
   <canvas id="graph" width="640" height="480" tabindex="0"></canvas>
@@ -59,9 +60,10 @@
   <div id="cookies"></div>
 
   <div id="searchBox">
-    <strong>Image Search</strong> (pictures only)<br>
+    <strong>Image Search</strong> (Wikimedia – pictures only)<br>
     <input type="text" id="query" placeholder="search images...">
     <button id="searchBtn">Search</button>
+    <div id="status" class="status"></div>
     <div id="imageResults"></div>
   </div>
 
@@ -73,6 +75,7 @@
     const menu = document.getElementById("menu");
     const cookiesDiv = document.getElementById("cookies");
     const photoInput = document.getElementById("photoInput");
+    const statusEl = document.getElementById("status");
     const w = canvas.width, h = canvas.height;
     const scale = 36;
     const originX = w / 2 - 1 * scale;
@@ -93,10 +96,10 @@
 
       if (centerImage) {
         const c = toCanvas(1, 2);
-        const imgW = Math.max(w * 1.3, centerImage.width * 0.8);
-        const imgH = Math.max(h * 1.3, centerImage.height * 0.8);
-        const shakeX = Math.sin(phase * 1.3) * shake * 7;
-        const shakeY = Math.cos(phase * 1.7) * shake * 6;
+        const imgW = Math.max(w * 1.35, 800);
+        const imgH = Math.max(h * 1.35, 600);
+        const shakeX = Math.sin(phase * 1.3) * shake * 8;
+        const shakeY = Math.cos(phase * 1.7) * shake * 7;
         ctx.drawImage(
           centerImage,
           c.x - imgW / 2 + shakeX,
@@ -109,7 +112,7 @@
         ctx.fillRect(0, 0, w, h);
       }
 
-      ctx.strokeStyle = "rgba(0,0,0,0.05)";
+      ctx.strokeStyle = "rgba(0,0,0,0.04)";
       ctx.lineWidth = 1;
       for (let i = -10; i <= 10; i++) {
         const px = toCanvas(i, 0).x;
@@ -118,18 +121,18 @@
         ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
       }
 
-      ctx.strokeStyle = "rgba(0,0,0,0.12)";
+      ctx.strokeStyle = "rgba(0,0,0,0.1)";
       ctx.lineWidth = 1;
       const ox = toCanvas(0, 0).x, oy = toCanvas(0, 0).y;
       ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
 
       // nearly invisible ellipse
-      ctx.strokeStyle = "rgba(192,57,43,0.06)";
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = "rgba(192,57,43,0.05)";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      for (let t = 0; t <= 2 * Math.PI; t += 0.02) {
-        const s = 1 + shake * Math.sin(t * 6 + phase) * 0.03;
+      for (let t = 0; t <= 2 * Math.PI; t += 0.025) {
+        const s = 1 + shake * Math.sin(t * 5 + phase) * 0.025;
         const x = 1 + 2 * Math.cos(t) * s;
         const y = 2 + 3 * Math.sin(t) * s;
         const p = toCanvas(x, y);
@@ -200,20 +203,24 @@
     document.addEventListener("click", () => menu.style.display = "none");
     document.addEventListener("touchstart", () => menu.style.display = "none");
 
-    function setImage(file) {
-      if (!file || !file.type.startsWith("image/")) return;
+    function setImage(fileOrUrl) {
       const img = new Image();
+      img.crossOrigin = "anonymous";
       img.onload = () => {
         centerImage = img;
         if (animId) draw(shakeSpeed);
         else draw(0);
       };
-      img.src = URL.createObjectURL(file);
+      if (typeof fileOrUrl === "string") {
+        img.src = fileOrUrl;
+      } else {
+        if (!fileOrUrl || !fileOrUrl.type.startsWith("image/")) return;
+        img.src = URL.createObjectURL(fileOrUrl);
+      }
     }
 
     photoInput.addEventListener("change", e => setImage(e.target.files[0]));
 
-    // Paste directly onto the coordinate plane (canvas) or page
     function handlePaste(e) {
       const items = e.clipboardData?.items;
       if (!items) return;
@@ -228,37 +235,44 @@
     canvas.addEventListener("paste", handlePaste);
     document.addEventListener("paste", handlePaste);
 
-    // Working image search (loremflickr)
+    // Working image search via Wikimedia Commons API
     document.getElementById("searchBtn").onclick = doSearch;
     document.getElementById("query").addEventListener("keydown", e => {
       if (e.key === "Enter") doSearch();
     });
 
-    function doSearch() {
+    async function doSearch() {
       const q = document.getElementById("query").value.trim();
       if (!q) return;
       const results = document.getElementById("imageResults");
       results.innerHTML = "";
-      const term = encodeURIComponent(q.replace(/\s+/g, ","));
-      for (let i = 0; i < 8; i++) {
-        const img = document.createElement("img");
-        img.src = `https://loremflickr.com/300/200/${term}?random=${Date.now() + i}`;
-        img.alt = q;
-        img.loading = "lazy";
-        img.title = "Click to use this image on the graph";
-        img.onclick = () => {
-          // click a search result to place it on the coordinate plane
-          const useImg = new Image();
-          useImg.crossOrigin = "anonymous";
-          useImg.onload = () => {
-            centerImage = useImg;
-            if (animId) draw(shakeSpeed);
-            else draw(0);
+      statusEl.textContent = "Searching…";
+
+      try {
+        const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=10&gsrnamespace=6&iiprop=url&iiurlwidth=300&origin=*`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const pages = data.query?.pages || {};
+        let count = 0;
+
+        for (const page of Object.values(pages)) {
+          const info = page.imageinfo?.[0];
+          if (!info?.thumburl && !info?.url) continue;
+          const img = document.createElement("img");
+          img.src = info.thumburl || info.url;
+          img.alt = page.title || q;
+          img.title = "Click to place on graph";
+          img.onclick = () => {
+            setImage(info.url || info.thumburl);
             canvas.scrollIntoView({ behavior: "smooth", block: "center" });
           };
-          useImg.src = img.src;
-        };
-        results.appendChild(img);
+          results.appendChild(img);
+          count++;
+        }
+        statusEl.textContent = count ? `${count} images found` : "No images found";
+      } catch (err) {
+        statusEl.textContent = "Search failed (network or API limit)";
+        console.error(err);
       }
     }
 
