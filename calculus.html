@@ -173,13 +173,11 @@
       setTimeout(() => { menuJustOpened = false; }, 400);
     }
 
-    // Desktop right-click
     canvas.addEventListener("contextmenu", e => {
       e.preventDefault();
       showMenu(e.pageX, e.pageY);
     });
 
-    // Mobile double-tap (more reliable)
     canvas.addEventListener("touchend", e => {
       const now = Date.now();
       if (now - lastTap < 400 && e.changedTouches.length === 1) {
@@ -208,7 +206,6 @@
       }
     });
 
-    // Hide menu only when tapping outside (and not right after opening)
     function hideMenuIfOutside(e) {
       if (menuJustOpened) return;
       if (!menu.contains(e.target)) menu.style.display = "none";
