@@ -9,122 +9,39 @@
     h1 { font-size: 1.4em; margin: 0 0 8px; }
     .eq { font-size: 1.1em; margin: 0 0 12px; font-family: serif; }
     #controls { margin: 8px 0 12px; }
-    
-    #graphContainer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: flex-start;
-      margin: 8px 0 16px;
-    }
-    #canvasWrap {
-      flex: 1 1 320px;
-      min-width: 280px;
-    }
-    canvas {
-      border: 1px solid #ccc;
-      background: #fff;
-      display: block;
-      width: 100%;
-      height: auto;
-      max-width: 640px;
-      cursor: crosshair;
-      touch-action: manipulation;
-    }
-    
-    #eventPanel {
-      flex: 0 0 160px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.1);
-      max-height: 480px;
-      overflow-y: auto;
-    }
-    #eventPanel h3 {
-      margin: 0 0 10px;
-      font-size: 1em;
-      text-align: center;
-      color: #333;
-    }
-    .event-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .event-table td {
-      padding: 8px 4px;
-      text-align: center;
-    }
-    .event-btn {
-      display: block;
-      width: 100%;
-      padding: 14px 8px;
-      font-size: 22px;
-      font-weight: bold;
-      background: #f0f4f8;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      cursor: pointer;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .event-btn:hover,
-    .event-btn:active,
-    .event-btn.selected {
-      background: #2980b9;
-      color: white;
-      border-color: #1a5276;
-    }
-    
-    #menu {
-      position: absolute; display: none; background: #fff; border: 1px solid #aaa;
-      border-radius: 6px; box-shadow: 2px 2px 10px rgba(0,0,0,.25); z-index: 100;
-      padding: 6px 0; min-width: 180px;
-    }
+    #graphContainer { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; margin: 8px 0 16px; }
+    #canvasWrap { flex: 1 1 320px; min-width: 280px; }
+    canvas { border: 1px solid #ccc; background: #fff; display: block; width: 100%; height: auto; max-width: 640px; cursor: crosshair; touch-action: manipulation; }
+    #eventPanel { flex: 0 0 160px; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.1); max-height: 480px; overflow-y: auto; }
+    #eventPanel h3 { margin: 0 0 10px; font-size: 1em; text-align: center; color: #333; }
+    .event-table { width: 100%; border-collapse: collapse; }
+    .event-table td { padding: 8px 4px; text-align: center; }
+    .event-btn { display: block; width: 100%; padding: 14px 8px; font-size: 22px; font-weight: bold; background: #f0f4f8; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; touch-action: manipulation; user-select: none; }
+    .event-btn:hover, .event-btn:active, .event-btn.selected { background: #2980b9; color: white; border-color: #1a5276; }
+    #menu { position: absolute; display: none; background: #fff; border: 1px solid #aaa; border-radius: 6px; box-shadow: 2px 2px 10px rgba(0,0,0,.25); z-index: 100; padding: 6px 0; min-width: 180px; }
     #menu div { padding: 14px 20px; cursor: pointer; font-size: 16px; }
     #menu div:hover, #menu div:active { background: #eef; }
     #cookies { margin: 12px 0; }
-    .cookie {
-      display: inline-block; margin: 4px; padding: 6px 10px; background: #f4d03f;
-      border: 1px solid #d4ac0d; border-radius: 12px; cursor: pointer; font-size: 13px;
-    }
+    .cookie { display: inline-block; margin: 4px; padding: 6px 10px; background: #f4d03f; border: 1px solid #d4ac0d; border-radius: 12px; cursor: pointer; font-size: 13px; }
     #searchBox { margin: 20px 0; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
     #searchBox input[type=text] { padding: 8px; width: min(260px, 100%); font-size: 15px; }
     #searchBox button { padding: 8px 14px; font-size: 15px; margin-left: 6px; }
     #imageResults { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; min-height: 40px; }
     #imageResults img { width: 140px; height: 110px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
-    #floatBack {
-      position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white;
-      padding: 12px 18px; border-radius: 20px; cursor: pointer; font-size: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 200;
-    }
+    #floatBack { position: fixed; bottom: 16px; right: 16px; background: #2980b9; color: white; padding: 12px 18px; border-radius: 20px; cursor: pointer; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 200; }
     .status { color: #666; font-size: 14px; margin-top: 8px; }
-    
-    @media (max-width: 700px) {
-      #graphContainer { flex-direction: column; }
-      #eventPanel { flex: 1 1 auto; width: 100%; max-width: 100%; }
-      .event-btn { font-size: 20px; padding: 16px; }
-    }
+    @media (max-width: 700px) { #graphContainer { flex-direction: column; } #eventPanel { flex: 1 1 auto; width: 100%; } .event-btn { font-size: 20px; padding: 16px; } }
   </style>
 </head>
 <body>
   <h1>Calculus Manuscript</h1>
   <div class="eq">(x − 1)² / 4 + (y − 2)² / 9 = 1</div>
-
   <div id="controls">
-    <label>Photo (large, local only): 
-      <input type="file" id="photoInput" accept="image/*">
-    </label>
+    <label>Photo (large, local only): <input type="file" id="photoInput" accept="image/*"></label>
     <span style="color:#666;font-size:13px;"> — or paste image on the graph</span>
   </div>
-
   <div id="graphContainer">
-    <div id="canvasWrap">
-      <canvas id="graph" width="640" height="480" tabindex="0"></canvas>
-    </div>
-    
+    <div id="canvasWrap"><canvas id="graph" width="640" height="480" tabindex="0"></canvas></div>
     <div id="eventPanel">
       <h3>Event Selection</h3>
       <table class="event-table">
@@ -136,16 +53,13 @@
       </table>
     </div>
   </div>
-
   <div id="menu">
     <div data-speed="0.4">PHP Speed: Slow</div>
     <div data-speed="1.0">PHP Speed: Medium</div>
     <div data-speed="2.2">PHP Speed: Fast</div>
     <div data-speed="3.5">PHP Speed: Extreme</div>
   </div>
-
   <div id="cookies"></div>
-
   <div id="searchBox">
     <strong>Image Search</strong> (Wikimedia)<br>
     <input type="text" id="query" placeholder="search images...">
@@ -153,7 +67,6 @@
     <div id="status" class="status"></div>
     <div id="imageResults"></div>
   </div>
-
   <div id="floatBack" title="Back to graph">↑ Graph</div>
 
   <script>
@@ -167,331 +80,123 @@
     const scale = 36;
     const originX = w / 2 - 1 * scale;
     const originY = h / 2 + 2 * scale;
+    let shakeSpeed = 0, animId = null, phase = 0, centerImage = null, lastTap = 0, menuJustOpened = false, selectedChar = null;
 
-    let shakeSpeed = 0;
-    let animId = null;
-    let phase = 0;
-    let centerImage = null;
-    let lastTap = 0;
-    let menuJustOpened = false;
-    let selectedChar = null;
-
-    function toCanvas(x, y) {
-      return { x: originX + x * scale, y: originY - y * scale };
-    }
+    function toCanvas(x, y) { return { x: originX + x * scale, y: originY - y * scale }; }
 
     function draw(shake = 0) {
       ctx.clearRect(0, 0, w, h);
-
       if (centerImage) {
         const c = toCanvas(1, 2);
-        const imgW = Math.max(w * 1.35, 800);
-        const imgH = Math.max(h * 1.35, 600);
-        const shakeX = Math.sin(phase * 1.3) * shake * 8;
-        const shakeY = Math.cos(phase * 1.7) * shake * 7;
+        const imgW = Math.max(w * 1.35, 800), imgH = Math.max(h * 1.35, 600);
+        const shakeX = Math.sin(phase * 1.3) * shake * 8, shakeY = Math.cos(phase * 1.7) * shake * 7;
         ctx.drawImage(centerImage, c.x - imgW/2 + shakeX, c.y - imgH/2 + shakeY, imgW, imgH);
-      } else {
-        ctx.fillStyle = "#fafafa";
-        ctx.fillRect(0, 0, w, h);
-      }
-
-      ctx.strokeStyle = "rgba(0,0,0,0.04)";
-      ctx.lineWidth = 1;
+      } else { ctx.fillStyle = "#fafafa"; ctx.fillRect(0, 0, w, h); }
+      ctx.strokeStyle = "rgba(0,0,0,0.04)"; ctx.lineWidth = 1;
       for (let i = -10; i <= 10; i++) {
-        const px = toCanvas(i, 0).x;
-        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
-        const py = toCanvas(0, i).y;
-        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+        const px = toCanvas(i, 0).x; ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+        const py = toCanvas(0, i).y; ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
       }
-
       ctx.strokeStyle = "rgba(0,0,0,0.1)";
       const ox = toCanvas(0, 0).x, oy = toCanvas(0, 0).y;
       ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
-
-      ctx.strokeStyle = "rgba(192,57,43,0.05)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
+      ctx.strokeStyle = "rgba(192,57,43,0.05)"; ctx.lineWidth = 1; ctx.beginPath();
       for (let t = 0; t <= 2 * Math.PI; t += 0.025) {
         const s = 1 + shake * Math.sin(t * 5 + phase) * 0.025;
-        const x = 1 + 2 * Math.cos(t) * s;
-        const y = 2 + 3 * Math.sin(t) * s;
+        const x = 1 + 2 * Math.cos(t) * s, y = 2 + 3 * Math.sin(t) * s;
         const p = toCanvas(x, y);
-        if (t === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
+        if (t === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
       }
-      ctx.closePath();
-      ctx.stroke();
+      ctx.closePath(); ctx.stroke();
     }
 
-    function animate() {
-      phase += shakeSpeed * 0.18;
-      draw(shakeSpeed);
-      animId = requestAnimationFrame(animate);
-    }
-
-    function startShake(speed) {
-      shakeSpeed = speed;
-      if (animId) cancelAnimationFrame(animId);
-      animate();
-      spawnCookies();
-    }
+    function animate() { phase += shakeSpeed * 0.18; draw(shakeSpeed); animId = requestAnimationFrame(animate); }
+    function startShake(speed) { shakeSpeed = speed; if (animId) cancelAnimationFrame(animId); animate(); spawnCookies(); }
 
     function spawnCookies() {
       cookiesDiv.innerHTML = "<strong>Cookies:</strong><br>";
       for (let i = 0; i < 5; i++) {
-        const t = Math.random() * 2 * Math.PI;
-        const noise = (Math.random() - 0.5) * 0.5;
-        const x = +(1 + 2 * Math.cos(t) + noise).toFixed(1);
-        const y = +(2 + 3 * Math.sin(t) + noise).toFixed(1);
-        const el = document.createElement("span");
-        el.className = "cookie";
-        el.textContent = `${x},${y}`;
-        el.onclick = () => alert(`Cookie: (${x}, ${y})`);
-        cookiesDiv.appendChild(el);
+        const t = Math.random() * 2 * Math.PI, noise = (Math.random() - 0.5) * 0.5;
+        const x = +(1 + 2 * Math.cos(t) + noise).toFixed(1), y = +(2 + 3 * Math.sin(t) + noise).toFixed(1);
+        const el = document.createElement("span"); el.className = "cookie"; el.textContent = `${x},${y}`;
+        el.onclick = () => alert(`Cookie: (${x}, ${y})`); cookiesDiv.appendChild(el);
       }
     }
 
     function showMenu(x, y) {
       menu.style.left = Math.min(x, window.innerWidth - 200) + "px";
       menu.style.top = Math.min(y, window.innerHeight - 220) + "px";
-      menu.style.display = "block";
-      menuJustOpened = true;
+      menu.style.display = "block"; menuJustOpened = true;
       setTimeout(() => { menuJustOpened = false; }, 400);
     }
 
-    canvas.addEventListener("contextmenu", e => {
-      e.preventDefault();
-      showMenu(e.pageX, e.pageY);
-    });
-
+    canvas.addEventListener("contextmenu", e => { e.preventDefault(); showMenu(e.pageX, e.pageY); });
     canvas.addEventListener("touchend", e => {
       const now = Date.now();
       if (now - lastTap < 400 && e.changedTouches.length === 1) {
-        e.preventDefault();
-        const touch = e.changedTouches[0];
-        showMenu(touch.pageX, touch.pageY);
-        lastTap = 0;
-      } else {
-        lastTap = now;
-      }
+        e.preventDefault(); const touch = e.changedTouches[0]; showMenu(touch.pageX, touch.pageY); lastTap = 0;
+      } else lastTap = now;
     }, { passive: false });
 
-    menu.addEventListener("click", e => {
-      const speed = e.target.dataset.speed;
-      if (speed) {
-        startShake(parseFloat(speed));
-        menu.style.display = "none";
-      }
-    });
-    menu.addEventListener("touchend", e => {
-      const speed = e.target.dataset.speed;
-      if (speed) {
-        e.preventDefault();
-        startShake(parseFloat(speed));
-        menu.style.display = "none";
-      }
-    });
+    menu.addEventListener("click", e => { const speed = e.target.dataset.speed; if (speed) { startShake(parseFloat(speed)); menu.style.display = "none"; } });
+    menu.addEventListener("touchend", e => { const speed = e.target.dataset.speed; if (speed) { e.preventDefault(); startShake(parseFloat(speed)); menu.style.display = "none"; } });
 
-    function hideMenuIfOutside(e) {
-      if (menuJustOpened) return;
-      if (!menu.contains(e.target)) menu.style.display = "none";
-    }
+    function hideMenuIfOutside(e) { if (menuJustOpened) return; if (!menu.contains(e.target)) menu.style.display = "none"; }
     document.addEventListener("click", hideMenuIfOutside);
     document.addEventListener("touchstart", hideMenuIfOutside);
 
     function setImage(fileOrUrl) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        centerImage = img;
-        draw(shakeSpeed || 0);
-      };
+      const img = new Image(); img.crossOrigin = "anonymous";
+      img.onload = () => { centerImage = img; draw(shakeSpeed || 0); };
       if (typeof fileOrUrl === "string") img.src = fileOrUrl;
-      else {
-        if (!fileOrUrl || !fileOrUrl.type?.startsWith("image/")) return;
-        img.src = URL.createObjectURL(fileOrUrl);
-      }
+      else if (fileOrUrl?.type?.startsWith("image/")) img.src = URL.createObjectURL(fileOrUrl);
     }
-
     photoInput.addEventListener("change", e => setImage(e.target.files[0]));
 
     function handlePaste(e) {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (const item of items) {
-        if (item.type.startsWith("image/")) {
-          e.preventDefault();
-          setImage(item.getAsFile());
-          break;
-        }
-      }
+      const items = e.clipboardData?.items; if (!items) return;
+      for (const item of items) if (item.type.startsWith("image/")) { e.preventDefault(); setImage(item.getAsFile()); break; }
     }
-    canvas.addEventListener("paste", handlePaste);
-    document.addEventListener("paste", handlePaste);
+    canvas.addEventListener("paste", handlePaste); document.addEventListener("paste", handlePaste);
 
     document.getElementById("searchBtn").onclick = doSearch;
-    document.getElementById("query").addEventListener("keydown", e => {
-      if (e.key === "Enter") doSearch();
-    });
+    document.getElementById("query").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
 
     async function doSearch() {
-      const q = document.getElementById("query").value.trim();
-      if (!q) return;
-      const results = document.getElementById("imageResults");
-      results.innerHTML = "";
-      statusEl.textContent = "Searching…";
+      const q = document.getElementById("query").value.trim(); if (!q) return;
+      const results = document.getElementById("imageResults"); results.innerHTML = ""; statusEl.textContent = "Searching…";
       try {
         const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=10&gsrnamespace=6&iiprop=url&iiurlwidth=300&origin=*`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const pages = data.query?.pages || {};
-        let count = 0;
+        const res = await fetch(url); const data = await res.json();
+        const pages = data.query?.pages || {}; let count = 0;
         for (const page of Object.values(pages)) {
-          const info = page.imageinfo?.[0];
-          if (!info?.thumburl && !info?.url) continue;
-          const img = document.createElement("img");
-          img.src = info.thumburl || info.url;
-          img.alt = page.title || q;
-          img.title = "Tap to place on graph";
-          img.onclick = () => {
-            setImage(info.url || info.thumburl);
-            canvas.scrollIntoView({ behavior: "smooth", block: "center" });
-          };
-          results.appendChild(img);
-          count++;
+          const info = page.imageinfo?.[0]; if (!info?.thumburl && !info?.url) continue;
+          const img = document.createElement("img"); img.src = info.thumburl || info.url; img.alt = page.title || q; img.title = "Tap to place on graph";
+          img.onclick = () => { setImage(info.url || info.thumburl); canvas.scrollIntoView({ behavior: "smooth", block: "center" }); };
+          results.appendChild(img); count++;
         }
         statusEl.textContent = count ? `${count} images` : "No images found";
-      } catch (err) {
-        statusEl.textContent = "Search failed";
-      }
+      } catch { statusEl.textContent = "Search failed"; }
     }
 
-    document.getElementById("floatBack").onclick = () => {
-      canvas.scrollIntoView({ behavior: "smooth", block: "center" });
-    };
+    document.getElementById("floatBack").onclick = () => canvas.scrollIntoView({ behavior: "smooth", block: "center" });
 
-    // Event selection buttons
     document.querySelectorAll(".event-btn").forEach(btn => {
       btn.addEventListener("click", function() {
         document.querySelectorAll(".event-btn").forEach(b => b.classList.remove("selected"));
-        this.classList.add("selected");
-        selectedChar = this.dataset.char;
+        this.classList.add("selected"); selectedChar = this.dataset.char;
         console.log("Selected event character:", selectedChar);
-
-        if (selectedChar === "$") {
-          openDiscontinuityPage();
-        }
+        if (selectedChar === "$") openDiscontinuityPage();
       });
-      btn.addEventListener("touchend", function(e) {
-        e.preventDefault();
-        this.click();
-      });
+      btn.addEventListener("touchend", function(e) { e.preventDefault(); this.click(); });
     });
 
     function openDiscontinuityPage() {
-      const dualHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Discontinuity Forum – Dual Graphs</title>
-  <style>
-    body { font-family: sans-serif; margin: 0; padding: 16px; background: #f4f4f4; }
-    h1 { text-align: center; margin: 0 0 8px; font-size: 1.5em; }
-    .counter { text-align: center; font-size: 1.8em; font-weight: bold; color: #c0392b; margin: 8px 0 16px; }
-    .graphs { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
-    .graph-box { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px; flex: 1 1 300px; max-width: 480px; }
-    .graph-box h2 { margin: 0 0 8px; font-size: 1.1em; text-align: center; }
-    canvas { display: block; width: 100%; height: auto; border: 1px solid #ddd; background: #fafafa; }
-    .status { text-align: center; color: #666; margin-top: 12px; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <h1>Discontinuity: lim f(x) ≠ lim f(x)</h1>
-  <div class="counter" id="counter">30</div>
-  <div class="graphs">
-    <div class="graph-box">
-      <h2>Left Limit Graph</h2>
-      <canvas id="leftCanvas" width="400" height="320"></canvas>
-    </div>
-    <div class="graph-box">
-      <h2>Right Limit / Jump Graph</h2>
-      <canvas id="rightCanvas" width="400" height="320"></canvas>
-    </div>
-  </div>
-  <div class="status">Self-governing cycle: 30 → 15 then reset · Medium speed</div>
-  <script>
-    let current = 30;
-    const leftCanvas = document.getElementById("leftCanvas");
-    const rightCanvas = document.getElementById("rightCanvas");
-    const leftCtx = leftCanvas.getContext("2d");
-    const rightCtx = rightCanvas.getContext("2d");
-    const counterEl = document.getElementById("counter");
-
-    function drawGraph(ctx, value, isJump) {
-      const w = ctx.canvas.width, h = ctx.canvas.height;
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "#fafafa";
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.strokeStyle = "#ccc";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(40, h/2); ctx.lineTo(w-20, h/2);
-      ctx.moveTo(w/2, 20); ctx.lineTo(w/2, h-20);
-      ctx.stroke();
-
-      const scale = 4;
-      const originX = w/2;
-      const originY = h/2;
-
-      ctx.strokeStyle = isJump ? "#c0392b" : "#2980b9";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-
-      for (let x = -8; x <= 8; x += 0.05) {
-        let y;
-        if (isJump) {
-          y = (x < 0) ? value * 0.15 : (value * 0.15) + 3;
-        } else {
-          y = value * 0.15 * Math.tanh(x * 0.8);
-        }
-        const px = originX + x * scale * 4;
-        const py = originY - y * scale * 6;
-        if (x === -8) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-
-      ctx.fillStyle = "#333";
-      ctx.font = "14px sans-serif";
-      ctx.fillText("value ≈ " + value, 50, 30);
-    }
-
-    function update() {
-      counterEl.textContent = current;
-      drawGraph(leftCtx, current, false);
-      drawGraph(rightCtx, current, true);
-
-      current--;
-      if (current < 15) current = 30;
-
-      setTimeout(update, 650);
-    }
-
-    update();
-  </script>
-</body>
-</html>`;
-
+      const dualHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Discontinuity Forum – Dual Graphs</title><style>body{font-family:sans-serif;margin:0;padding:16px;background:#f4f4f4}h1{text-align:center;margin:0 0 8px;font-size:1.5em}.counter{text-align:center;font-size:1.8em;font-weight:bold;color:#c0392b;margin:8px 0 16px}.graphs{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}.graph-box{background:#fff;border:1px solid #ccc;border-radius:8px;padding:10px;flex:1 1 300px;max-width:480px}.graph-box h2{margin:0 0 8px;font-size:1.1em;text-align:center}canvas{display:block;width:100%;height:auto;border:1px solid #ddd;background:#fafafa}.status{text-align:center;color:#666;margin-top:12px;font-size:14px}</style></head><body><h1>Discontinuity: lim f(x) ≠ lim f(x)</h1><div class="counter" id="counter">30</div><div class="graphs"><div class="graph-box"><h2>Left Limit Graph</h2><canvas id="leftCanvas" width="400" height="320"></canvas></div><div class="graph-box"><h2>Right Limit / Jump Graph</h2><canvas id="rightCanvas" width="400" height="320"></canvas></div></div><div class="status">Self-governing cycle: 30 → 15 then reset · Medium speed</div><script>let current=30;const leftCanvas=document.getElementById("leftCanvas"),rightCanvas=document.getElementById("rightCanvas"),leftCtx=leftCanvas.getContext("2d"),rightCtx=rightCanvas.getContext("2d"),counterEl=document.getElementById("counter");function drawGraph(ctx,value,isJump){const w=ctx.canvas.width,h=ctx.canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle="#fafafa";ctx.fillRect(0,0,w,h);ctx.strokeStyle="#ccc";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(40,h/2);ctx.lineTo(w-20,h/2);ctx.moveTo(w/2,20);ctx.lineTo(w/2,h-20);ctx.stroke();const scale=4,originX=w/2,originY=h/2;ctx.strokeStyle=isJump?"#c0392b":"#2980b9";ctx.lineWidth=2;ctx.beginPath();for(let x=-8;x<=8;x+=0.05){let y;if(isJump)y=(x<0)?value*0.15:(value*0.15)+3;else y=value*0.15*Math.tanh(x*0.8);const px=originX+x*scale*4,py=originY-y*scale*6;if(x===-8)ctx.moveTo(px,py);else ctx.lineTo(px,py)}ctx.stroke();ctx.fillStyle="#333";ctx.font="14px sans-serif";ctx.fillText("value ≈ "+value,50,30)}function update(){counterEl.textContent=current;drawGraph(leftCtx,current,false);drawGraph(rightCtx,current,true);current--;if(current<15)current=30;setTimeout(update,650)}update();<\/script></body></html>`;
       const win = window.open("", "_blank", "width=980,height=640,scrollbars=yes");
-      if (win) {
-        win.document.write(dualHtml);
-        win.document.close();
-      } else {
-        alert("Please allow pop-ups to open the discontinuity page.");
-      }
+      if (win) { win.document.write(dualHtml); win.document.close(); }
+      else alert("Please allow pop-ups to open the discontinuity page.");
     }
 
     draw(0);
