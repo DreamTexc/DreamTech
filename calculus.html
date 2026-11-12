@@ -10,7 +10,6 @@
     .eq { font-size: 1.1em; margin: 0 0 12px; font-family: serif; }
     #controls { margin: 8px 0 12px; }
     
-    /* Top container: canvas + selection panel side by side */
     #graphContainer {
       display: flex;
       flex-wrap: wrap;
@@ -33,7 +32,6 @@
       touch-action: manipulation;
     }
     
-    /* Selection panel on the right */
     #eventPanel {
       flex: 0 0 160px;
       background: #fff;
@@ -104,7 +102,6 @@
     }
     .status { color: #666; font-size: 14px; margin-top: 8px; }
     
-    /* Mobile adjustments */
     @media (max-width: 700px) {
       #graphContainer { flex-direction: column; }
       #eventPanel { flex: 1 1 auto; width: 100%; max-width: 100%; }
@@ -374,22 +371,128 @@
       canvas.scrollIntoView({ behavior: "smooth", block: "center" });
     };
 
-    // Event selection buttons (placeholder handlers – ready for your actions)
+    // Event selection buttons
     document.querySelectorAll(".event-btn").forEach(btn => {
       btn.addEventListener("click", function() {
         document.querySelectorAll(".event-btn").forEach(b => b.classList.remove("selected"));
         this.classList.add("selected");
         selectedChar = this.dataset.char;
         console.log("Selected event character:", selectedChar);
-        // TODO: add specific actions here later
-        // Example: if (selectedChar === "$") { ... }
+
+        if (selectedChar === "$") {
+          openDiscontinuityPage();
+        }
       });
-      // Touch support already covered by click, but ensure no delay
       btn.addEventListener("touchend", function(e) {
         e.preventDefault();
         this.click();
       });
     });
+
+    function openDiscontinuityPage() {
+      const dualHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discontinuity Forum – Dual Graphs</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 16px; background: #f4f4f4; }
+    h1 { text-align: center; margin: 0 0 8px; font-size: 1.5em; }
+    .counter { text-align: center; font-size: 1.8em; font-weight: bold; color: #c0392b; margin: 8px 0 16px; }
+    .graphs { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .graph-box { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px; flex: 1 1 300px; max-width: 480px; }
+    .graph-box h2 { margin: 0 0 8px; font-size: 1.1em; text-align: center; }
+    canvas { display: block; width: 100%; height: auto; border: 1px solid #ddd; background: #fafafa; }
+    .status { text-align: center; color: #666; margin-top: 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Discontinuity: lim f(x) ≠ lim f(x)</h1>
+  <div class="counter" id="counter">30</div>
+  <div class="graphs">
+    <div class="graph-box">
+      <h2>Left Limit Graph</h2>
+      <canvas id="leftCanvas" width="400" height="320"></canvas>
+    </div>
+    <div class="graph-box">
+      <h2>Right Limit / Jump Graph</h2>
+      <canvas id="rightCanvas" width="400" height="320"></canvas>
+    </div>
+  </div>
+  <div class="status">Self-governing cycle: 30 → 15 then reset · Medium speed</div>
+  <script>
+    let current = 30;
+    const leftCanvas = document.getElementById("leftCanvas");
+    const rightCanvas = document.getElementById("rightCanvas");
+    const leftCtx = leftCanvas.getContext("2d");
+    const rightCtx = rightCanvas.getContext("2d");
+    const counterEl = document.getElementById("counter");
+
+    function drawGraph(ctx, value, isJump) {
+      const w = ctx.canvas.width, h = ctx.canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fafafa";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = "#ccc";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(40, h/2); ctx.lineTo(w-20, h/2);
+      ctx.moveTo(w/2, 20); ctx.lineTo(w/2, h-20);
+      ctx.stroke();
+
+      const scale = 4;
+      const originX = w/2;
+      const originY = h/2;
+
+      ctx.strokeStyle = isJump ? "#c0392b" : "#2980b9";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+
+      for (let x = -8; x <= 8; x += 0.05) {
+        let y;
+        if (isJump) {
+          y = (x < 0) ? value * 0.15 : (value * 0.15) + 3;
+        } else {
+          y = value * 0.15 * Math.tanh(x * 0.8);
+        }
+        const px = originX + x * scale * 4;
+        const py = originY - y * scale * 6;
+        if (x === -8) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = "#333";
+      ctx.font = "14px sans-serif";
+      ctx.fillText("value ≈ " + value, 50, 30);
+    }
+
+    function update() {
+      counterEl.textContent = current;
+      drawGraph(leftCtx, current, false);
+      drawGraph(rightCtx, current, true);
+
+      current--;
+      if (current < 15) current = 30;
+
+      setTimeout(update, 650);
+    }
+
+    update();
+  </script>
+</body>
+</html>`;
+
+      const win = window.open("", "_blank", "width=980,height=640,scrollbars=yes");
+      if (win) {
+        win.document.write(dualHtml);
+        win.document.close();
+      } else {
+        alert("Please allow pop-ups to open the discontinuity page.");
+      }
+    }
 
     draw(0);
   </script>
